@@ -1,0 +1,223 @@
+/* Component Styles */
+
+/* Upload Area */
+.upload-area {
+  border: 2px dashed var(--border-color);
+  border-radius: var(--border-radius-large);
+  padding: var(--spacing-2xl);
+  text-align: center;
+  transition: all var(--transition-base);
+  cursor: pointer;
+}
+
+.upload-area.drag-over {
+  border-color: var(--primary-color);
+  background-color: var(--primary-light);
+}
+
+.upload-icon {
+  font-size: 3rem;
+  margin-bottom: var(--spacing-md);
+}
+
+.upload-area p {
+  margin-bottom: var(--spacing-sm);
+  color: var(--text-secondary);
+}
+
+.upload-hint {
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
+}
+
+.upload-limit {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  margin-top: var(--spacing-md);
+}
+
+/* Toast Notifications */
+.toast-container {
+  position: fixed;
+  top: var(--spacing-lg);
+  right: var(--spacing-lg);
+  z-index: calc(var(--z-modal) + 10);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.toast {
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--bg-primary);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-large);
+  min-width: 300px;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.toast.success {
+  border-left: 4px solid var(--success-color);
+}
+
+.toast.error {
+  border-left: 4px solid var(--error-color);
+}
+
+.toast.warning {
+  border-left: 4px solid var(--warning-color);
+}
+
+.toast.info {
+  border-left: 4px solid var(--primary-color);
+}
+
+.toast-content {
+  display: flex;
+  align-items: start;
+  gap: var(--spacing-sm);
+}
+
+.toast-icon {
+  font-size: var(--font-size-lg);
+}
+
+.toast-message {
+  flex: 1;
+}
+
+.toast-title {
+  font-weight: 600;
+  margin-bottom: var(--spacing-xs);
+}
+
+.toast-text {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+/* Badge */
+.badge {
+  display: inline-block;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: var(--border-radius-small);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.badge.success {
+  background-color: var(--success-color);
+  color: var(--text-white);
+}
+
+.badge.error {
+  background-color: var(--error-color);
+  color: var(--text-white);
+}
+
+.badge.warning {
+  background-color: var(--warning-color);
+  color: var(--text-white);
+}
+
+.badge.info {
+  background-color: var(--primary-color);
+  color: var(--text-white);
+}
+
+/* Card */
+.card {
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-small);
+}
+
+.card-header {
+  font-weight: 600;
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.card-body {
+  color: var(--text-secondary);
+}
+
+/* Skeleton Loader */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--bg-tertiary) 25%,
+    var(--bg-hover) 50%,
+    var(--bg-tertiary) 75%
+  );
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: var(--border-radius-small);
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.skeleton-text {
+  height: 1rem;
+  margin-bottom: var(--spacing-sm);
+}
+
+.skeleton-title {
+  height: 1.5rem;
+  width: 60%;
+  margin-bottom: var(--spacing-md);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    left: -280px;
+    top: 0;
+    height: 100%;
+    z-index: calc(var(--z-modal) - 1);
+    transition: left var(--transition-base);
+  }
+
+  .sidebar.open {
+    left: 0;
+  }
+
+  .chat-container {
+    width: 100%;
+  }
+
+  .message-content {
+    max-width: 85%;
+  }
+
+  .header-content {
+    padding: var(--spacing-sm) var(--spacing-md);
+  }
+
+  .app-title {
+    font-size: var(--font-size-xl);
+  }
+}

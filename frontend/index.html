@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Agentic AutoML Platform - Build ML pipelines with AI agents"
+    />
+    <title>Agentic Platform</title>
+    <link rel="stylesheet" href="/src/css/variables.css" />
+    <link rel="stylesheet" href="/src/css/main.css" />
+    <link rel="stylesheet" href="/src/css/chat.css" />
+    <link rel="stylesheet" href="/src/css/components.css" />
+  </head>
+  <body>
+    <div class="app-container">
+      <!-- Header -->
+      <header class="app-header">
+        <div class="header-content">
+          <h1 class="app-title">AGENTIC PLATFORM</h1>
+          <div class="header-actions">
+            <button
+              id="canvas-btn"
+              class="btn btn-accent"
+              title="Toggle Canvas Mode"
+            >
+              <span id="canvas-btn-text">Canvas Mode</span>
+            </button>
+            <button
+              id="agents-btn"
+              class="btn btn-secondary"
+              title="Manage Agents"
+              style="display: none"
+            >
+              Agents
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Content -->
+      <main class="app-main">
+        <!-- Sidebar (Hidden by Default) -->
+        <aside class="sidebar" id="sidebar">
+          <div class="sidebar-header">
+            <h2>Active Agents</h2>
+            <button
+              id="reload-agents-btn"
+              class="btn btn-small"
+              title="Reload Agents"
+            >
+              Reload
+            </button>
+          </div>
+          <div class="agent-list" id="agent-list">
+            <!-- Agents will be dynamically loaded here -->
+            <div class="loading">Loading agents...</div>
+          </div>
+        </aside>
+
+        <!-- Chat Interface -->
+        <section class="chat-container">
+          <div class="chat-messages" id="chat-messages">
+            <div class="welcome-message">
+              <h2>Welcome</h2>
+              <p>
+                Describe what you want to build. The interaction agent will help
+                refine your requirements.
+              </p>
+            </div>
+          </div>
+
+          <div class="chat-input-container">
+            <div class="file-preview" id="file-preview" style="display: none">
+              <span class="file-name"></span>
+              <button class="remove-file-btn" id="remove-file-btn">✕</button>
+            </div>
+            <form class="chat-input-form" id="chat-form">
+              <input
+                type="file"
+                id="file-input-inline"
+                accept=".csv"
+                style="display: none"
+              />
+              <button
+                type="button"
+                class="upload-inline-btn"
+                id="upload-inline-btn"
+                title="Upload CSV"
+              >
+                <span>📎</span>
+              </button>
+              <input
+                type="text"
+                id="chat-input"
+                class="chat-input"
+                placeholder="Describe your requirements..."
+                autocomplete="off"
+                required
+              />
+              <button type="submit" class="send-btn" id="send-btn">
+                <span class="send-icon">→</span>
+              </button>
+            </form>
+          </div>
+        </section>
+      </main>
+
+      <!-- Canvas Mode Overlay -->
+      <div class="canvas-overlay" id="canvas-overlay">
+        <!-- Canvas Sidebar -->
+        <aside class="canvas-sidebar" id="canvas-sidebar">
+          <div class="canvas-sidebar-header">
+            <h3>AGENTS</h3>
+          </div>
+          <div class="canvas-sidebar-content">
+            <button id="create-agent-btn" class="btn btn-primary btn-block">
+              + Create Agent
+            </button>
+            <div class="canvas-agent-list" id="canvas-agent-list">
+              <!-- Agent list will be populated here -->
+            </div>
+          </div>
+        </aside>
+
+        <div class="canvas-content" id="canvas-content">
+          <!-- Canvas will be populated with agent nodes -->
+        </div>
+      </div>
+
+      <!-- Modals -->
+      <!-- Agent Configuration Modal -->
+      <div class="modal" id="agent-modal" style="display: none">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2>Agent Configuration</h2>
+            <button class="modal-close" id="close-agent-modal">✕</button>
+          </div>
+          <div class="modal-body">
+            <form id="agent-form">
+              <div class="form-group">
+                <label for="agent-name">Agent Name</label>
+                <input type="text" id="agent-name" required />
+              </div>
+              <div class="form-group">
+                <label for="agent-description">Description</label>
+                <textarea id="agent-description" rows="2" required></textarea>
+              </div>
+              <div class="form-group">
+                <label for="agent-model">Model</label>
+                <select id="agent-model">
+                  <option value="gemini/gemini-2.5-flash" selected>
+                    Gemini 2.5 Flash
+                  </option>
+                  <option value="gemini/gemini-1.5-pro">Gemini 1.5 Pro</option>
+                  <option value="gemini/gemini-1.5-flash">
+                    Gemini 1.5 Flash
+                  </option>
+                  <option value="gpt-4o">GPT-4o</option>
+                  <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                  <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                  <option value="ollama/llama2">Ollama - Llama 2</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="agent-prompt">System Prompt</label>
+                <textarea id="agent-prompt" rows="4" required></textarea>
+              </div>
+              <div class="form-group">
+                <label>
+                  <input type="checkbox" id="agent-a2a" />
+                  Enable A2A Communication
+                </label>
+              </div>
+              <div class="form-actions">
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  id="cancel-agent-btn"
+                >
+                  Cancel
+                </button>
+                <button type="submit" class="btn btn-primary">
+                  Create Agent
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- File Upload Modal -->
+      <div class="modal" id="upload-modal" style="display: none">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2>Upload CSV File</h2>
+            <button class="modal-close" id="close-upload-modal">✕</button>
+          </div>
+          <div class="modal-body">
+            <div class="upload-area" id="upload-area">
+              <div class="upload-icon">📤</div>
+              <p>Drag and drop a CSV file here</p>
+              <p class="upload-hint">or</p>
+              <input
+                type="file"
+                id="file-input"
+                accept=".csv"
+                style="display: none"
+              />
+              <button class="btn btn-primary" id="select-file-btn">
+                Select File
+              </button>
+              <p class="upload-limit">Maximum file size: 50MB</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/js/main.js"></script>
+  </body>
+</html>

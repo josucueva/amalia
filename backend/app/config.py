@@ -1,0 +1,91 @@
+"""
+Configuration management for the application.
+"""
+
+from functools import lru_cache
+from typing import List
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    """Application settings loaded from environment variables."""
+
+    # Application
+    app_name: str = "Agentic AutoML Platform"
+    app_version: str = "0.1.0"
+    environment: str = "development"
+    debug: bool = True
+
+    # Server
+    backend_host: str = "0.0.0.0"
+    backend_port: int = 8000
+
+    # CORS
+    allowed_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
+
+    # LLM API Keys
+    openai_api_key: str = ""
+    anthropic_api_key: str = ""
+    google_api_key: str = ""
+
+    # Local Models
+    ollama_base_url: str = "http://localhost:11434"
+    default_model: str = "gemini/gemini-2.5-flash"
+
+    # Redis
+    redis_host: str = "localhost"
+    redis_port: int = 6379
+    redis_db: int = 0
+    redis_password: str = ""
+
+    # File Upload
+    max_upload_size_mb: int = 50
+    upload_dir: str = "./data/uploads"
+    allowed_file_types: str = ".csv"
+
+    # Database
+    database_url: str = "sqlite:///./data/agentic_platform.db"
+
+    # Agent Configuration
+    agent_config_dir: str = "./config/agents"
+    agent_timeout_seconds: int = 300
+
+    # MCP
+    mcp_server_enabled: bool = True
+    mcp_server_port: int = 3000
+
+    # Logging
+    log_level: str = "INFO"
+    log_format: str = "json"
+    log_file: str = "./logs/app.log"
+
+    # Security
+    secret_key: str = "your-secret-key-change-in-production"
+    jwt_algorithm: str = "HS256"
+    access_token_expire_minutes: int = 60
+
+    # Rate Limiting
+    rate_limit_enabled: bool = True
+    rate_limit_requests: int = 100
+    rate_limit_period: int = 60
+
+    model_config = SettingsConfigDict(
+        env_file=".env", env_file_encoding="utf-8", case_sensitive=False
+    )
+
+    @property
+    def allowed_origins_list(self) -> List[str]:
+        """Get allowed origins as a list."""
+        return [origin.strip() for origin in self.allowed_origins.split(",")]
+
+    @property
+    def redis_url(self) -> str:
+        """Get Redis URL."""
+        auth = f":{self.redis_password}@" if self.redis_password else ""
+        return f"redis://{auth}{self.redis_host}:{self.redis_port}/{self.redis_db}"
+
+
+@lru_cache()
+def get_settings() -> Settings:
+    """Get cached settings instance."""
+    return Settings()

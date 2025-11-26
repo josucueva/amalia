@@ -1,0 +1,66 @@
+/* CSS Variables for Industrial/Minimalist Theme */
+:root {
+  /* Industrial Color Palette */
+  --primary-color: #1a1a1a;
+  --primary-hover: #000000;
+  --accent-color: #6366f1;
+  --accent-hover: #4f46e5;
+
+  /* Backgrounds */
+  --bg-primary: #f5f5f5;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #e8e8e8;
+  --bg-dark: #1a1a1a;
+  --bg-medium: #2a2a2a;
+  --bg-hover: #f0f0f0;
+
+  /* Text Colors */
+  --text-primary: #1a1a1a;
+  --text-secondary: #666666;
+  --text-tertiary: #999999;
+  --text-white: #ffffff;
+
+  /* Borders */
+  --border-color: #d4d4d4;
+  --border-color-dark: #3a3a3a;
+  --border-width: 1px;
+  --border-radius: 2px;
+  --border-radius-large: 4px;
+
+  /* Shadows - Subtle */
+  --shadow-small: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-medium: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-large: 0 4px 16px rgba(0, 0, 0, 0.1);
+
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-2xl: 3rem;
+
+  /* Typography - Industrial Monospace */
+  --font-family: "SF Mono", "Monaco", "Inconsolata", "Fira Code", "Courier New",
+    monospace;
+  --font-family-display: -apple-system, BlinkMacSystemFont, "Segoe UI",
+    system-ui, sans-serif;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 0.9375rem;
+  --font-size-lg: 1rem;
+  --font-size-xl: 1.125rem;
+  --font-size-2xl: 1.5rem;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 600;
+
+  /* Transitions */
+  --transition-fast: 100ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Z-index */
+  --z-modal: 1000;
+  --z-canvas: 50;
+  --z-header: 100;
+}
