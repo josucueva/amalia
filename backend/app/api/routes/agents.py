@@ -130,7 +130,7 @@ async def update_agent(agent_id: str, req: AgentCreateRequest, request: Request)
             updated_at=datetime.now().isoformat(),
         )
 
-        reg.update_agent(updated_agent)
+        get_registry(request).update_agent(updated_agent)
         logger.info("Agent updated", agent_id=agent_id)
 
         return updated_agent
