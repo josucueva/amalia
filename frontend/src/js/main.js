@@ -121,25 +121,37 @@ class App {
       const canvasContent = document.getElementById("canvas-content");
       const canvasAgentList = document.getElementById("canvas-agent-list");
 
+      if (!canvasContent || !canvasAgentList) {
+        console.error("Canvas elements not found");
+        return;
+      }
+
       canvasContent.innerHTML = "";
       canvasAgentList.innerHTML = "";
 
-      agents.forEach((agent, index) => {
-        // Create node in canvas
-        const node = this.createAgentNode(agent, index);
-        canvasContent.appendChild(node);
+      console.log("Loading agents:", agents);
 
-        // Create item in sidebar list
-        const listItem = this.createAgentListItem(agent);
-        canvasAgentList.appendChild(listItem);
-      });
+      if (agents && agents.length > 0) {
+        agents.forEach((agent, index) => {
+          // Create node in canvas
+          const node = this.createAgentNode(agent, index);
+          canvasContent.appendChild(node);
 
-      if (agents.length === 0) {
+          // Create item in sidebar list
+          const listItem = this.createAgentListItem(agent);
+          canvasAgentList.appendChild(listItem);
+        });
+      } else {
         canvasAgentList.innerHTML =
           '<div style="color: var(--text-secondary); font-size: var(--font-size-xs); text-align: center; padding: var(--spacing-lg) 0;">No agents configured</div>';
       }
     } catch (error) {
       console.error("Error loading canvas agents:", error);
+      const canvasAgentList = document.getElementById("canvas-agent-list");
+      if (canvasAgentList) {
+        canvasAgentList.innerHTML =
+          '<div style="color: #dc2626; font-size: var(--font-size-xs); text-align: center; padding: var(--spacing-lg) 0;">Error loading agents</div>';
+      }
     }
   }
 
@@ -164,13 +176,28 @@ class App {
     const item = document.createElement("div");
     item.className = "canvas-agent-item";
     item.innerHTML = `
-      <div class="canvas-agent-item-name">${agent.config.name}</div>
-      <div class="canvas-agent-item-desc">${agent.config.description}</div>
+      <div class="canvas-agent-item-content">
+        <div class="canvas-agent-item-name">${agent.config.name}</div>
+        <div class="canvas-agent-item-desc">${agent.config.description}</div>
+        <div class="canvas-agent-item-actions">
+          <button class="canvas-agent-action-btn edit-btn">[ EDIT ]</button>
+          <button class="canvas-agent-action-btn delete-btn">[ DELETE ]</button>
+        </div>
+      </div>
     `;
 
-    item.addEventListener("click", () => {
-      // Future: Focus on agent in canvas or show details
-      console.log("Agent clicked:", agent.config.name);
+    // Edit button handler
+    const editBtn = item.querySelector(".edit-btn");
+    editBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      this.agentConfig.openModal(agent);
+    });
+
+    // Delete button handler
+    const deleteBtn = item.querySelector(".delete-btn");
+    deleteBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      this.agentConfig.deleteAgent(agent.id, agent.config.name);
     });
 
     return item;
@@ -212,5 +239,6 @@ class App {
 // Initialize app when DOM is ready
 document.addEventListener("DOMContentLoaded", () => {
   const app = new App();
+  window.app = app; // Store globally for cross-component access
   app.init();
 });

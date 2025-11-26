@@ -14,6 +14,7 @@ class AgentConfig {
     this.agentForm = document.getElementById("agent-form");
     this.agentList = document.getElementById("agent-list");
     this.reloadBtn = document.getElementById("reload-agents-btn");
+    this.currentAgentId = null;
 
     this.init();
     this.loadAgents();
@@ -48,13 +49,39 @@ class AgentConfig {
     }
   }
 
-  openModal() {
+  openModal(agent = null) {
+    this.currentAgentId = agent ? agent.id : null;
+
+    // Update modal title
+    const modalTitle = this.agentModal.querySelector(".modal-header h2");
+    if (modalTitle) {
+      modalTitle.textContent = agent ? "Edit Agent" : "Agent Configuration";
+    }
+
+    // Update submit button text
+    const submitBtn = this.agentForm.querySelector('button[type="submit"]');
+    if (submitBtn) {
+      submitBtn.textContent = agent ? "Update Agent" : "Create Agent";
+    }
+
+    if (agent) {
+      // Populate form with agent data
+      document.getElementById("agent-name").value = agent.config.name;
+      document.getElementById("agent-description").value =
+        agent.config.description;
+      document.getElementById("agent-model").value = agent.config.model;
+      document.getElementById("agent-prompt").value =
+        agent.config.system_prompt;
+      document.getElementById("agent-a2a").checked = agent.config.a2a_enabled;
+    }
+
     this.agentModal.style.display = "flex";
   }
 
   closeModal() {
     this.agentModal.style.display = "none";
     this.agentForm.reset();
+    this.currentAgentId = null;
   }
 
   async handleSubmit(e) {
@@ -70,13 +97,27 @@ class AgentConfig {
     };
 
     try {
-      await api.createAgent(config);
-      showToast("Agent created successfully", "success");
+      if (this.currentAgentId) {
+        // Update existing agent
+        await api.updateAgent(this.currentAgentId, config);
+        showToast("Agent updated successfully", "success");
+      } else {
+        // Create new agent
+        await api.createAgent(config);
+        showToast("Agent created successfully", "success");
+      }
+
       this.closeModal();
       this.loadAgents();
+
+      // Trigger canvas refresh if in canvas mode
+      if (window.app && window.app.canvasMode) {
+        window.app.loadCanvasAgents();
+      }
     } catch (error) {
-      showToast("Failed to create agent", "error");
-      console.error("Error creating agent:", error);
+      const action = this.currentAgentId ? "update" : "create";
+      showToast(`Failed to ${action} agent`, "error");
+      console.error(`Error ${action}ing agent:`, error);
     }
   }
 
@@ -154,6 +195,26 @@ class AgentConfig {
     } catch (error) {
       showToast("Failed to reload agents", "error");
       console.error("Error reloading agents:", error);
+    }
+  }
+
+  async deleteAgent(agentId, agentName) {
+    if (!confirm(`Are you sure you want to delete agent "${agentName}"?`)) {
+      return;
+    }
+
+    try {
+      await api.deleteAgent(agentId);
+      showToast("Agent deleted successfully", "success");
+      this.loadAgents();
+
+      // Trigger canvas refresh if in canvas mode
+      if (window.app && window.app.canvasMode) {
+        window.app.loadCanvasAgents();
+      }
+    } catch (error) {
+      showToast("Failed to delete agent", "error");
+      console.error("Error deleting agent:", error);
     }
   }
 }

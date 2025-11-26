@@ -1,7 +1,8 @@
 """
 Agent management routes.
 """
-from fastapi import APIRouter, HTTPException
+
+from fastapi import APIRouter, HTTPException, Request
 from typing import List
 import structlog
 from datetime import datetime
@@ -14,42 +15,55 @@ from app.agents.config_loader import load_agent_configs_from_yaml
 logger = structlog.get_logger()
 router = APIRouter()
 
-# Global agent registry
-agent_registry = AgentRegistry()
+
+def get_registry(req: Request) -> AgentRegistry:
+    """Get agent registry from app state, with fallback initialization."""
+    if not hasattr(req.app.state, "agent_registry"):
+        from app.config import get_settings
+        from app.agents.config_loader import load_agents_from_directory
+
+        registry = AgentRegistry()
+        settings = get_settings()
+        try:
+            agents = load_agents_from_directory(settings.agent_config_dir)
+            for agent in agents:
+                registry.register_agent(agent)
+            logger.info("Fallback: agents loaded", count=len(agents))
+        except Exception as e:
+            logger.error("Fallback: error loading agents", error=str(e))
+        req.app.state.agent_registry = registry
+    return req.app.state.agent_registry
 
 
 @router.get("/", response_model=AgentListResponse)
-async def list_agents():
+async def list_agents(request: Request):
     """
     List all registered agents.
-    
+
     Returns:
         AgentListResponse: List of all agents
     """
     try:
-        agents = agent_registry.list_agents()
-        return AgentListResponse(
-            agents=agents,
-            total=len(agents)
-        )
+        agents = get_registry(request).list_agents()
+        return AgentListResponse(agents=agents, total=len(agents))
     except Exception as e:
         logger.error("Error listing agents", error=str(e))
         raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/{agent_id}", response_model=Agent)
-async def get_agent(agent_id: str):
+async def get_agent(agent_id: str, request: Request):
     """
     Get a specific agent by ID.
-    
+
     Args:
         agent_id: Agent ID
-        
+
     Returns:
         Agent: Agent details
     """
     try:
-        agent = agent_registry.get_agent(agent_id)
+        agent = get_registry(request).get_agent(agent_id)
         if not agent:
             raise HTTPException(status_code=404, detail=f"Agent {agent_id} not found")
         return agent
@@ -61,30 +75,30 @@ async def get_agent(agent_id: str):
 
 
 @router.post("/", response_model=Agent, status_code=201)
-async def create_agent(request: AgentCreateRequest):
+async def create_agent(req: AgentCreateRequest, request: Request):
     """
     Create a new agent.
-    
+
     Args:
         request: Agent creation request
-        
+
     Returns:
         Agent: Created agent
     """
     try:
         agent_id = f"agent_{uuid.uuid4().hex[:12]}"
         timestamp = datetime.now().isoformat()
-        
+
         agent = Agent(
             id=agent_id,
-            config=request.config,
+            config=req.config,
             status=AgentStatus.ACTIVE,
-            created_at=timestamp
+            created_at=timestamp,
         )
-        
-        agent_registry.register_agent(agent)
-        logger.info("Agent created", agent_id=agent_id, name=request.config.name)
-        
+
+        get_registry(request).register_agent(agent)
+        logger.info("Agent created", agent_id=agent_id, name=req.config.name)
+
         return agent
     except Exception as e:
         logger.error("Error creating agent", error=str(e))
@@ -92,33 +106,33 @@ async def create_agent(request: AgentCreateRequest):
 
 
 @router.put("/{agent_id}", response_model=Agent)
-async def update_agent(agent_id: str, request: AgentCreateRequest):
+async def update_agent(agent_id: str, req: AgentCreateRequest, request: Request):
     """
     Update an existing agent.
-    
+
     Args:
         agent_id: Agent ID
         request: Agent update request
-        
+
     Returns:
         Agent: Updated agent
     """
     try:
-        existing_agent = agent_registry.get_agent(agent_id)
+        existing_agent = get_registry(request).get_agent(agent_id)
         if not existing_agent:
             raise HTTPException(status_code=404, detail=f"Agent {agent_id} not found")
-        
+
         updated_agent = Agent(
             id=agent_id,
-            config=request.config,
+            config=req.config,
             status=existing_agent.status,
             created_at=existing_agent.created_at,
-            updated_at=datetime.now().isoformat()
+            updated_at=datetime.now().isoformat(),
         )
-        
-        agent_registry.update_agent(updated_agent)
+
+        reg.update_agent(updated_agent)
         logger.info("Agent updated", agent_id=agent_id)
-        
+
         return updated_agent
     except HTTPException:
         raise
@@ -128,21 +142,21 @@ async def update_agent(agent_id: str, request: AgentCreateRequest):
 
 
 @router.delete("/{agent_id}")
-async def delete_agent(agent_id: str):
+async def delete_agent(agent_id: str, request: Request):
     """
     Delete an agent.
-    
+
     Args:
         agent_id: Agent ID
-        
+
     Returns:
         dict: Deletion confirmation
     """
     try:
-        success = agent_registry.unregister_agent(agent_id)
+        success = get_registry(request).unregister_agent(agent_id)
         if not success:
             raise HTTPException(status_code=404, detail=f"Agent {agent_id} not found")
-        
+
         logger.info("Agent deleted", agent_id=agent_id)
         return {"status": "deleted", "agent_id": agent_id}
     except HTTPException:
@@ -153,26 +167,27 @@ async def delete_agent(agent_id: str):
 
 
 @router.post("/reload-from-yaml")
-async def reload_agents_from_yaml():
+async def reload_agents_from_yaml(request: Request):
     """
     Reload all agents from YAML configuration files.
-    
+
     Returns:
         dict: Reload status with count of loaded agents
     """
     try:
         agents = load_agent_configs_from_yaml()
-        
+
         # Clear and re-register all agents
-        agent_registry.clear()
+        reg = get_registry(request)
+        reg.clear()
         for agent in agents:
-            agent_registry.register_agent(agent)
-        
+            get_registry(request).register_agent(agent)
+
         logger.info("Agents reloaded from YAML", count=len(agents))
         return {
             "status": "success",
             "agents_loaded": len(agents),
-            "agents": [{"id": a.id, "name": a.config.name} for a in agents]
+            "agents": [{"id": a.id, "name": a.config.name} for a in agents],
         }
     except Exception as e:
         logger.error("Error reloading agents from YAML", error=str(e))

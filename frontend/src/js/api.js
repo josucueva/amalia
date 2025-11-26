@@ -75,6 +75,30 @@ class ApiClient {
   }
 
   /**
+   * Make a PUT request
+   */
+  async put(url, data) {
+    try {
+      const response = await fetch(url, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error("PUT request failed:", error);
+      throw error;
+    }
+  }
+
+  /**
    * Upload a file
    */
   async uploadFile(file) {
@@ -116,12 +140,22 @@ class ApiClient {
     return this.get(API_ENDPOINTS.agents);
   }
 
+  async getAgents() {
+    // Alias for listAgents to maintain compatibility
+    const response = await this.listAgents();
+    return response.agents || [];
+  }
+
   async getAgent(agentId) {
     return this.get(`${API_ENDPOINTS.agents}/${agentId}`);
   }
 
   async createAgent(config) {
     return this.post(API_ENDPOINTS.agents, { config });
+  }
+
+  async updateAgent(agentId, config) {
+    return this.put(`${API_ENDPOINTS.agents}/${agentId}`, { config });
   }
 
   async deleteAgent(agentId) {
