@@ -18,37 +18,38 @@ import config from "./config.js";
 const { API_BASE_URL } = config;
 
 class App {
-  constructor() {
-    this.chat = null;
-    this.fileUpload = null;
-    this.agentConfig = null;
-    this.connectionManager = null;
-    this.canvasMode = false;
-    this.menuCloseListener = null; // Track document click listener for menu
-    this.showHiddenAgents = false; // Toggle for showing hidden agents (Ctrl+Shift+H)
+  // Component references
+  chat = null;
+  fileUpload = null;
+  agentConfig = null;
+  connectionManager = null;
+  uploadedFile = null;
 
-    // Canvas drop listeners (to prevent duplicates)
-    this.canvasDropListeners = {
-      dragover: null,
-      drop: null,
-    };
+  // State
+  canvasMode = false;
+  showHiddenAgents = false;
+  menuCloseListener = null;
 
-    // Pipeline execution state
-    this.isExecuting = false;
-    this.executionPaused = false;
-    this.executionCancelled = false;
-    this.currentExecutingNode = null;
-    this.executionResults = new Map(); // Store results by instanceId
-    this.executionOrder = []; // Ordered list of nodes to execute
+  // Canvas drop listeners (to prevent duplicates)
+  canvasDropListeners = {
+    dragover: null,
+    drop: null,
+  };
 
-    // Canvas grid configuration
-    // Note: gridSize must match the CSS grid pattern in main.css (.canvas-content)
-    this.canvasConfig = {
-      gridSize: 20, // Grid cell size in pixels
-      snapToGrid: true, // Enable/disable grid snapping
-      dragThreshold: 5, // Minimum pixels movement to initiate drag
-    };
-  }
+  // Pipeline execution state
+  isExecuting = false;
+  executionPaused = false;
+  executionCancelled = false;
+  currentExecutingNode = null;
+  executionResults = new Map();
+  executionOrder = [];
+
+  // Canvas grid configuration
+  canvasConfig = {
+    gridSize: 20,
+    snapToGrid: true,
+    dragThreshold: 5,
+  };
 
   async init() {
     console.log("🚀 Initializing AMALIA...");
@@ -271,15 +272,15 @@ class App {
     const nodeMap = new Map(); // instanceId -> node element
 
     // Initialize
-    nodes.forEach((node) => {
+    for (const node of nodes) {
       const instanceId = node.dataset.instanceId;
       graph.set(instanceId, []);
       inDegree.set(instanceId, 0);
       nodeMap.set(instanceId, node);
-    });
+    }
 
     // Build graph from connections
-    connections.forEach((conn) => {
+    for (const conn of connections) {
       const fromId = conn.from.instanceId;
       const toId = conn.to.instanceId;
 
@@ -287,30 +288,30 @@ class App {
         graph.get(fromId).push(toId);
         inDegree.set(toId, inDegree.get(toId) + 1);
       }
-    });
+    }
 
     // Topological sort (Kahn's algorithm)
     const queue = [];
     const order = [];
 
     // Start with nodes that have no dependencies
-    inDegree.forEach((degree, instanceId) => {
+    for (const [instanceId, degree] of inDegree) {
       if (degree === 0) {
         queue.push(instanceId);
       }
-    });
+    }
 
     while (queue.length > 0) {
       const current = queue.shift();
       order.push(nodeMap.get(current));
 
       // Process dependents
-      graph.get(current).forEach((dependent) => {
+      for (const dependent of graph.get(current)) {
         inDegree.set(dependent, inDegree.get(dependent) - 1);
         if (inDegree.get(dependent) === 0) {
           queue.push(dependent);
         }
-      });
+      }
     }
 
     // Check for cycles
@@ -516,57 +517,68 @@ class App {
 
   toggleCanvasMode() {
     this.canvasMode = !this.canvasMode;
+    this.updateUIForMode();
+
+    if (this.canvasMode) {
+      this.initializeCanvasMode();
+    }
+  }
+
+  updateUIForMode() {
     const overlay = document.getElementById("canvas-overlay");
     const chatContainer = document.querySelector(".chat-container");
     const btnText = document.getElementById("canvas-btn-text");
     const agentsBtn = document.getElementById("agents-btn");
 
     if (this.canvasMode) {
-      overlay.classList.add("active");
+      overlay?.classList.add("active");
       if (chatContainer) chatContainer.style.display = "none";
       if (btnText) btnText.textContent = "Chat Mode";
       if (agentsBtn) agentsBtn.style.display = "inline-block";
-      // Run button stays visible in canvas mode
-
-      // Initialize connection manager if not already done
-      if (!this.connectionManager) {
-        console.log("🔧 Initializing ConnectionManager...");
-        this.connectionManager = new ConnectionManager();
-        const canvasContent = document.getElementById("canvas-content");
-        if (canvasContent) {
-          this.connectionManager.initialize(canvasContent);
-          console.log("✅ ConnectionManager initialized");
-
-          // Expose for debugging
-          window.connectionManager = this.connectionManager;
-        }
-      }
-
-      this.loadCanvasAgents();
-      this.setupCanvasDrop(); // Enable drag-drop
-
-      // Check for pending pipeline from BUILD command
-      const pendingPipeline = sessionStorage.getItem("pendingPipeline");
-      if (pendingPipeline) {
-        try {
-          const pipelineData = JSON.parse(pendingPipeline);
-          sessionStorage.removeItem("pendingPipeline");
-          setTimeout(() => {
-            this.createPipelineFromData(
-              pipelineData.nodes,
-              pipelineData.connections
-            );
-          }, 500);
-        } catch (error) {
-          console.error("Error loading pending pipeline:", error);
-        }
-      }
     } else {
-      overlay.classList.remove("active");
+      overlay?.classList.remove("active");
       if (chatContainer) chatContainer.style.display = "flex";
       if (btnText) btnText.textContent = "Canvas Mode";
       if (agentsBtn) agentsBtn.style.display = "none";
-      // Run button stays visible in chat mode
+    }
+  }
+
+  initializeCanvasMode() {
+    this.ensureConnectionManager();
+    this.loadCanvasAgents();
+    this.setupCanvasDrop();
+    this.loadPendingPipeline();
+  }
+
+  ensureConnectionManager() {
+    if (this.connectionManager) return;
+
+    console.log("🔧 Initializing ConnectionManager...");
+    this.connectionManager = new ConnectionManager();
+    const canvasContent = document.getElementById("canvas-content");
+
+    if (canvasContent) {
+      this.connectionManager.initialize(canvasContent);
+      console.log("✅ ConnectionManager initialized");
+      globalThis.connectionManager = this.connectionManager;
+    }
+  }
+
+  loadPendingPipeline() {
+    const pendingPipeline = sessionStorage.getItem("pendingPipeline");
+    if (!pendingPipeline) return;
+
+    try {
+      const pipelineData = JSON.parse(pendingPipeline);
+      sessionStorage.removeItem("pendingPipeline");
+      setTimeout(() => {
+        this.createPipelineFromData(
+          pipelineData.nodes,
+          pipelineData.connections
+        );
+      }, 500);
+    } catch (error) {
+      console.error("Error loading pending pipeline:", error);
     }
   }
 
@@ -586,11 +598,10 @@ class App {
       console.log("Loading agents:", agents);
 
       if (agents && agents.length > 0) {
-        agents.forEach((agent) => {
-          // Create item in sidebar list (draggable)
+        for (const agent of agents) {
           const listItem = this.createAgentListItem(agent);
           canvasAgentList.appendChild(listItem);
-        });
+        }
 
         // Initialize Lucide icons after all items are added
         if (globalThis.lucide) {
@@ -618,7 +629,7 @@ class App {
     // Create a unique instance of the agent for this node
     const instanceId = `instance_${Date.now()}_${Math.random()
       .toString(36)
-      .substr(2, 9)}`;
+      .substring(2, 11)}`;
     const agentInstance = {
       ...agent,
       instanceId: instanceId,
@@ -786,18 +797,15 @@ class App {
     let initialLeft = 0;
     let initialTop = 0;
 
-    const app = this;
     const { gridSize, snapToGrid, dragThreshold } = this.canvasConfig;
 
-    dragHandle.addEventListener("mousedown", dragStart);
-
-    function dragStart(e) {
+    dragHandle.addEventListener("mousedown", (e) => {
       // Don't drag if clicking on port or action buttons
       if (e.target.dataset.port || e.target.closest(".agent-node-menu-btn"))
         return;
 
       // Close any open menus when starting to drag
-      app.hideNodeActionMenu();
+      this.hideNodeActionMenu();
 
       // Store initial state
       isDragging = true;
@@ -806,8 +814,8 @@ class App {
       startY = e.clientY;
 
       // Get current position
-      const currentLeft = parseInt(element.style.left) || 0;
-      const currentTop = parseInt(element.style.top) || 0;
+      const currentLeft = Number.parseInt(element.style.left, 10) || 0;
+      const currentTop = Number.parseInt(element.style.top, 10) || 0;
       initialLeft = currentLeft;
       initialTop = currentTop;
 
@@ -821,9 +829,9 @@ class App {
 
       e.preventDefault();
       e.stopPropagation();
-    }
+    });
 
-    function drag(e) {
+    const drag = (e) => {
       if (!isDragging) return;
 
       e.preventDefault();
@@ -847,8 +855,8 @@ class App {
 
         // Apply grid snapping
         if (snapToGrid) {
-          newX = app.snapToGrid(newX, gridSize);
-          newY = app.snapToGrid(newY, gridSize);
+          newX = this.snapToGrid(newX, gridSize);
+          newY = this.snapToGrid(newY, gridSize);
         }
 
         // Ensure node stays within canvas bounds
@@ -866,14 +874,14 @@ class App {
         element.style.top = newY + "px";
 
         // Update connections in real-time
-        if (app.connectionManager) {
+        if (this.connectionManager) {
           const instanceId = element.dataset.instanceId;
-          app.connectionManager.updateConnectionPositions(instanceId);
+          this.connectionManager.updateConnectionPositions(instanceId);
         }
       }
-    }
+    };
 
-    function dragEnd(e) {
+    const dragEnd = (e) => {
       // Clean up event listeners first
       document.removeEventListener("mousemove", drag);
       document.removeEventListener("mouseup", dragEnd);
@@ -894,7 +902,7 @@ class App {
       // Reset drag state
       isDragging = false;
       hasMoved = false;
-    }
+    };
   }
 
   setupCanvasDrop() {
@@ -1225,7 +1233,11 @@ class App {
     if (this.connectionManager) {
       this.connectionManager.clearAll();
     }
-    document.querySelectorAll(".agent-node").forEach((node) => node.remove());
+
+    for (const node of document.querySelectorAll(".agent-node")) {
+      node.remove();
+    }
+
     console.log("✓ Canvas cleared");
     showToast("Canvas cleared", "info");
   }
@@ -1250,7 +1262,6 @@ class App {
     const agentMap = new Map(agents.map((a) => [a.id, a]));
 
     // Create nodes
-    const nodeElements = [];
     for (const nodeData of nodes) {
       const agent = agentMap.get(nodeData.agentId);
       if (!agent) {
@@ -1300,7 +1311,6 @@ class App {
       });
 
       canvasContent.appendChild(node);
-      nodeElements.push(node);
     }
 
     // Initialize Lucide icons once after all nodes are added
@@ -1333,6 +1343,6 @@ class App {
 // Initialize app when DOM is ready
 document.addEventListener("DOMContentLoaded", () => {
   const app = new App();
-  window.app = app; // Store globally for cross-component access
+  globalThis.app = app; // Store globally for cross-component access
   app.init();
 });
