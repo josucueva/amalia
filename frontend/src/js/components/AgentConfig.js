@@ -15,6 +15,7 @@ class AgentConfig {
     this.agentList = document.getElementById("agent-list");
     this.reloadBtn = document.getElementById("reload-agents-btn");
     this.currentAgentId = null;
+    this.currentAgentData = null; // Store original agent data to preserve metadata
 
     // Icon picker elements
     this.iconPickerModal = document.getElementById("icon-picker-modal");
@@ -189,7 +190,11 @@ class AgentConfig {
 
   openModal(agent = null, updateCallback = null) {
     this.currentAgentId = agent ? agent.id : null;
+    this.currentAgentData = agent; // Store original agent data
     this.instanceUpdateCallback = updateCallback; // Store callback for canvas instances
+
+    // Check if this is a hidden/system agent
+    const isHidden = agent?.config?.metadata?.is_hidden === true;
 
     // Update modal title
     const modalTitle = this.agentModal.querySelector(".modal-header h2");
@@ -203,13 +208,25 @@ class AgentConfig {
       submitBtn.textContent = agent ? "Update Agent" : "Create Agent";
     }
 
+    // Hide/show icon input for hidden agents
+    const iconFormGroup = document
+      .querySelector('label[for="agent-icon"]')
+      ?.closest(".form-group");
+    if (iconFormGroup) {
+      iconFormGroup.style.display = isHidden ? "none" : "block";
+    }
+
     if (agent) {
       // Populate form with agent data
       document.getElementById("agent-name").value = agent.config.name;
       document.getElementById("agent-description").value =
         agent.config.description;
-      document.getElementById("agent-icon").value = agent.config.icon || "";
-      this.selectedIcon = agent.config.icon || null;
+
+      // Only set icon for non-hidden agents
+      if (!isHidden) {
+        document.getElementById("agent-icon").value = agent.config.icon || "";
+        this.selectedIcon = agent.config.icon || null;
+      }
 
       // Hide icon preview - we only show the icon name in the input
       document.getElementById("icon-preview").style.display = "none";
@@ -227,14 +244,24 @@ class AgentConfig {
     this.agentModal.style.display = "none";
     this.agentForm.reset();
     this.currentAgentId = null;
+    this.currentAgentData = null; // Clear stored agent data
     this.instanceUpdateCallback = null; // Clear callback
     this.selectedIcon = null;
     document.getElementById("icon-preview").style.display = "none";
+
+    // Reset icon form group visibility
+    const iconFormGroup = document
+      .querySelector('label[for="agent-icon"]')
+      ?.closest(".form-group");
+    if (iconFormGroup) {
+      iconFormGroup.style.display = "block";
+    }
   }
 
   async handleSubmit(e) {
     e.preventDefault();
 
+    // Build config object, preserving original fields if updating
     const config = {
       name: document.getElementById("agent-name").value,
       description: document.getElementById("agent-description").value,
@@ -242,7 +269,15 @@ class AgentConfig {
       model: document.getElementById("agent-model").value,
       system_prompt: document.getElementById("agent-prompt").value,
       a2a_enabled: document.getElementById("agent-a2a").checked,
-      tools: [],
+      tools: this.currentAgentData?.config?.tools || [],
+      // Preserve communication and metadata from original agent
+      communication: this.currentAgentData?.config?.communication || {
+        can_receive_from: ["*"],
+        can_send_to: [],
+      },
+      metadata: this.currentAgentData?.config?.metadata || {},
+      temperature: this.currentAgentData?.config?.temperature || 0.7,
+      max_tokens: this.currentAgentData?.config?.max_tokens || 2000,
     };
 
     try {

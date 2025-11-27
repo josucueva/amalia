@@ -147,8 +147,8 @@ body {
 }
 
 .chat-action-btn:hover {
-  background-color: #9e9e9e;
-  border-color: #9e9e9e;
+  background-color: var(--bg-dark);
+  border-color: var(--bg-dark);
   color: var(--text-white);
 }
 
@@ -189,9 +189,9 @@ body {
 }
 
 .send-btn:hover {
-  background-color: #d3d3ff;
-  border-color: #d3d3ff;
-  color: var(--bg-dark);
+  background-color: var(--highlight-color);
+  border-color: var(--highlight-color);
+  color: black;
 }
 
 .send-btn:disabled {
@@ -229,8 +229,9 @@ body {
 }
 
 .btn-primary:hover {
-  background-color: var(--bg-medium);
-  border-color: var(--bg-medium);
+  background-color: var(--highlight-color);
+  border-color: var(--highlight-color);
+  color: black;
 }
 
 .btn-accent {
@@ -248,12 +249,13 @@ body {
   background-color: var(--bg-dark);
   border-color: var(--bg-dark);
   color: var(--text-white);
-  display: none;
+  /* Always visible in both modes */
 }
 
 #run-btn:hover {
-  background-color: var(--bg-medium);
-  border-color: var(--bg-medium);
+  background-color: var(--highlight-color);
+  border-color: var(--highlight-color);
+  color: black;
 }
 
 #run-btn:disabled {
@@ -598,6 +600,25 @@ body {
 
 .canvas-agent-item.dragging {
   opacity: 0.5;
+}
+
+/* Hidden/System Agents - Special Styling */
+.canvas-agent-item.hidden-agent {
+  cursor: default !important;
+  background: rgba(100, 100, 100, 0.1);
+  border-style: dashed;
+  opacity: 0.8;
+}
+
+.canvas-agent-item.hidden-agent:hover {
+  cursor: default !important;
+  transform: none;
+  background: rgba(100, 100, 100, 0.15);
+}
+
+.canvas-agent-item.hidden-agent .canvas-agent-item-name {
+  font-style: italic;
+  color: var(--text-secondary);
 }
 
 /* Agent Node Action Menu */

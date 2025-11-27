@@ -163,7 +163,8 @@ class App {
 
   async openInteractionAgentConfig() {
     try {
-      const agents = await api.getAgents();
+      // Fetch agents including hidden ones since interaction_agent is hidden
+      const agents = await api.getAgents(true);
       const interactionAgent = agents.find(
         (agent) => agent.config.name === "interaction_agent"
       );
@@ -184,12 +185,11 @@ class App {
    */
   setupKeyboardShortcuts() {
     document.addEventListener("keydown", (e) => {
-      // Ctrl+Shift+H: Toggle hidden agents visibility
-      if (e.shiftKey && e.key === "H") {
-        e.preventDefault();
-
-        // Only work in canvas mode
+      // Ctrl+Shift+H: Toggle hidden agents visibility (only in canvas mode)
+      if (e.ctrlKey && e.shiftKey && e.key === "H") {
+        // Only work in canvas mode - don't prevent default in chat mode
         if (this.canvasMode) {
+          e.preventDefault();
           this.showHiddenAgents = !this.showHiddenAgents;
           this.loadCanvasAgents();
 
@@ -225,7 +225,7 @@ class App {
       if (chatContainer) chatContainer.style.display = "none";
       if (btnText) btnText.textContent = "Chat Mode";
       if (agentsBtn) agentsBtn.style.display = "inline-block";
-      if (runBtn) runBtn.style.display = "inline-block";
+      // Run button stays visible in canvas mode
 
       // Initialize connection manager if not already done
       if (!this.connectionManager) {
@@ -265,7 +265,7 @@ class App {
       if (chatContainer) chatContainer.style.display = "flex";
       if (btnText) btnText.textContent = "Canvas Mode";
       if (agentsBtn) agentsBtn.style.display = "none";
-      if (runBtn) runBtn.style.display = "none";
+      // Run button stays visible in chat mode
     }
   }
 
@@ -375,17 +375,27 @@ class App {
   }
 
   createAgentListItem(agent) {
+    // Check if agent is hidden (system agent)
+    const isHidden = agent.config.metadata?.is_hidden === true;
+
     const item = document.createElement("div");
     item.className = "canvas-agent-item";
-    item.draggable = true;
+    // Hidden agents cannot be dragged/instantiated
+    item.draggable = !isHidden;
     item.dataset.agentId = agent.id;
     item.dataset.agentData = JSON.stringify(agent);
+
+    // Add visual indicator for hidden agents
+    if (isHidden) {
+      item.classList.add("hidden-agent");
+    }
 
     item.innerHTML = `
       <div class="canvas-agent-item-content">
         <div class="canvas-agent-item-name">
           ${
-            agent.config.icon
+            // Hidden agents don't show icons
+            !isHidden && agent.config.icon
               ? `<i data-lucide="${agent.config.icon}" style="width: 16px; height: 16px; margin-right: 8px;"></i>`
               : ""
           }${agent.config.name}
@@ -393,7 +403,12 @@ class App {
         <div class="canvas-agent-item-desc">${agent.config.description}</div>
         <div class="canvas-agent-item-actions">
           <button class="canvas-agent-action-btn edit-btn">[ EDIT ]</button>
-          <button class="canvas-agent-action-btn delete-btn">[ DELETE ]</button>
+          ${
+            // Hidden agents cannot be deleted
+            !isHidden
+              ? '<button class="canvas-agent-action-btn delete-btn">[ DELETE ]</button>'
+              : ""
+          }
         </div>
       </div>
     `;
@@ -403,16 +418,18 @@ class App {
       window.lucide.createIcons();
     }
 
-    // Drag start handler
-    item.addEventListener("dragstart", (e) => {
-      e.dataTransfer.effectAllowed = "copy";
-      e.dataTransfer.setData("application/json", item.dataset.agentData);
-      item.classList.add("dragging");
-    });
+    // Drag handlers - only for non-hidden agents
+    if (!isHidden) {
+      item.addEventListener("dragstart", (e) => {
+        e.dataTransfer.effectAllowed = "copy";
+        e.dataTransfer.setData("application/json", item.dataset.agentData);
+        item.classList.add("dragging");
+      });
 
-    item.addEventListener("dragend", (e) => {
-      item.classList.remove("dragging");
-    });
+      item.addEventListener("dragend", (e) => {
+        item.classList.remove("dragging");
+      });
+    }
 
     // Edit button handler
     const editBtn = item.querySelector(".edit-btn");
@@ -421,12 +438,16 @@ class App {
       this.agentConfig.openModal(agent);
     });
 
-    // Delete button handler
-    const deleteBtn = item.querySelector(".delete-btn");
-    deleteBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      this.agentConfig.deleteAgent(agent.id, agent.config.name);
-    });
+    // Delete button handler - only for non-hidden agents
+    if (!isHidden) {
+      const deleteBtn = item.querySelector(".delete-btn");
+      if (deleteBtn) {
+        deleteBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          this.agentConfig.deleteAgent(agent.id, agent.config.name);
+        });
+      }
+    }
 
     return item;
   }
