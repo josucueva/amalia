@@ -49,8 +49,9 @@ class AgentConfig {
     }
   }
 
-  openModal(agent = null) {
+  openModal(agent = null, updateCallback = null) {
     this.currentAgentId = agent ? agent.id : null;
+    this.instanceUpdateCallback = updateCallback; // Store callback for canvas instances
 
     // Update modal title
     const modalTitle = this.agentModal.querySelector(".modal-header h2");
@@ -82,6 +83,7 @@ class AgentConfig {
     this.agentModal.style.display = "none";
     this.agentForm.reset();
     this.currentAgentId = null;
+    this.instanceUpdateCallback = null; // Clear callback
   }
 
   async handleSubmit(e) {
@@ -97,8 +99,16 @@ class AgentConfig {
     };
 
     try {
+      // If there's a callback, it's a canvas instance - just update locally
+      if (this.instanceUpdateCallback) {
+        this.instanceUpdateCallback(config);
+        showToast("Agent instance updated", "success");
+        this.closeModal();
+        return;
+      }
+
       if (this.currentAgentId) {
-        // Update existing agent
+        // Update existing agent in backend
         await api.updateAgent(this.currentAgentId, config);
         showToast("Agent updated successfully", "success");
       } else {

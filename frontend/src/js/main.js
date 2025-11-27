@@ -151,9 +151,21 @@ class App {
   }
 
   createAgentNode(agent, x, y) {
+    // Create a unique instance of the agent for this node
+    const instanceId = `instance_${Date.now()}_${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
+    const agentInstance = {
+      ...agent,
+      instanceId: instanceId,
+      position: { x, y },
+    };
+
     const node = document.createElement("div");
     node.className = "agent-node";
-    node.dataset.agentId = agent.id;
+    node.dataset.instanceId = instanceId;
+    node.dataset.agentId = agent.id; // Keep reference to template agent
+    node.dataset.agentData = JSON.stringify(agentInstance);
     node.style.left = `${x}px`;
     node.style.top = `${y}px`;
 
@@ -168,6 +180,15 @@ class App {
 
     // Add connection port handlers
     this.setupConnectionPorts(node);
+
+    // Add click handler for action menu - pass instance data
+    node.addEventListener("click", (e) => {
+      // Don't show menu if clicking on ports or dragging
+      if (e.target.dataset.port) return;
+      // Get fresh instance data from node to ensure we have latest state
+      const currentInstance = JSON.parse(node.dataset.agentData);
+      this.showNodeActionMenu(node, currentInstance);
+    });
 
     return node;
   }
@@ -223,8 +244,11 @@ class App {
     const dragHandle = header || element;
 
     let isDragging = false;
+    let startX = 0;
+    let startY = 0;
     let offsetX = 0;
     let offsetY = 0;
+    const DRAG_THRESHOLD = 5; // pixels movement to consider it a drag
 
     dragHandle.addEventListener("mousedown", dragStart);
 
@@ -233,6 +257,8 @@ class App {
       if (e.target.dataset.port) return;
 
       isDragging = true;
+      startX = e.clientX;
+      startY = e.clientY;
 
       // Calculate offset from mouse to element's top-left corner
       const rect = element.getBoundingClientRect();
@@ -245,6 +271,7 @@ class App {
       document.addEventListener("mouseup", dragEnd);
 
       e.preventDefault();
+      e.stopPropagation();
     }
 
     function drag(e) {
@@ -252,23 +279,49 @@ class App {
 
       e.preventDefault();
 
-      // Get parent's position
-      const parentRect = element.parentElement.getBoundingClientRect();
+      // Check if we've moved beyond threshold
+      const deltaX = Math.abs(e.clientX - startX);
+      const deltaY = Math.abs(e.clientY - startY);
 
-      // Calculate new position: mouse position relative to parent, minus the offset where user clicked
-      const newX = e.clientX - parentRect.left - offsetX;
-      const newY = e.clientY - parentRect.top - offsetY;
+      if (deltaX > DRAG_THRESHOLD || deltaY > DRAG_THRESHOLD) {
+        // Get parent's position
+        const parentRect = element.parentElement.getBoundingClientRect();
 
-      element.style.left = newX + "px";
-      element.style.top = newY + "px";
+        // Calculate new position
+        const newX = e.clientX - parentRect.left - offsetX;
+        const newY = e.clientY - parentRect.top - offsetY;
+
+        element.style.left = newX + "px";
+        element.style.top = newY + "px";
+      }
     }
 
     function dragEnd(e) {
+      const deltaX = Math.abs(e.clientX - startX);
+      const deltaY = Math.abs(e.clientY - startY);
+      const hasMoved = deltaX > DRAG_THRESHOLD || deltaY > DRAG_THRESHOLD;
+
       isDragging = false;
       element.style.cursor = "move";
 
       document.removeEventListener("mousemove", drag);
       document.removeEventListener("mouseup", dragEnd);
+
+      // Only prevent click if we actually moved
+      if (hasMoved) {
+        // Use a short timeout to ensure this runs before the click event
+        setTimeout(() => {
+          element.addEventListener("click", preventClick, {
+            once: true,
+            capture: true,
+          });
+        }, 0);
+      }
+    }
+
+    function preventClick(e) {
+      e.stopPropagation();
+      e.preventDefault();
     }
   }
 
@@ -313,6 +366,98 @@ class App {
         this.startConnection(node, "input", e);
       });
     }
+  }
+
+  showNodeActionMenu(node, agentInstance) {
+    // Remove any existing menus
+    this.hideNodeActionMenu();
+
+    const menu = document.createElement("div");
+    menu.className = "agent-node-menu";
+    menu.id = "active-node-menu";
+    menu.innerHTML = `
+      <button class="agent-node-menu-btn" data-action="edit">EDIT</button>
+      <button class="agent-node-menu-btn" data-action="duplicate">DUPLICATE</button>
+      <button class="agent-node-menu-btn delete" data-action="delete">DELETE</button>
+    `;
+
+    // Position menu above the node
+    const nodeRect = node.getBoundingClientRect();
+    const parentRect = node.parentElement.getBoundingClientRect();
+    menu.style.left = nodeRect.left - parentRect.left + "px";
+    menu.style.bottom = parentRect.bottom - nodeRect.top + 8 + "px";
+
+    node.parentElement.appendChild(menu);
+
+    // Add event listeners
+    menu
+      .querySelector('[data-action="edit"]')
+      .addEventListener("click", (e) => {
+        e.stopPropagation();
+        // Open modal with instance data and update callback
+        this.agentConfig.openModal(agentInstance, (updatedConfig) => {
+          // Update the instance data in the node
+          const updatedInstance = {
+            ...agentInstance,
+            config: updatedConfig,
+          };
+          node.dataset.agentData = JSON.stringify(updatedInstance);
+          // Update the displayed name if it changed
+          const header = node.querySelector(".agent-node-header");
+          if (header) header.textContent = updatedConfig.name;
+        });
+        this.hideNodeActionMenu();
+      });
+
+    menu
+      .querySelector('[data-action="duplicate"]')
+      .addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.duplicateAgentNode(node, agentInstance);
+        this.hideNodeActionMenu();
+      });
+
+    menu
+      .querySelector('[data-action="delete"]')
+      .addEventListener("click", (e) => {
+        e.stopPropagation();
+        node.remove();
+        this.hideNodeActionMenu();
+      });
+
+    // Close menu when clicking outside
+    setTimeout(() => {
+      document.addEventListener("click", this.hideNodeActionMenu.bind(this), {
+        once: true,
+      });
+    }, 10);
+  }
+
+  hideNodeActionMenu() {
+    const existingMenu = document.getElementById("active-node-menu");
+    if (existingMenu) {
+      existingMenu.remove();
+    }
+  }
+
+  duplicateAgentNode(originalNode, agentInstance) {
+    const rect = originalNode.getBoundingClientRect();
+    const parentRect = originalNode.parentElement.getBoundingClientRect();
+
+    // Position duplicate slightly offset from original
+    const x = rect.left - parentRect.left + 20;
+    const y = rect.top - parentRect.top + 20;
+
+    // Create a new independent instance (removes instanceId so a new one is generated)
+    const templateAgent = {
+      id: agentInstance.id,
+      config: { ...agentInstance.config },
+      status: agentInstance.status,
+      created_at: agentInstance.created_at,
+    };
+
+    const duplicateNode = this.createAgentNode(templateAgent, x, y);
+    originalNode.parentElement.appendChild(duplicateNode);
   }
 
   startConnection(node, portType, event) {

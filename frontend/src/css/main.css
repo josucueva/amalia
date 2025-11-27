@@ -505,6 +505,52 @@ body {
   opacity: 0.5;
 }
 
+/* Agent Node Action Menu */
+.agent-node-menu {
+  position: absolute;
+  display: flex;
+  gap: var(--spacing-xs);
+  background: var(--bg-secondary);
+  border: var(--border-width) solid var(--border-color);
+  padding: var(--spacing-xs);
+  z-index: 10;
+  animation: menuFadeIn 0.15s ease;
+}
+
+@keyframes menuFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.agent-node-menu-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.05em;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.agent-node-menu-btn:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.agent-node-menu-btn.delete:hover {
+  color: #dc2626;
+  background: rgba(220, 38, 38, 0.08);
+}
+
 /* Loading State */
 .loading {
   color: var(--text-secondary);
