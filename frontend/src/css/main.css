@@ -508,6 +508,10 @@ body {
   transform: translateY(-1px);
 }
 
+.agent-node:active {
+  transform: scale(0.98);
+}
+
 .agent-node-header {
   font-family: var(--font-family-display);
   font-weight: var(--font-weight-bold);

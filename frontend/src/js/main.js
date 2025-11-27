@@ -21,6 +21,7 @@ class App {
     this.agentConfig = null;
     this.connectionManager = null;
     this.canvasMode = false;
+    this.menuCloseListener = null; // Track document click listener for menu
 
     // Canvas grid configuration
     // Note: gridSize must match the CSS grid pattern in main.css (.canvas-content)
@@ -334,8 +335,15 @@ class App {
 
     // Add click handler for action menu - pass instance data
     node.addEventListener("click", (e) => {
-      // Don't show menu if clicking on ports or dragging
+      // Don't show menu if clicking on ports
       if (e.target.dataset.port) return;
+
+      // Don't show menu if node was just dragged
+      if (node._justDragged) {
+        node._justDragged = false;
+        return;
+      }
+
       // Get fresh instance data from node to ensure we have latest state
       const currentInstance = JSON.parse(node.dataset.agentData);
       this.showNodeActionMenu(node, currentInstance);
@@ -414,6 +422,12 @@ class App {
   /**
    * Make a node draggable with grid snapping support
    * Implements best practices: event delegation, threshold detection, grid alignment
+   *
+   * Click vs Drag Detection:
+   * - Click: mousedown -> mouseup within 5px threshold -> shows menu
+   * - Drag: mousedown -> move > 5px -> mousemove updates position -> mouseup sets flag
+   * - The _justDragged flag prevents click handler from firing after drag
+   *
    * @param {HTMLElement} element - The node element to make draggable
    */
   makeDraggableNode(element) {
@@ -437,6 +451,9 @@ class App {
       // Don't drag if clicking on port or action buttons
       if (e.target.dataset.port || e.target.closest(".agent-node-menu-btn"))
         return;
+
+      // Close any open menus when starting to drag
+      app.hideNodeActionMenu();
 
       // Store initial state
       isDragging = true;
@@ -513,31 +530,26 @@ class App {
     }
 
     function dragEnd(e) {
-      isDragging = false;
+      // Clean up event listeners first
+      document.removeEventListener("mousemove", drag);
+      document.removeEventListener("mouseup", dragEnd);
 
       // Reset visual state
       element.style.cursor = "move";
       element.style.zIndex = "2"; // Reset z-index
 
-      // Clean up event listeners
-      document.removeEventListener("mousemove", drag);
-      document.removeEventListener("mouseup", dragEnd);
-
-      // Prevent click event if node was dragged (not just clicked)
+      // Set flag to prevent click event if node was actually dragged
       if (hasMoved) {
-        // Use a short timeout to ensure this runs before the click event
+        element._justDragged = true;
+        // Clear the flag after a short delay to allow future clicks
         setTimeout(() => {
-          element.addEventListener("click", preventClick, {
-            once: true,
-            capture: true,
-          });
-        }, 0);
+          element._justDragged = false;
+        }, 100);
       }
-    }
 
-    function preventClick(e) {
-      e.stopPropagation();
-      e.preventDefault();
+      // Reset drag state
+      isDragging = false;
+      hasMoved = false;
     }
   }
 
@@ -674,10 +686,23 @@ class App {
       });
 
     // Close menu when clicking outside
+    // Remove any existing listener first to prevent conflicts
+    if (this.menuCloseListener) {
+      document.removeEventListener("click", this.menuCloseListener);
+    }
+
+    // Create and store the new listener
+    this.menuCloseListener = (e) => {
+      // Don't close if clicking on a node (let the node's click handler manage it)
+      if (e.target.closest(".agent-node")) {
+        return;
+      }
+      this.hideNodeActionMenu();
+    };
+
+    // Add listener after a short delay to avoid immediate trigger
     setTimeout(() => {
-      document.addEventListener("click", this.hideNodeActionMenu.bind(this), {
-        once: true,
-      });
+      document.addEventListener("click", this.menuCloseListener);
     }, 10);
   }
 
@@ -685,6 +710,12 @@ class App {
     const existingMenu = document.getElementById("active-node-menu");
     if (existingMenu) {
       existingMenu.remove();
+    }
+
+    // Remove the document click listener
+    if (this.menuCloseListener) {
+      document.removeEventListener("click", this.menuCloseListener);
+      this.menuCloseListener = null;
     }
   }
 
