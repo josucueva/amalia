@@ -136,13 +136,16 @@ class ApiClient {
   }
 
   // Agents API
-  async listAgents() {
-    return this.get(API_ENDPOINTS.agents);
+  async listAgents(includeHidden = false) {
+    const url = includeHidden
+      ? `${API_ENDPOINTS.agents}?include_hidden=true`
+      : API_ENDPOINTS.agents;
+    return this.get(url);
   }
 
-  async getAgents() {
+  async getAgents(includeHidden = false) {
     // Alias for listAgents to maintain compatibility
-    const response = await this.listAgents();
+    const response = await this.listAgents(includeHidden);
     return response.agents || [];
   }
 

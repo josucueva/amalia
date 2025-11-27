@@ -22,6 +22,7 @@ class App {
     this.connectionManager = null;
     this.canvasMode = false;
     this.menuCloseListener = null; // Track document click listener for menu
+    this.showHiddenAgents = false; // Toggle for showing hidden agents
 
     // Canvas grid configuration
     // Note: gridSize must match the CSS grid pattern in main.css (.canvas-content)
@@ -136,6 +137,9 @@ class App {
       });
     }
 
+    // Setup keyboard shortcuts
+    this.setupKeyboardShortcuts();
+
     console.log("✓ Application initialized successfully");
   }
 
@@ -173,6 +177,28 @@ class App {
       console.error("Error loading interaction agent:", error);
       showToast("Failed to load interaction agent", "error");
     }
+  }
+
+  /**
+   * Setup keyboard shortcuts for canvas mode
+   */
+  setupKeyboardShortcuts() {
+    document.addEventListener("keydown", (e) => {
+      // Ctrl+Shift+H: Toggle hidden agents visibility
+      if (e.shiftKey && e.key === "H") {
+        e.preventDefault();
+
+        // Only work in canvas mode
+        if (this.canvasMode) {
+          this.showHiddenAgents = !this.showHiddenAgents;
+          this.loadCanvasAgents();
+
+          // Show feedback toast
+          const status = this.showHiddenAgents ? "shown" : "hidden";
+          showToast(`Hidden agents ${status}`, "info");
+        }
+      }
+    });
   }
 
   runPipeline() {
@@ -245,7 +271,8 @@ class App {
 
   async loadCanvasAgents() {
     try {
-      const agents = await api.getAgents();
+      // Fetch agents with include_hidden parameter
+      const agents = await api.getAgents(this.showHiddenAgents);
       const canvasAgentList = document.getElementById("canvas-agent-list");
 
       if (!canvasAgentList) {
@@ -257,13 +284,8 @@ class App {
 
       console.log("Loading agents:", agents);
 
-      // Filter out interaction_agent from canvas
-      const canvasAgents = agents.filter(
-        (agent) => agent.config.name !== "interaction_agent"
-      );
-
-      if (canvasAgents && canvasAgents.length > 0) {
-        canvasAgents.forEach((agent) => {
+      if (agents && agents.length > 0) {
+        agents.forEach((agent) => {
           // Create item in sidebar list (draggable)
           const listItem = this.createAgentListItem(agent);
           canvasAgentList.appendChild(listItem);
