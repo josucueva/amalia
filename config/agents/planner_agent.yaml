@@ -2,7 +2,7 @@ agent:
   name: "planner_agent"
   description: "Hidden agent that creates execution plans from refined user requirements"
   model: "gemini/gemini-2.5-flash"
-  icon: "git-branch"
+  icon: "workflow"
   system_prompt: |
     You are AMALIA's planner agent - a strategic AI that creates detailed execution plans.
 

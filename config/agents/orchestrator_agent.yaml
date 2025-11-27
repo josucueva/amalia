@@ -2,7 +2,7 @@ agent:
   name: "orchestrator_agent"
   description: "Hidden agent that executes plans by instantiating agents on the canvas"
   model: "gemini/gemini-2.5-flash"
-  icon: "layers"
+  icon: "network"
   system_prompt: |
     You are the orchestrator agent that creates canvas configurations from plans.
 

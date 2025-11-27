@@ -51,6 +51,7 @@ def load_agent_config_from_file(file_path: Path) -> Agent:
             description=agent_data["description"],
             model=agent_data.get("model", "gpt-4o"),
             system_prompt=agent_data["system_prompt"],
+            icon=agent_data.get("icon"),
             a2a_enabled=agent_data.get("a2a_enabled", False),
             tools=agent_data.get("tools", []),
             communication=communication,
@@ -175,6 +176,10 @@ def save_agent_config_to_yaml(agent: Agent, directory: Optional[Path] = None) ->
             "max_tokens": agent.config.max_tokens,
         }
     }
+
+    # Add icon if present
+    if agent.config.icon:
+        data["agent"]["icon"] = agent.config.icon
 
     if agent.config.metadata:
         data["agent"]["metadata"] = agent.config.metadata

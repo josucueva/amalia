@@ -2,7 +2,7 @@ agent:
   name: "model_trainer"
   description: "Agent specialized in training machine learning models"
   model: "gemini/gemini-2.5-flash"
-  icon: "target"
+  icon: "brain"
   system_prompt: |
     You are a machine learning expert specializing in model training and optimization.
 

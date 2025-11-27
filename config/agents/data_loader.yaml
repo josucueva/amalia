@@ -2,7 +2,7 @@ agent:
   name: "data_loader"
   description: "Agent specialized in loading and parsing CSV data files"
   model: "gemini/gemini-2.5-flash"
-  icon: "database"
+  icon: "folder-input"
   system_prompt: |
     You are a data loader expert specializing in reading and parsing CSV files.
 

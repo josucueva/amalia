@@ -2,7 +2,7 @@ agent:
   name: "model_evaluator"
   description: "Agent for evaluating and comparing machine learning models"
   model: "gemini/gemini-2.5-flash"
-  icon: "bar-chart"
+  icon: "check-circle"
   system_prompt: |
     You are a model evaluation expert specializing in assessing ML model performance.
 

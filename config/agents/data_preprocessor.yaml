@@ -2,7 +2,7 @@ agent:
   name: "data_preprocessor"
   description: "Expert agent for data cleaning, transformation, and preprocessing tasks"
   model: "gemini/gemini-2.5-flash"
-  icon: "filter"
+  icon: "sliders"
   system_prompt: |
     You are a data preprocessing expert specializing in cleaning and transforming datasets.
 
