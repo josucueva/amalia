@@ -14,6 +14,13 @@ class AgentStatus(str, Enum):
     BUSY = "busy"
 
 
+class MCPServerConfig(BaseModel):
+    """MCP server configuration."""
+    command: str = Field(..., description="Command to execute MCP server")
+    args: List[str] = Field(default_factory=list, description="Command arguments")
+    env: Optional[Dict[str, str]] = Field(default=None, description="Environment variables")
+
+
 class CommunicationConfig(BaseModel):
     """Agent communication configuration."""
     can_receive_from: List[str] = Field(default_factory=lambda: ["*"], description="List of agent IDs or '*' for all")
@@ -29,6 +36,7 @@ class AgentConfig(BaseModel):
     icon: Optional[str] = Field(default=None, description="Icon emoji for visual representation")
     a2a_enabled: bool = Field(default=False, description="Enable A2A communication")
     tools: List[str] = Field(default_factory=list, description="List of tool names this agent can use")
+    mcp_servers: Dict[str, MCPServerConfig] = Field(default_factory=dict, description="MCP servers configuration")
     communication: CommunicationConfig = Field(default_factory=CommunicationConfig)
     temperature: float = Field(default=0.7, ge=0.0, le=2.0, description="LLM temperature")
     max_tokens: int = Field(default=2000, gt=0, description="Maximum tokens for response")

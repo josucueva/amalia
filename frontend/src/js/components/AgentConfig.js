@@ -16,6 +16,7 @@ class AgentConfig {
     this.reloadBtn = document.getElementById("reload-agents-btn");
     this.currentAgentId = null;
     this.currentAgentData = null; // Store original agent data to preserve metadata
+    this.mcpServers = {}; // Store MCP server configurations
 
     // Icon picker elements
     this.iconPickerModal = document.getElementById("icon-picker-modal");
@@ -28,6 +29,7 @@ class AgentConfig {
     this.init();
     this.loadAgents();
     this.initIconPicker();
+    this.initMCPSection();
   }
 
   init() {
@@ -188,6 +190,71 @@ class AgentConfig {
     document.getElementById("icon-preview").style.display = "none";
   }
 
+  initMCPSection() {
+    const addMCPBtn = document.getElementById("add-mcp-server-btn");
+    if (addMCPBtn) {
+      addMCPBtn.addEventListener("click", () => this.showAddMCPServerDialog());
+    }
+  }
+
+  showAddMCPServerDialog() {
+    const name = prompt("Server name:");
+    if (!name || !name.trim()) return;
+
+    const command = prompt("Command to run:");
+    if (!command || !command.trim()) return;
+
+    const argsInput = prompt("Arguments (comma-separated, optional):");
+    const args = argsInput ? argsInput.split(",").map((a) => a.trim()) : [];
+
+    this.mcpServers[name.trim()] = {
+      command: command.trim(),
+      args: args,
+      env: null,
+    };
+
+    this.renderMCPServers();
+  }
+
+  renderMCPServers() {
+    const container = document.getElementById("mcp-servers-list");
+    if (!container) return;
+
+    if (Object.keys(this.mcpServers).length === 0) {
+      container.innerHTML = `
+        <div class="mcp-empty-state">
+          No MCP servers configured. Click "Add MCP Server" to connect tools.
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = Object.entries(this.mcpServers)
+      .map(
+        ([name, config]) => `
+        <div class="mcp-server-item" data-server-name="${name}">
+          <div class="mcp-server-info">
+            <div class="mcp-server-name">${name}</div>
+            <div class="mcp-server-command">${
+              config.command
+            } ${config.args.join(" ")}</div>
+          </div>
+          <button class="mcp-server-remove" data-server-name="${name}">✕</button>
+        </div>
+      `
+      )
+      .join("");
+
+    // Add remove handlers
+    container.querySelectorAll(".mcp-server-remove").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const serverName = e.target.dataset.serverName;
+        delete this.mcpServers[serverName];
+        this.renderMCPServers();
+      });
+    });
+  }
+
   openModal(agent = null, updateCallback = null) {
     this.currentAgentId = agent ? agent.id : null;
     this.currentAgentData = agent; // Store original agent data
@@ -199,7 +266,7 @@ class AgentConfig {
     // Update modal title
     const modalTitle = this.agentModal.querySelector(".modal-header h2");
     if (modalTitle) {
-      modalTitle.textContent = agent ? "Edit Agent" : "Agent Configuration";
+      modalTitle.textContent = "Agent Details";
     }
 
     // Update submit button text
@@ -235,6 +302,14 @@ class AgentConfig {
       document.getElementById("agent-prompt").value =
         agent.config.system_prompt;
       document.getElementById("agent-a2a").checked = agent.config.a2a_enabled;
+
+      // Load MCP servers
+      this.mcpServers = agent.config.mcp_servers || {};
+      this.renderMCPServers();
+    } else {
+      // Reset MCP servers for new agent
+      this.mcpServers = {};
+      this.renderMCPServers();
     }
 
     this.agentModal.style.display = "flex";
@@ -247,6 +322,7 @@ class AgentConfig {
     this.currentAgentData = null; // Clear stored agent data
     this.instanceUpdateCallback = null; // Clear callback
     this.selectedIcon = null;
+    this.mcpServers = {}; // Clear MCP servers
     document.getElementById("icon-preview").style.display = "none";
 
     // Reset icon form group visibility
@@ -270,6 +346,7 @@ class AgentConfig {
       system_prompt: document.getElementById("agent-prompt").value,
       a2a_enabled: document.getElementById("agent-a2a").checked,
       tools: this.currentAgentData?.config?.tools || [],
+      mcp_servers: this.mcpServers, // Include MCP servers
       // Preserve communication and metadata from original agent
       communication: this.currentAgentData?.config?.communication || {
         can_receive_from: ["*"],

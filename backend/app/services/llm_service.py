@@ -2,7 +2,8 @@
 LLM service for handling model interactions.
 """
 import os
-from typing import List, Dict, Any, Optional, AsyncIterator
+import json
+from typing import List, Dict, Any, Optional, AsyncIterator, Union
 import structlog
 from litellm import acompletion, completion_cost
 import asyncio
@@ -43,8 +44,9 @@ class LLMService:
         model: Optional[str] = None,
         temperature: float = 0.7,
         max_tokens: int = 2000,
-        stream: bool = False
-    ) -> str | AsyncIterator[str]:
+        stream: bool = False,
+        tools: Optional[List[Dict[str, Any]]] = None
+    ) -> Union[str, Dict[str, Any], AsyncIterator[str]]:
         """
         Generate a response from the LLM.
         
@@ -54,6 +56,7 @@ class LLMService:
             temperature: Temperature for sampling
             max_tokens: Maximum tokens to generate
             stream: Whether to stream the response
+            tools: Optional list of tools available to the LLM
             
         Returns:
             Generated response text or async iterator for streaming
@@ -65,22 +68,46 @@ class LLMService:
                 "Generating LLM response",
                 model=model,
                 message_count=len(messages),
-                stream=stream
+                stream=stream,
+                tools_count=len(tools) if tools else 0
             )
             
+            # Prepare request parameters
+            request_params = {
+                "model": model,
+                "messages": messages,
+                "temperature": temperature,
+                "max_tokens": max_tokens,
+                "stream": stream
+            }
+            
+            # Add tools if provided
+            if tools:
+                request_params["tools"] = tools
+                request_params["tool_choice"] = "auto"
+            
             # Call LiteLLM
-            response = await acompletion(
-                model=model,
-                messages=messages,
-                temperature=temperature,
-                max_tokens=max_tokens,
-                stream=stream
-            )
+            response = await acompletion(**request_params)
             
             if stream:
                 return self._stream_response(response)
             else:
-                content = response.choices[0].message.content
+                # Check for tool calls
+                choice = response.choices[0]
+                if hasattr(choice.message, 'tool_calls') and choice.message.tool_calls:
+                    # Return tool calls for external processing
+                    return {
+                        "tool_calls": [
+                            {
+                                "id": tc.id,
+                                "name": tc.function.name,
+                                "arguments": json.loads(tc.function.arguments)
+                            }
+                            for tc in choice.message.tool_calls
+                        ]
+                    }
+                
+                content = choice.message.content
                 
                 # Log usage
                 try:

@@ -644,12 +644,21 @@ class App {
     node.style.left = `${snappedX}px`;
     node.style.top = `${snappedY}px`;
 
+    // Count MCP tools
+    const mcpServers = agent.config.mcp_servers || {};
+    const toolCount = Object.keys(mcpServers).length;
+
     node.innerHTML = `
       <div class="agent-node-header">
         ${
           agent.config.icon
             ? `<i data-lucide="${agent.config.icon}" class="agent-node-icon"></i>`
             : `<span class="agent-node-name">${agent.config.name}</span>`
+        }
+        ${
+          toolCount > 0
+            ? `<span class="tool-count-badge">${toolCount}</span>`
+            : ""
         }
       </div>
       <div class="agent-node-input" data-port="input" title="Input connection"></div>

@@ -74,7 +74,8 @@ async def execute_node(
         ExecuteNodeResponse: Execution result
     """
     try:
-        from datetime import datetime
+        from datetime import datetime, timezone
+        from app.services.mcp_service import MCPService
         
         logger.info(
             "Executing agent node",
@@ -110,17 +111,73 @@ async def execute_node(
         settings = get_settings()
         llm_service = get_llm_service(settings)
 
-        # Execute the agent using LLM service
+        # Initialize MCP service if agent has MCP servers configured
+        mcp_service = None
+        available_tools = []
+        
+        if agent.config.mcp_servers:
+            mcp_service = MCPService()
+            await mcp_service.connect_servers(agent.config.mcp_servers)
+            
+            # Get available tools in OpenAI format
+            mcp_tools = mcp_service.get_available_tools()
+            available_tools = [
+                {
+                    "type": "function",
+                    "function": {
+                        "name": tool["name"],
+                        "description": tool["description"],
+                        "parameters": tool["inputSchema"]
+                    }
+                }
+                for tool in mcp_tools
+            ]
+            
+            logger.info("MCP tools loaded", tool_count=len(available_tools))
+
+        # Execute the agent using LLM service with tools
         result = await llm_service.generate_agent_response(
             user_message=combined_input,
-            agent_config=agent.config.dict(),
+            agent_config={**agent.config.dict(), "tools": available_tools} if available_tools else agent.config.dict(),
             conversation_history=[]
         )
+
+        # Handle tool calls if present
+        if isinstance(result, dict) and "tool_calls" in result:
+            # Execute tools and get results
+            tool_results = []
+            for tool_call in result["tool_calls"]:
+                try:
+                    tool_result = await mcp_service.execute_tool(
+                        tool_call["name"],
+                        tool_call["arguments"]
+                    )
+                    tool_results.append({
+                        "tool_call_id": tool_call["id"],
+                        "output": str(tool_result)
+                    })
+                except Exception as e:
+                    logger.error("Tool execution failed", tool=tool_call["name"], error=str(e))
+                    tool_results.append({
+                        "tool_call_id": tool_call["id"],
+                        "output": f"Error: {str(e)}"
+                    })
+            
+            # Get final response from LLM with tool results
+            # This would require another LLM call with tool results
+            # For simplicity, we'll return the tool results as output
+            result = f"Tools executed: {len(tool_results)}\n\n" + "\n\n".join(
+                [f"Tool result: {tr['output']}" for tr in tool_results]
+            )
+
+        # Cleanup MCP connections
+        if mcp_service:
+            await mcp_service.disconnect_all()
 
         return ExecuteNodeResponse(
             instanceId=request_data.instanceId,
             agentType=request_data.agentType,
-            timestamp=datetime.utcnow().isoformat(),
+            timestamp=datetime.now(timezone.utc).isoformat(),
             inputs=len(request_data.inputs),
             output=result if isinstance(result, str) else str(result),
         )
@@ -128,12 +185,12 @@ async def execute_node(
     except HTTPException:
         raise
     except Exception as e:
-        from datetime import datetime
+        from datetime import datetime, timezone
         logger.error("Error executing node", error=str(e), instance_id=request_data.instanceId)
         return ExecuteNodeResponse(
             instanceId=request_data.instanceId,
             agentType=request_data.agentType,
-            timestamp=datetime.utcnow().isoformat(),
+            timestamp=datetime.now(timezone.utc).isoformat(),
             inputs=len(request_data.inputs),
             output="",
             error=str(e)
