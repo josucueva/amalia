@@ -13,6 +13,9 @@ import FileUpload from "./components/FileUpload.js";
 import AgentConfig from "./components/AgentConfig.js";
 import ConnectionManager from "./managers/ConnectionManager.js";
 import { showToast } from "./utils/helpers.js";
+import config from "./config.js";
+
+const { API_BASE_URL } = config;
 
 class App {
   constructor() {
@@ -22,7 +25,21 @@ class App {
     this.connectionManager = null;
     this.canvasMode = false;
     this.menuCloseListener = null; // Track document click listener for menu
-    this.showHiddenAgents = false; // Toggle for showing hidden agents
+    this.showHiddenAgents = false; // Toggle for showing hidden agents (Ctrl+Shift+H)
+
+    // Canvas drop listeners (to prevent duplicates)
+    this.canvasDropListeners = {
+      dragover: null,
+      drop: null,
+    };
+
+    // Pipeline execution state
+    this.isExecuting = false;
+    this.executionPaused = false;
+    this.executionCancelled = false;
+    this.currentExecutingNode = null;
+    this.executionResults = new Map(); // Store results by instanceId
+    this.executionOrder = []; // Ordered list of nodes to execute
 
     // Canvas grid configuration
     // Note: gridSize must match the CSS grid pattern in main.css (.canvas-content)
@@ -201,15 +218,300 @@ class App {
     });
   }
 
-  runPipeline() {
-    // Placeholder for future pipeline execution functionality
-    showToast("Pipeline execution will be implemented soon", "info");
-    console.log("🚀 Run pipeline functionality - Coming soon!");
-    // TODO: Implement actual pipeline execution logic
-    // - Validate pipeline has nodes and connections
-    // - Send execution request to backend
-    // - Show execution progress
-    // - Display results
+  async runPipeline() {
+    if (this.isExecuting) {
+      console.warn("Pipeline already executing");
+      return;
+    }
+
+    // Get all nodes and connections
+    const nodes = Array.from(document.querySelectorAll(".agent-node"));
+    const connections = this.connectionManager.getConnectionsData();
+
+    // Validation
+    if (nodes.length === 0) {
+      showToast("No agents on canvas to execute", "warning");
+      return;
+    }
+
+    // Calculate execution order (topological sort)
+    this.executionOrder = this.calculateExecutionOrder(nodes, connections);
+
+    if (!this.executionOrder) {
+      showToast("Cannot execute: Circular dependencies detected", "error");
+      return;
+    }
+
+    // Reset state
+    this.isExecuting = true;
+    this.executionPaused = false;
+    this.executionCancelled = false;
+    this.executionResults.clear();
+
+    showToast(`Executing ${this.executionOrder.length} agents...`, "info");
+
+    // Execute sequentially
+    await this.executeSequentialPipeline();
+
+    // Cleanup
+    this.isExecuting = false;
+    this.currentExecutingNode = null;
+
+    if (this.executionCancelled) {
+      showToast("Pipeline execution cancelled", "warning");
+    } else {
+      showToast("Pipeline execution completed", "success");
+    }
+  }
+
+  calculateExecutionOrder(nodes, connections) {
+    // Build adjacency list and in-degree map
+    const graph = new Map(); // instanceId -> [dependent instanceIds]
+    const inDegree = new Map(); // instanceId -> number of dependencies
+    const nodeMap = new Map(); // instanceId -> node element
+
+    // Initialize
+    nodes.forEach((node) => {
+      const instanceId = node.dataset.instanceId;
+      graph.set(instanceId, []);
+      inDegree.set(instanceId, 0);
+      nodeMap.set(instanceId, node);
+    });
+
+    // Build graph from connections
+    connections.forEach((conn) => {
+      const fromId = conn.from.instanceId;
+      const toId = conn.to.instanceId;
+
+      if (graph.has(fromId) && graph.has(toId)) {
+        graph.get(fromId).push(toId);
+        inDegree.set(toId, inDegree.get(toId) + 1);
+      }
+    });
+
+    // Topological sort (Kahn's algorithm)
+    const queue = [];
+    const order = [];
+
+    // Start with nodes that have no dependencies
+    inDegree.forEach((degree, instanceId) => {
+      if (degree === 0) {
+        queue.push(instanceId);
+      }
+    });
+
+    while (queue.length > 0) {
+      const current = queue.shift();
+      order.push(nodeMap.get(current));
+
+      // Process dependents
+      graph.get(current).forEach((dependent) => {
+        inDegree.set(dependent, inDegree.get(dependent) - 1);
+        if (inDegree.get(dependent) === 0) {
+          queue.push(dependent);
+        }
+      });
+    }
+
+    // Check for cycles
+    if (order.length !== nodes.length) {
+      console.error("Circular dependency detected in pipeline");
+      return null;
+    }
+
+    return order;
+  }
+
+  async executeSequentialPipeline() {
+    for (const node of this.executionOrder) {
+      // Check for cancellation
+      if (this.executionCancelled) {
+        this.setNodeExecutionState(node, "cancelled");
+        continue;
+      }
+
+      // Wait if paused
+      while (this.executionPaused && !this.executionCancelled) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      }
+
+      if (this.executionCancelled) {
+        this.setNodeExecutionState(node, "cancelled");
+        continue;
+      }
+
+      // Execute this node
+      this.currentExecutingNode = node;
+      this.setNodeExecutionState(node, "running");
+
+      try {
+        const result = await this.executeNode(node);
+        this.executionResults.set(node.dataset.instanceId, result);
+        this.setNodeExecutionState(node, "completed");
+      } catch (error) {
+        console.error(
+          `Error executing node ${node.dataset.instanceId}:`,
+          error
+        );
+        this.executionResults.set(node.dataset.instanceId, {
+          error: error.message,
+        });
+        this.setNodeExecutionState(node, "error");
+
+        // Stop execution on error
+        showToast(`Execution failed: ${error.message}`, "error");
+        this.executionCancelled = true;
+      }
+    }
+  }
+
+  async executeNode(node) {
+    const instanceId = node.dataset.instanceId;
+    const agentId = node.dataset.agentId; // This is the agent ID (e.g., "data_loader")
+
+    // Get input from connected nodes
+    const connections = this.connectionManager.getConnectionsData();
+    const inputs = connections
+      .filter((conn) => conn.to.instanceId === instanceId)
+      .map((conn) => this.executionResults.get(conn.from.instanceId))
+      .filter((result) => result !== undefined);
+
+    // Call backend API to execute agent
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/canvas/execute`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          instanceId,
+          agentType: agentId, // Send agentId as agentType
+          inputs,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to execute agent: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+
+      if (result.error) {
+        throw new Error(result.error);
+      }
+
+      return result;
+    } catch (error) {
+      console.error("Error executing node:", error);
+      throw error;
+    }
+  }
+
+  setNodeExecutionState(node, state) {
+    // Remove all state classes
+    node.classList.remove(
+      "node-running",
+      "node-completed",
+      "node-error",
+      "node-cancelled",
+      "node-loading"
+    );
+
+    // Add new state class
+    if (state === "running") {
+      node.classList.add("node-running", "node-loading");
+    } else if (state === "completed") {
+      node.classList.add("node-completed");
+    } else if (state === "error") {
+      node.classList.add("node-error");
+    } else if (state === "cancelled") {
+      node.classList.add("node-cancelled");
+    }
+  }
+
+  pauseExecution() {
+    this.executionPaused = true;
+    showToast("Execution paused", "info");
+  }
+
+  resumeExecution() {
+    this.executionPaused = false;
+    showToast("Execution resumed", "info");
+  }
+
+  cancelExecution() {
+    this.executionCancelled = true;
+    showToast("Cancelling execution...", "warning");
+  }
+
+  showExecutionLogs(instanceId) {
+    const result = this.executionResults.get(instanceId);
+
+    if (!result) {
+      showToast("No execution logs available for this agent", "info");
+      return;
+    }
+
+    // Create and show logs modal
+    const modal = document.createElement("div");
+    modal.className = "modal-overlay";
+    modal.id = "execution-logs-modal";
+
+    modal.innerHTML = `
+      <div class="modal-content execution-logs-modal-content">
+        <div class="modal-header">
+          <h2>Execution Logs</h2>
+          <button class="modal-close" onclick="document.getElementById('execution-logs-modal').remove()">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="execution-logs-info">
+            <div class="log-field">
+              <label>Instance ID:</label>
+              <span>${result.instanceId}</span>
+            </div>
+            <div class="log-field">
+              <label>Agent Type:</label>
+              <span>${result.agentType}</span>
+            </div>
+            <div class="log-field">
+              <label>Timestamp:</label>
+              <span>${new Date(result.timestamp).toLocaleString()}</span>
+            </div>
+            <div class="log-field">
+              <label>Input Count:</label>
+              <span>${result.inputs}</span>
+            </div>
+          </div>
+          <div class="execution-logs-output">
+            <h3>Output</h3>
+            <pre>${
+              result.error
+                ? `ERROR: ${result.error}`
+                : JSON.stringify(result.output, null, 2)
+            }</pre>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="document.getElementById('execution-logs-modal').remove()">Close</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Initialize Lucide icons
+    if (globalThis.lucide) {
+      globalThis.lucide.createIcons();
+    }
+
+    // Close on overlay click
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) {
+        modal.remove();
+      }
+    });
   }
 
   toggleCanvasMode() {
@@ -218,7 +520,6 @@ class App {
     const chatContainer = document.querySelector(".chat-container");
     const btnText = document.getElementById("canvas-btn-text");
     const agentsBtn = document.getElementById("agents-btn");
-    const runBtn = document.getElementById("run-btn");
 
     if (this.canvasMode) {
       overlay.classList.add("active");
@@ -292,8 +593,8 @@ class App {
         });
 
         // Initialize Lucide icons after all items are added
-        if (window.lucide) {
-          window.lucide.createIcons();
+        if (globalThis.lucide) {
+          globalThis.lucide.createIcons();
         }
       } else {
         canvasAgentList.innerHTML =
@@ -345,8 +646,8 @@ class App {
     `;
 
     // Initialize Lucide icons
-    if (window.lucide) {
-      window.lucide.createIcons();
+    if (globalThis.lucide) {
+      globalThis.lucide.createIcons();
     }
 
     // Make draggable
@@ -405,17 +706,17 @@ class App {
           <button class="canvas-agent-action-btn edit-btn">[ EDIT ]</button>
           ${
             // Hidden agents cannot be deleted
-            !isHidden
-              ? '<button class="canvas-agent-action-btn delete-btn">[ DELETE ]</button>'
-              : ""
+            isHidden
+              ? ""
+              : '<button class="canvas-agent-action-btn delete-btn">[ DELETE ]</button>'
           }
         </div>
       </div>
     `;
 
     // Initialize Lucide icons
-    if (window.lucide) {
-      window.lucide.createIcons();
+    if (globalThis.lucide) {
+      globalThis.lucide.createIcons();
     }
 
     // Drag handlers - only for non-hidden agents
@@ -600,13 +901,27 @@ class App {
     const canvasContent = document.getElementById("canvas-content");
     if (!canvasContent) return;
 
-    canvasContent.addEventListener("dragover", (e) => {
+    // Remove existing listeners if any to prevent duplicates
+    if (this.canvasDropListeners.dragover) {
+      canvasContent.removeEventListener(
+        "dragover",
+        this.canvasDropListeners.dragover
+      );
+    }
+    if (this.canvasDropListeners.drop) {
+      canvasContent.removeEventListener("drop", this.canvasDropListeners.drop);
+    }
+
+    // Create and store new listeners
+    this.canvasDropListeners.dragover = (e) => {
       e.preventDefault();
       e.dataTransfer.dropEffect = "copy";
-    });
+    };
 
-    canvasContent.addEventListener("drop", (e) => {
+    this.canvasDropListeners.drop = (e) => {
       e.preventDefault();
+      e.stopPropagation();
+
       const agentData = JSON.parse(e.dataTransfer.getData("application/json"));
 
       // Get drop position relative to canvas
@@ -628,7 +943,14 @@ class App {
       if (globalThis.lucide) {
         globalThis.lucide.createIcons();
       }
-    });
+    };
+
+    // Add listeners
+    canvasContent.addEventListener(
+      "dragover",
+      this.canvasDropListeners.dragover
+    );
+    canvasContent.addEventListener("drop", this.canvasDropListeners.drop);
   }
 
   setupConnectionPorts(node) {
@@ -661,11 +983,28 @@ class App {
     const menu = document.createElement("div");
     menu.className = "agent-node-menu";
     menu.id = "active-node-menu";
-    menu.innerHTML = `
-      <button class="agent-node-menu-btn" data-action="edit">EDIT</button>
-      <button class="agent-node-menu-btn" data-action="duplicate">DUPLICATE</button>
-      <button class="agent-node-menu-btn delete" data-action="delete">DELETE</button>
-    `;
+
+    // Check if this node is currently executing
+    const instanceId = node.dataset.instanceId;
+    const isExecuting = this.currentExecutingNode === node;
+
+    if (isExecuting) {
+      // Show execution controls
+      menu.innerHTML = `
+        <button class="agent-node-menu-btn" data-action="pause">${
+          this.executionPaused ? "RESUME" : "PAUSE"
+        }</button>
+        <button class="agent-node-menu-btn" data-action="cancel">CANCEL</button>
+        <button class="agent-node-menu-btn" data-action="logs">LOGS</button>
+      `;
+    } else {
+      // Show normal controls
+      menu.innerHTML = `
+        <button class="agent-node-menu-btn" data-action="edit">EDIT</button>
+        <button class="agent-node-menu-btn" data-action="duplicate">DUPLICATE</button>
+        <button class="agent-node-menu-btn delete" data-action="delete">DELETE</button>
+      `;
+    }
 
     // Position menu above the node
     const nodeRect = node.getBoundingClientRect();
@@ -675,58 +1014,92 @@ class App {
 
     node.parentElement.appendChild(menu);
 
-    // Add event listeners
-    menu
-      .querySelector('[data-action="edit"]')
-      .addEventListener("click", (e) => {
-        e.stopPropagation();
-        // Open modal with instance data and update callback
-        this.agentConfig.openModal(agentInstance, (updatedConfig) => {
-          // Update the instance data in the node
-          const updatedInstance = {
-            ...agentInstance,
-            config: updatedConfig,
-          };
-          node.dataset.agentData = JSON.stringify(updatedInstance);
-          // Update the displayed name and icon if changed
-          const header = node.querySelector(".agent-node-header");
-          if (header) {
-            if (updatedConfig.icon) {
-              header.innerHTML = `<i data-lucide="${updatedConfig.icon}" class="agent-node-icon"></i>`;
-            } else {
-              header.innerHTML = `<span class="agent-node-name">${updatedConfig.name}</span>`;
-            }
-            // Re-initialize Lucide icons
-            if (globalThis.lucide) {
-              globalThis.lucide.createIcons();
-            }
+    // Add event listeners based on menu type
+    if (isExecuting) {
+      const pauseBtn = menu.querySelector('[data-action="pause"]');
+      if (pauseBtn) {
+        pauseBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          if (this.executionPaused) {
+            this.resumeExecution();
+          } else {
+            this.pauseExecution();
           }
+          this.hideNodeActionMenu();
         });
-        this.hideNodeActionMenu();
-      });
+      }
 
-    menu
-      .querySelector('[data-action="duplicate"]')
-      .addEventListener("click", (e) => {
-        e.stopPropagation();
-        this.duplicateAgentNode(node, agentInstance);
-        this.hideNodeActionMenu();
-      });
+      const cancelBtn = menu.querySelector('[data-action="cancel"]');
+      if (cancelBtn) {
+        cancelBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          this.cancelExecution();
+          this.hideNodeActionMenu();
+        });
+      }
 
-    menu
-      .querySelector('[data-action="delete"]')
-      .addEventListener("click", (e) => {
-        e.stopPropagation();
-        const instanceId = node.dataset.instanceId;
+      const logsBtn = menu.querySelector('[data-action="logs"]');
+      if (logsBtn) {
+        logsBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          this.showExecutionLogs(instanceId);
+          this.hideNodeActionMenu();
+        });
+      }
+    } else {
+      // Normal menu event listeners
+      menu
+        .querySelector('[data-action="edit"]')
+        .addEventListener("click", (e) => {
+          e.stopPropagation();
+          // Open modal with instance data and update callback
+          this.agentConfig.openModal(agentInstance, (updatedConfig) => {
+            // Update the instance data in the node
+            const updatedInstance = {
+              ...agentInstance,
+              config: updatedConfig,
+            };
+            node.dataset.agentData = JSON.stringify(updatedInstance);
+            // Update the displayed name and icon if changed
+            const header = node.querySelector(".agent-node-header");
+            if (header) {
+              if (updatedConfig.icon) {
+                header.innerHTML = `<i data-lucide="${updatedConfig.icon}" class="agent-node-icon"></i>`;
+              } else {
+                header.innerHTML = `<span class="agent-node-name">${updatedConfig.name}</span>`;
+              }
+              // Re-initialize Lucide icons
+              if (globalThis.lucide) {
+                globalThis.lucide.createIcons();
+              }
+            }
+          });
+          this.hideNodeActionMenu();
+        });
 
-        // Remove all connections for this node
-        if (this.connectionManager) {
-          this.connectionManager.removeNodeConnections(instanceId);
-        }
+      menu
+        .querySelector('[data-action="duplicate"]')
+        .addEventListener("click", (e) => {
+          e.stopPropagation();
+          this.duplicateAgentNode(node, agentInstance);
+          this.hideNodeActionMenu();
+        });
 
-        node.remove();
-        this.hideNodeActionMenu();
-      });
+      menu
+        .querySelector('[data-action="delete"]')
+        .addEventListener("click", (e) => {
+          e.stopPropagation();
+          const instanceId = node.dataset.instanceId;
+
+          // Remove all connections for this node
+          if (this.connectionManager) {
+            this.connectionManager.removeNodeConnections(instanceId);
+          }
+
+          node.remove();
+          this.hideNodeActionMenu();
+        });
+    }
 
     // Close menu when clicking outside
     // Remove any existing listener first to prevent conflicts
@@ -784,8 +1157,8 @@ class App {
     originalNode.parentElement.appendChild(duplicateNode);
 
     // Re-initialize Lucide icons after appending to DOM
-    if (window.lucide) {
-      window.lucide.createIcons();
+    if (globalThis.lucide) {
+      globalThis.lucide.createIcons();
     }
   }
 
@@ -931,8 +1304,8 @@ class App {
     }
 
     // Initialize Lucide icons once after all nodes are added
-    if (window.lucide) {
-      window.lucide.createIcons();
+    if (globalThis.lucide) {
+      globalThis.lucide.createIcons();
     }
 
     // Create connections

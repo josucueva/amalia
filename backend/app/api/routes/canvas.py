@@ -43,6 +43,103 @@ class BuildPipelineResponse(BaseModel):
     connections: List[CanvasConnection]
 
 
+class ExecuteNodeRequest(BaseModel):
+    instanceId: str
+    agentType: str
+    inputs: List[dict] = []
+
+
+class ExecuteNodeResponse(BaseModel):
+    instanceId: str
+    agentType: str
+    timestamp: str
+    inputs: int
+    output: str
+    error: Optional[str] = None
+
+
+@router.post("/execute", response_model=ExecuteNodeResponse)
+async def execute_node(
+    request_data: ExecuteNodeRequest,
+    request: Request,
+):
+    """
+    Execute a single agent node in the pipeline.
+
+    Args:
+        request_data: Node execution request
+        request: FastAPI request object
+
+    Returns:
+        ExecuteNodeResponse: Execution result
+    """
+    try:
+        from datetime import datetime
+        
+        logger.info(
+            "Executing agent node",
+            instance_id=request_data.instanceId,
+            agent_type=request_data.agentType,
+            inputs_count=len(request_data.inputs)
+        )
+
+        # Get agent registry
+        agent_registry = getattr(request.app.state, "agent_registry", None)
+        if not agent_registry:
+            raise HTTPException(status_code=500, detail="Agent registry not available")
+
+        # Get the agent from registry
+        agent = agent_registry.get_agent(request_data.agentType)
+        if not agent:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Agent type '{request_data.agentType}' not found"
+            )
+
+        # Prepare input for agent execution
+        # Combine all inputs into a single context
+        if request_data.inputs:
+            combined_input = "\n\n".join([
+                f"Input {i+1}:\n{inp.get('output', '')}" 
+                for i, inp in enumerate(request_data.inputs)
+            ])
+        else:
+            combined_input = "No input data provided. Please process this request independently."
+
+        # Get LLM service
+        settings = get_settings()
+        llm_service = get_llm_service(settings)
+
+        # Execute the agent using LLM service
+        result = await llm_service.generate_agent_response(
+            user_message=combined_input,
+            agent_config=agent.config.dict(),
+            conversation_history=[]
+        )
+
+        return ExecuteNodeResponse(
+            instanceId=request_data.instanceId,
+            agentType=request_data.agentType,
+            timestamp=datetime.utcnow().isoformat(),
+            inputs=len(request_data.inputs),
+            output=result if isinstance(result, str) else str(result),
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        from datetime import datetime
+        logger.error("Error executing node", error=str(e), instance_id=request_data.instanceId)
+        return ExecuteNodeResponse(
+            instanceId=request_data.instanceId,
+            agentType=request_data.agentType,
+            timestamp=datetime.utcnow().isoformat(),
+            inputs=len(request_data.inputs),
+            output="",
+            error=str(e)
+        )
+
+
 @router.post("/build", response_model=BuildPipelineResponse)
 async def build_pipeline(
     request_data: BuildPipelineRequest,
