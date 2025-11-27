@@ -244,6 +244,23 @@ body {
   border-color: var(--accent-hover);
 }
 
+#run-btn {
+  background-color: var(--bg-dark);
+  border-color: var(--bg-dark);
+  color: var(--text-white);
+  display: none;
+}
+
+#run-btn:hover {
+  background-color: var(--bg-medium);
+  border-color: var(--bg-medium);
+}
+
+#run-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .btn-secondary {
   background-color: transparent;
   color: var(--text-primary);

@@ -42,6 +42,14 @@ class App {
       });
     }
 
+    // Setup run button
+    const runBtn = document.getElementById("run-btn");
+    if (runBtn) {
+      runBtn.addEventListener("click", () => {
+        this.runPipeline();
+      });
+    }
+
     // Setup agents button (opens agent modal)
     const agentsBtn = document.getElementById("agents-btn");
     if (agentsBtn) {
@@ -152,18 +160,31 @@ class App {
     }
   }
 
+  runPipeline() {
+    // Placeholder for future pipeline execution functionality
+    showToast("Pipeline execution will be implemented soon", "info");
+    console.log("🚀 Run pipeline functionality - Coming soon!");
+    // TODO: Implement actual pipeline execution logic
+    // - Validate pipeline has nodes and connections
+    // - Send execution request to backend
+    // - Show execution progress
+    // - Display results
+  }
+
   toggleCanvasMode() {
     this.canvasMode = !this.canvasMode;
     const overlay = document.getElementById("canvas-overlay");
     const chatContainer = document.querySelector(".chat-container");
     const btnText = document.getElementById("canvas-btn-text");
     const agentsBtn = document.getElementById("agents-btn");
+    const runBtn = document.getElementById("run-btn");
 
     if (this.canvasMode) {
       overlay.classList.add("active");
       if (chatContainer) chatContainer.style.display = "none";
       if (btnText) btnText.textContent = "Chat Mode";
       if (agentsBtn) agentsBtn.style.display = "inline-block";
+      if (runBtn) runBtn.style.display = "inline-block";
 
       // Initialize connection manager if not already done
       if (!this.connectionManager) {
@@ -203,6 +224,7 @@ class App {
       if (chatContainer) chatContainer.style.display = "flex";
       if (btnText) btnText.textContent = "Canvas Mode";
       if (agentsBtn) agentsBtn.style.display = "none";
+      if (runBtn) runBtn.style.display = "none";
     }
   }
 
