@@ -5,6 +5,7 @@ import api from "./api.js";
 import Chat from "./components/Chat.js";
 import FileUpload from "./components/FileUpload.js";
 import AgentConfig from "./components/AgentConfig.js";
+import ConnectionManager from "./managers/ConnectionManager.js";
 import { showToast } from "./utils/helpers.js";
 
 class App {
@@ -12,6 +13,7 @@ class App {
     this.chat = null;
     this.fileUpload = null;
     this.agentConfig = null;
+    this.connectionManager = null;
     this.canvasMode = false;
   }
 
@@ -83,6 +85,34 @@ class App {
       });
     }
 
+    // Setup canvas control buttons
+    const saveCanvasBtn = document.getElementById("save-canvas-btn");
+    if (saveCanvasBtn) {
+      saveCanvasBtn.addEventListener("click", () => {
+        this.saveCanvasState();
+      });
+    }
+
+    const loadCanvasBtn = document.getElementById("load-canvas-btn");
+    if (loadCanvasBtn) {
+      loadCanvasBtn.addEventListener("click", () => {
+        this.loadCanvasState();
+      });
+    }
+
+    const clearCanvasBtn = document.getElementById("clear-canvas-btn");
+    if (clearCanvasBtn) {
+      clearCanvasBtn.addEventListener("click", () => {
+        if (
+          confirm(
+            "Are you sure you want to clear the canvas? This cannot be undone."
+          )
+        ) {
+          this.clearCanvas();
+        }
+      });
+    }
+
     console.log("✓ Application initialized successfully");
   }
 
@@ -134,6 +164,21 @@ class App {
       if (chatContainer) chatContainer.style.display = "none";
       if (btnText) btnText.textContent = "Chat Mode";
       if (agentsBtn) agentsBtn.style.display = "inline-block";
+
+      // Initialize connection manager if not already done
+      if (!this.connectionManager) {
+        console.log("🔧 Initializing ConnectionManager...");
+        this.connectionManager = new ConnectionManager();
+        const canvasContent = document.getElementById("canvas-content");
+        if (canvasContent) {
+          this.connectionManager.initialize(canvasContent);
+          console.log("✅ ConnectionManager initialized");
+
+          // Expose for debugging
+          window.connectionManager = this.connectionManager;
+        }
+      }
+
       this.loadCanvasAgents();
       this.setupCanvasDrop(); // Enable drag-drop
     } else {
@@ -282,6 +327,7 @@ class App {
     let offsetX = 0;
     let offsetY = 0;
     const DRAG_THRESHOLD = 5; // pixels movement to consider it a drag
+    const app = this; // Store reference to app instance
 
     dragHandle.addEventListener("mousedown", dragStart);
 
@@ -326,6 +372,12 @@ class App {
 
         element.style.left = newX + "px";
         element.style.top = newY + "px";
+
+        // Update connection positions
+        if (app.connectionManager) {
+          const instanceId = element.dataset.instanceId;
+          app.connectionManager.updateConnectionPositions(instanceId);
+        }
       }
     }
 
@@ -387,16 +439,20 @@ class App {
     const inputPort = node.querySelector('[data-port="input"]');
 
     if (outputPort) {
-      outputPort.addEventListener("mousedown", (e) => {
+      outputPort.addEventListener("click", (e) => {
         e.stopPropagation();
-        this.startConnection(node, "output", e);
+        if (this.connectionManager) {
+          this.connectionManager.handlePortClick(node, "output", e);
+        }
       });
     }
 
     if (inputPort) {
-      inputPort.addEventListener("mousedown", (e) => {
+      inputPort.addEventListener("click", (e) => {
         e.stopPropagation();
-        this.startConnection(node, "input", e);
+        if (this.connectionManager) {
+          this.connectionManager.handlePortClick(node, "input", e);
+        }
       });
     }
   }
@@ -454,6 +510,13 @@ class App {
       .querySelector('[data-action="delete"]')
       .addEventListener("click", (e) => {
         e.stopPropagation();
+        const instanceId = node.dataset.instanceId;
+
+        // Remove all connections for this node
+        if (this.connectionManager) {
+          this.connectionManager.removeNodeConnections(instanceId);
+        }
+
         node.remove();
         this.hideNodeActionMenu();
       });
@@ -493,36 +556,72 @@ class App {
     originalNode.parentElement.appendChild(duplicateNode);
   }
 
-  startConnection(node, portType, event) {
-    // Store connection state
-    if (!this.connections) this.connections = [];
-    if (!this.tempConnection) {
-      this.tempConnection = {
-        fromNode: portType === "output" ? node : null,
-        toNode: portType === "input" ? node : null,
-        startPort: portType,
-      };
+  /**
+   * Save current canvas state to localStorage
+   */
+  saveCanvasState() {
+    if (!this.connectionManager) {
+      console.warn("Connection manager not initialized");
+      return;
+    }
 
-      // Visual feedback - create temporary line
-      const svg = document.getElementById("canvas-svg");
-      if (!svg) {
-        const newSvg = document.createElementNS(
-          "http://www.w3.org/2000/svg",
-          "svg"
-        );
-        newSvg.id = "canvas-svg";
-        newSvg.style.position = "absolute";
-        newSvg.style.top = "0";
-        newSvg.style.left = "0";
-        newSvg.style.width = "100%";
-        newSvg.style.height = "100%";
-        newSvg.style.pointerEvents = "none";
-        newSvg.style.zIndex = "1";
-        document.getElementById("canvas-content").appendChild(newSvg);
+    const state = this.connectionManager.exportState();
+    localStorage.setItem("amalia_canvas_state", JSON.stringify(state));
+    console.log("✓ Canvas state saved", state);
+    showToast("Canvas saved successfully", "success");
+    return state;
+  }
+
+  /**
+   * Load canvas state from localStorage
+   */
+  loadCanvasState() {
+    const stateJson = localStorage.getItem("amalia_canvas_state");
+    if (!stateJson) {
+      console.log("No saved canvas state found");
+      return false;
+    }
+
+    try {
+      const state = JSON.parse(stateJson);
+      const canvasContent = document.getElementById("canvas-content");
+
+      if (!canvasContent || !this.connectionManager) {
+        console.error("Canvas not ready");
+        return false;
       }
 
-      console.log("Connection started from", portType, "port");
+      // Use arrow function to preserve 'this' context
+      const success = this.connectionManager.importState(
+        state,
+        (agent, x, y) => {
+          const node = this.createAgentNode(agent, x, y);
+          canvasContent.appendChild(node);
+          return node;
+        }
+      );
+
+      if (success) {
+        showToast("Canvas loaded successfully", "success");
+      }
+      return success;
+    } catch (error) {
+      console.error("Error loading canvas state:", error);
+      showToast("Error loading canvas", "error");
+      return false;
     }
+  }
+
+  /**
+   * Clear canvas state
+   */
+  clearCanvas() {
+    if (this.connectionManager) {
+      this.connectionManager.clearAll();
+    }
+    document.querySelectorAll(".agent-node").forEach((node) => node.remove());
+    console.log("✓ Canvas cleared");
+    showToast("Canvas cleared", "info");
   }
 }
 
