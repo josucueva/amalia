@@ -159,116 +159,196 @@
       <!-- Modals -->
       <!-- Agent Configuration Modal -->
       <div class="modal" id="agent-modal" style="display: none">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h2>Agent Configuration</h2>
-            <button class="modal-close" id="close-agent-modal">✕</button>
+        <div class="modal-content agent-modal-container">
+          <div class="agent-details-panel">
+            <div class="modal-header">
+              <h2>Agent Details</h2>
+              <button class="modal-close" id="close-agent-modal">✕</button>
+            </div>
+            <div class="modal-body">
+              <form id="agent-form">
+                <div class="form-group">
+                  <label for="agent-name">Agent Name</label>
+                  <input type="text" id="agent-name" required />
+                </div>
+                <div class="form-group">
+                  <label for="agent-description">Description</label>
+                  <textarea id="agent-description" rows="2" required></textarea>
+                </div>
+                <div class="form-group">
+                  <label for="agent-icon">Icon</label>
+                  <div
+                    style="
+                      display: flex;
+                      gap: var(--spacing-sm);
+                      align-items: center;
+                    "
+                  >
+                    <input
+                      type="text"
+                      id="agent-icon"
+                      readonly
+                      placeholder="No icon selected"
+                      style="flex: 1"
+                    />
+                    <button
+                      type="button"
+                      id="select-icon-btn"
+                      class="btn btn-secondary"
+                      style="white-space: nowrap"
+                    >
+                      Choose Icon
+                    </button>
+                    <button
+                      type="button"
+                      id="clear-icon-btn"
+                      class="btn btn-secondary"
+                      title="Clear icon"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <div id="icon-preview" style="margin-top: 8px; display: none">
+                    <i
+                      data-lucide="help-circle"
+                      style="width: 32px; height: 32px"
+                    ></i>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="agent-model">Model</label>
+                  <select id="agent-model">
+                    <option value="gemini/gemini-2.5-flash" selected>
+                      Gemini 2.5 Flash
+                    </option>
+                    <option value="gemini/gemini-2.5-pro">
+                      Gemini 2.5 Pro
+                    </option>
+                    <option value="gemini/gemini-2.5-flash">
+                      Gemini 2.5 Flash
+                    </option>
+                    <option value="gpt-4o">GPT-4o</option>
+                    <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                    <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                    <option value="ollama/llama2">Ollama - Llama 2</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="agent-prompt">System Prompt</label>
+                  <textarea id="agent-prompt" rows="4" required></textarea>
+                </div>
+                <div class="form-group">
+                  <label>
+                    <input type="checkbox" id="agent-a2a" />
+                    Enable A2A Communication
+                  </label>
+                </div>
+
+                <!-- MCP Tools Section -->
+                <div class="form-section">
+                  <h3>MCP Tools</h3>
+                  <div id="mcp-servers-list" class="mcp-servers-list">
+                    <!-- MCP servers will be rendered here -->
+                  </div>
+                  <button
+                    type="button"
+                    class="btn btn-secondary btn-sm"
+                    id="add-mcp-server-btn"
+                  >
+                    + Add MCP Server
+                  </button>
+                </div>
+
+                <div class="form-actions">
+                  <button
+                    type="button"
+                    class="btn btn-secondary"
+                    id="cancel-agent-btn"
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" class="btn btn-primary">
+                    Create Agent
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-          <div class="modal-body">
-            <form id="agent-form">
-              <div class="form-group">
-                <label for="agent-name">Agent Name</label>
-                <input type="text" id="agent-name" required />
-              </div>
-              <div class="form-group">
-                <label for="agent-description">Description</label>
-                <textarea id="agent-description" rows="2" required></textarea>
-              </div>
-              <div class="form-group">
-                <label for="agent-icon">Icon</label>
-                <div
-                  style="
-                    display: flex;
-                    gap: var(--spacing-sm);
-                    align-items: center;
-                  "
-                >
+
+          <!-- MCP Server Configuration Panel -->
+          <div class="mcp-config-panel" id="mcp-config-panel">
+            <div class="modal-header">
+              <h2>MCP Server Configuration</h2>
+              <button class="modal-close" id="close-mcp-config">✕</button>
+            </div>
+            <div class="modal-body">
+              <form id="mcp-server-form">
+                <div class="form-group">
+                  <label for="mcp-server-name">Server Name</label>
                   <input
                     type="text"
-                    id="agent-icon"
-                    readonly
-                    placeholder="No icon selected"
-                    style="flex: 1"
+                    id="mcp-server-name"
+                    placeholder="e.g., filesystem"
+                    required
                   />
+                </div>
+                <div class="form-group">
+                  <label for="mcp-server-command">Command</label>
+                  <input
+                    type="text"
+                    id="mcp-server-command"
+                    placeholder="e.g., npx, python, node"
+                    required
+                  />
+                </div>
+                <div class="form-group">
+                  <label for="mcp-server-args">Arguments</label>
+                  <textarea
+                    id="mcp-server-args"
+                    rows="3"
+                    placeholder="One argument per line, e.g.:&#10;-y&#10;@modelcontextprotocol/server-filesystem&#10;/path/to/directory"
+                  ></textarea>
+                  <small
+                    style="
+                      color: var(--text-tertiary);
+                      font-size: var(--font-size-xs);
+                    "
+                  >
+                    Enter each argument on a new line
+                  </small>
+                </div>
+                <div class="form-group">
+                  <label for="mcp-server-env"
+                    >Environment Variables (JSON)</label
+                  >
+                  <textarea
+                    id="mcp-server-env"
+                    rows="4"
+                    placeholder='{"API_KEY": "your-key", "DEBUG": "true"}'
+                  ></textarea>
+                  <small
+                    style="
+                      color: var(--text-tertiary);
+                      font-size: var(--font-size-xs);
+                    "
+                  >
+                    Optional: Enter valid JSON object
+                  </small>
+                </div>
+                <div class="form-actions">
                   <button
                     type="button"
-                    id="select-icon-btn"
                     class="btn btn-secondary"
-                    style="white-space: nowrap"
+                    id="cancel-mcp-server"
                   >
-                    Choose Icon
+                    Cancel
                   </button>
-                  <button
-                    type="button"
-                    id="clear-icon-btn"
-                    class="btn btn-secondary"
-                    title="Clear icon"
-                  >
-                    ✕
+                  <button type="submit" class="btn btn-primary">
+                    Add Server
                   </button>
                 </div>
-                <div id="icon-preview" style="margin-top: 8px; display: none">
-                  <i
-                    data-lucide="help-circle"
-                    style="width: 32px; height: 32px"
-                  ></i>
-                </div>
-              </div>
-              <div class="form-group">
-                <label for="agent-model">Model</label>
-                <select id="agent-model">
-                  <option value="gemini/gemini-2.5-flash" selected>
-                    Gemini 2.5 Flash
-                  </option>
-                  <option value="gemini/gemini-2.5-pro">Gemini 2.5 Pro</option>
-                  <option value="gemini/gemini-2.5-flash">
-                    Gemini 2.5 Flash
-                  </option>
-                  <option value="gpt-4o">GPT-4o</option>
-                  <option value="gpt-4-turbo">GPT-4 Turbo</option>
-                  <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                  <option value="ollama/llama2">Ollama - Llama 2</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label for="agent-prompt">System Prompt</label>
-                <textarea id="agent-prompt" rows="4" required></textarea>
-              </div>
-              <div class="form-group">
-                <label>
-                  <input type="checkbox" id="agent-a2a" />
-                  Enable A2A Communication
-                </label>
-              </div>
-
-              <!-- MCP Tools Section -->
-              <div class="form-section">
-                <h3>MCP Tools</h3>
-                <div id="mcp-servers-list" class="mcp-servers-list">
-                  <!-- MCP servers will be rendered here -->
-                </div>
-                <button
-                  type="button"
-                  class="btn btn-secondary btn-sm"
-                  id="add-mcp-server-btn"
-                >
-                  + Add MCP Server
-                </button>
-              </div>
-
-              <div class="form-actions">
-                <button
-                  type="button"
-                  class="btn btn-secondary"
-                  id="cancel-agent-btn"
-                >
-                  Cancel
-                </button>
-                <button type="submit" class="btn btn-primary">
-                  Create Agent
-                </button>
-              </div>
-            </form>
+              </form>
+            </div>
           </div>
         </div>
       </div>

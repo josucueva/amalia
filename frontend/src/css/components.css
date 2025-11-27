@@ -190,6 +190,98 @@
   margin-bottom: var(--spacing-md);
 }
 
+/* Agent Modal Dual Panel Layout */
+/* Uses flexbox for side-by-side layout with smooth transitions */
+.agent-modal-container {
+  display: flex;
+  flex-direction: row;
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  background-color: var(--bg-secondary);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: var(--border-radius-large);
+  overflow: hidden;
+  transition: max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Expand container when MCP panel is active */
+.agent-modal-container.mcp-panel-active {
+  max-width: 1050px;
+  width: 90%;
+}
+
+/* Agent Details Panel - Left side */
+.agent-details-panel {
+  flex: 1 1 100%;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  width: 100%;
+  overflow: hidden;
+}
+
+.agent-details-panel .modal-header {
+  flex-shrink: 0;
+}
+
+.agent-details-panel .modal-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* MCP Config Panel - Right side */
+.mcp-config-panel {
+  flex: 0 0 0;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--border-color);
+  background-color: var(--bg-tertiary);
+  overflow: hidden;
+  /* Completely removed from layout when not active */
+  width: 0;
+  min-width: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: flex-basis 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s linear 0.3s;
+}
+
+/* Show MCP panel when active */
+.agent-modal-container.mcp-panel-active .mcp-config-panel {
+  flex: 0 0 450px;
+  width: 450px;
+  opacity: 1;
+  visibility: visible;
+  transition: flex-basis 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0s linear 0s;
+}
+
+.mcp-config-panel .modal-header {
+  flex-shrink: 0;
+}
+
+.mcp-config-panel .modal-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var(--spacing-lg);
+}
+
+.mcp-config-panel textarea {
+  font-family: "Courier New", monospace;
+  font-size: var(--font-size-sm);
+}
+
+.mcp-config-panel small {
+  display: block;
+  margin-top: var(--spacing-xs);
+}
+
 /* MCP Tools Section */
 .form-section {
   margin-top: var(--spacing-xl);
@@ -312,5 +404,28 @@
 
   .app-title {
     font-size: var(--font-size-xl);
+  }
+
+  /* Stack panels vertically on mobile */
+  .agent-modal-container {
+    flex-direction: column;
+    width: 95vw;
+    max-width: 95vw;
+  }
+
+  .agent-modal-container.mcp-panel-active {
+    max-width: 95vw;
+  }
+
+  .mcp-config-panel {
+    flex: 0 0 auto;
+    width: 100%;
+    max-height: 50vh;
+    border-left: none;
+    border-top: 1px solid var(--border-color);
+  }
+
+  .agent-modal-container.mcp-panel-active .mcp-config-panel {
+    width: 100%;
   }
 }

@@ -193,8 +193,98 @@ class AgentConfig {
   initMCPSection() {
     const addMCPBtn = document.getElementById("add-mcp-server-btn");
     if (addMCPBtn) {
-      addMCPBtn.addEventListener("click", () => this.showAddMCPServerDialog());
+      addMCPBtn.addEventListener("click", () => this.openMCPConfigPanel());
     }
+
+    // MCP config panel handlers
+    const closeMCPConfig = document.getElementById("close-mcp-config");
+    const cancelMCPServer = document.getElementById("cancel-mcp-server");
+    const mcpServerForm = document.getElementById("mcp-server-form");
+
+    if (closeMCPConfig) {
+      closeMCPConfig.addEventListener("click", () =>
+        this.closeMCPConfigPanel()
+      );
+    }
+
+    if (cancelMCPServer) {
+      cancelMCPServer.addEventListener("click", () =>
+        this.closeMCPConfigPanel()
+      );
+    }
+
+    if (mcpServerForm) {
+      mcpServerForm.addEventListener("submit", (e) =>
+        this.handleMCPServerSubmit(e)
+      );
+    }
+  }
+
+  openMCPConfigPanel() {
+    const modalContainer = document.querySelector(".agent-modal-container");
+
+    if (modalContainer) {
+      modalContainer.classList.add("mcp-panel-active");
+    }
+  }
+
+  closeMCPConfigPanel() {
+    const modalContainer = document.querySelector(".agent-modal-container");
+    const form = document.getElementById("mcp-server-form");
+
+    if (modalContainer) {
+      modalContainer.classList.remove("mcp-panel-active");
+    }
+
+    // Wait for animation to complete before resetting form
+    setTimeout(() => {
+      if (form) {
+        form.reset();
+      }
+    }, 300);
+  }
+
+  handleMCPServerSubmit(e) {
+    e.preventDefault();
+
+    const name = document.getElementById("mcp-server-name").value.trim();
+    const command = document.getElementById("mcp-server-command").value.trim();
+    const argsText = document.getElementById("mcp-server-args").value.trim();
+    const envText = document.getElementById("mcp-server-env").value.trim();
+
+    // Parse arguments (one per line)
+    const args = argsText
+      ? argsText
+          .split("\n")
+          .map((a) => a.trim())
+          .filter((a) => a)
+      : [];
+
+    // Parse environment variables (JSON)
+    let env = null;
+    if (envText) {
+      try {
+        env = JSON.parse(envText);
+      } catch (error) {
+        alert(
+          "Invalid JSON in environment variables. Please check the format."
+        );
+        return;
+      }
+    }
+
+    // Add server to collection
+    this.mcpServers[name] = {
+      command,
+      args,
+      env,
+    };
+
+    // Update the server list display
+    this.renderMCPServers();
+
+    // Close the panel
+    this.closeMCPConfigPanel();
   }
 
   showAddMCPServerDialog() {
@@ -324,6 +414,12 @@ class AgentConfig {
     this.selectedIcon = null;
     this.mcpServers = {}; // Clear MCP servers
     document.getElementById("icon-preview").style.display = "none";
+
+    // Close MCP config panel if open
+    const modalContainer = document.querySelector(".agent-modal-container");
+    if (modalContainer) {
+      modalContainer.classList.remove("mcp-panel-active");
+    }
 
     // Reset icon form group visibility
     const iconFormGroup = document
