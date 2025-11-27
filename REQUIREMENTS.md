@@ -1,4 +1,4 @@
-# AutoML Agentic Platform - Technical Requirements Document
+# AMALIA - Technical Requirements Document
 
 ## Project Overview
 

@@ -16,7 +16,7 @@ class App {
   }
 
   async init() {
-    console.log("🚀 Initializing Agentic Platform...");
+    console.log("🚀 Initializing AMALIA...");
 
     // Check backend health
     try {

@@ -154,7 +154,8 @@ body {
 
 .chat-input {
   flex: 1;
-  padding: var(--spacing-md);
+  padding: 0 var(--spacing-md);
+  height: 48px;
   border: var(--border-width) solid var(--border-color);
   font-family: var(--font-family);
   font-size: var(--font-size-base);
