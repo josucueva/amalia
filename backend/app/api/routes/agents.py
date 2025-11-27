@@ -36,15 +36,25 @@ def get_registry(req: Request) -> AgentRegistry:
 
 
 @router.get("/", response_model=AgentListResponse)
-async def list_agents(request: Request):
+async def list_agents(request: Request, include_hidden: bool = False):
     """
     List all registered agents.
+    
+    Args:
+        include_hidden: Include hidden agents (planner, orchestrator)
 
     Returns:
         AgentListResponse: List of all agents
     """
     try:
-        agents = get_registry(request).list_agents()
+        all_agents = get_registry(request).list_agents()
+        
+        # Filter out hidden agents unless explicitly requested
+        if not include_hidden:
+            agents = [agent for agent in all_agents if not agent.is_hidden()]
+        else:
+            agents = all_agents
+            
         return AgentListResponse(agents=agents, total=len(agents))
     except Exception as e:
         logger.error("Error listing agents", error=str(e))

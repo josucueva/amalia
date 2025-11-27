@@ -66,14 +66,17 @@ class Chat {
       // Remove typing indicator
       this.removeTypingIndicator();
 
-      // Check if response contains an action in metadata
-      const action = response.message.metadata?.action;
+      // Check if response contains orchestration data
+      const orchestration = response.message.metadata?.orchestration;
 
-      if (action && action.action === "build_pipeline") {
-        // Handle build pipeline action
-        await this.handleBuildCommand(action.message || "Building pipeline...");
+      if (orchestration && orchestration.orchestration) {
+        // Pipeline was created by the three-agent system
+        await this.handlePipelineCreation(
+          response.message.content,
+          orchestration.orchestration
+        );
       } else {
-        // Add normal assistant response
+        // Normal response from interaction agent
         this.addMessage(response.message);
       }
     } catch (error) {
@@ -83,7 +86,7 @@ class Chat {
     }
   }
 
-  async handleBuildCommand(agentMessage) {
+  async handlePipelineCreation(agentMessage, orchestrationData) {
     // Show the agent's message first
     this.addMessage({
       role: "assistant",
@@ -91,40 +94,21 @@ class Chat {
       timestamp: new Date().toISOString(),
     });
 
-    this.showTypingIndicator();
-
-    try {
-      // Call build pipeline endpoint
-      const response = await api.buildPipeline("BUILD");
-
-      this.removeTypingIndicator();
-
-      // Add system message
-      this.addMessage({
-        role: "assistant",
-        content: `✅ ${response.message}\n\nSwitch to Canvas Mode to see your pipeline!`,
-        timestamp: new Date().toISOString(),
-      });
-
-      // Trigger canvas update if in canvas mode
-      if (window.app && window.app.canvasMode) {
-        window.app.createPipelineFromData(response.nodes, response.connections);
-      } else {
-        // Store pipeline data for when user switches to canvas mode
-        sessionStorage.setItem("pendingPipeline", JSON.stringify(response));
-      }
-
-      showToast("Pipeline created successfully!", "success");
-    } catch (error) {
-      this.removeTypingIndicator();
-      this.addMessage({
-        role: "assistant",
-        content: `❌ Failed to build pipeline: ${error.message}\n\nMake sure the backend is running.`,
-        timestamp: new Date().toISOString(),
-      });
-      showToast("Failed to build pipeline", "error");
-      console.error("Error building pipeline:", error);
+    // Trigger canvas update if in canvas mode
+    if (window.app && window.app.canvasMode) {
+      window.app.createPipelineFromData(
+        orchestrationData.nodes,
+        orchestrationData.connections
+      );
+    } else {
+      // Store pipeline data for when user switches to canvas mode
+      sessionStorage.setItem(
+        "pendingPipeline",
+        JSON.stringify(orchestrationData)
+      );
     }
+
+    showToast("Pipeline created successfully!", "success");
   }
 
   addMessage(message) {

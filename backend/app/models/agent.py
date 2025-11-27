@@ -58,6 +58,12 @@ class Agent(BaseModel):
     created_at: str = Field(..., description="Creation timestamp")
     updated_at: Optional[str] = Field(default=None, description="Last update timestamp")
     
+    def is_hidden(self) -> bool:
+        """Check if agent is hidden from UI."""
+        if self.config.metadata:
+            return self.config.metadata.get("is_hidden", False)
+        return False
+    
     class Config:
         json_schema_extra = {
             "example": {

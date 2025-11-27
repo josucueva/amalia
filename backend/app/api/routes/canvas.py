@@ -6,7 +6,10 @@ from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 from typing import List, Optional
 import structlog
-import random
+
+from app.services.agent_pipeline import AgentPipelineService
+from app.services.llm_service import get_llm_service
+from app.config import get_settings
 
 logger = structlog.get_logger()
 router = APIRouter()
@@ -63,67 +66,28 @@ async def build_pipeline(
         if not agent_registry:
             raise HTTPException(status_code=500, detail="Agent registry not available")
 
-        # Get all available agents (excluding interaction_agent)
-        agents = agent_registry.list_agents()
-        available_agents = [
-            agent for agent in agents if agent.config.name != "interaction_agent"
-        ]
+        # Get LLM service
+        settings = get_settings()
+        llm_service = get_llm_service(settings)
 
-        if len(available_agents) < 2:
-            raise HTTPException(
-                status_code=400,
-                detail="Not enough agents available. Need at least 2 agents (excluding interaction_agent).",
-            )
+        # Create pipeline service
+        pipeline_service = AgentPipelineService(llm_service, agent_registry)
 
-        # Select two random agents
-        selected_agents = random.sample(available_agents, 2)
-
-        # Generate instance IDs and positions
-        import time
-
-        timestamp = int(time.time() * 1000)
-        instance1_id = f"instance_{timestamp}_{random.randint(1000, 9999)}"
-        instance2_id = f"instance_{timestamp + 1}_{random.randint(1000, 9999)}"
-
-        # Create nodes with positions
-        nodes = [
-            CanvasNode(
-                instanceId=instance1_id,
-                agentId=selected_agents[0].id,
-                position=NodePosition(x=200, y=200),
-            ),
-            CanvasNode(
-                instanceId=instance2_id,
-                agentId=selected_agents[1].id,
-                position=NodePosition(x=500, y=200),
-            ),
-        ]
-
-        # Create connection from first to second agent
-        connection_id = f"{instance1_id}_to_{instance2_id}"
-        connections = [
-            CanvasConnection(
-                id=connection_id,
-                fromInstanceId=instance1_id,
-                toInstanceId=instance2_id,
-            )
-        ]
-
-        logger.info(
-            "Pipeline built successfully",
-            agent1=selected_agents[0].config.name,
-            agent2=selected_agents[1].config.name,
-        )
-
+        # Execute simple build (for backward compatibility)
+        result = pipeline_service.execute_simple_build()
+        
+        orchestration = result["orchestration"]
+        
         return BuildPipelineResponse(
             success=True,
-            message=f"Built pipeline: {selected_agents[0].config.name} → {selected_agents[1].config.name}",
-            nodes=nodes,
-            connections=connections,
+            message=orchestration.get("message", "Pipeline created"),
+            nodes=orchestration["nodes"],
+            connections=orchestration["connections"],
         )
 
-    except HTTPException:
-        raise
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.error("Error building pipeline", error=str(e))
         raise HTTPException(status_code=500, detail=str(e))
+

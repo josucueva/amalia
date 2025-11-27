@@ -12,6 +12,7 @@ from app.models import ChatRequest, ChatResponse, Message, MessageRole, MessageS
 from app.agents.registry import AgentRegistry
 from app.services.llm_service import LLMService, get_llm_service
 from app.services.conversation_history import conversation_history
+from app.services.agent_pipeline import AgentPipelineService
 from app.config import Settings, get_settings
 
 logger = structlog.get_logger()
@@ -58,71 +59,34 @@ async def chat(
 
         # Get agent registry from app state
         agent_registry = getattr(request.app.state, "agent_registry", None)
+        
+        if not agent_registry:
+            raise HTTPException(status_code=500, detail="Agent registry not available")
 
-        # Select agent - prioritize interaction_agent
-        selected_agent = None
-        agent_config_dict = None
+        # Create pipeline service
+        pipeline_service = AgentPipelineService(llm_service, agent_registry)
 
-        if agent_registry:
-            agents = agent_registry.list_agents()
-
-            # First, try to find the interaction agent
-            for agent in agents:
-                if agent.config.name == "interaction_agent":
-                    selected_agent = agent
-                    agent_config_dict = selected_agent.config.dict()
-                    break
-
-            # If no interaction agent, use first available
-            if not selected_agent and agents:
-                selected_agent = agents[0]
-                agent_config_dict = selected_agent.config.dict()
-
-        if not agent_config_dict:
-            # Default interaction agent configuration
-            agent_config_dict = {
-                "name": "interaction_agent",
-                "model": settings.default_model,
-                "system_prompt": "You are an interaction agent that helps users refine their requirements. Analyze the user's message, ask clarifying questions if needed, or provide an improved version of their prompt. Be concise and focus on understanding intent.",
-                "temperature": 0.7,
-                "max_tokens": 1500,
-            }
-
-        # Generate response using LLM
+        # Process through the three-agent pipeline
         try:
-            assistant_content = await llm_service.generate_agent_response(
+            assistant_content, orchestration_data = await pipeline_service.process_with_pipeline(
                 user_message=request_data.message,
-                agent_config=agent_config_dict,
-                conversation_history=history,
+                conversation_history=history
             )
-        except Exception as llm_error:
-            logger.error("LLM generation error", error=str(llm_error))
+        except Exception as pipeline_error:
+            logger.error("Pipeline processing error", error=str(pipeline_error))
             raise HTTPException(
-                status_code=500, detail=f"Error generating response: {str(llm_error)}"
+                status_code=500, detail=f"Error processing pipeline: {str(pipeline_error)}"
             )
-
-        # Check if response contains a JSON action
-        import json
-        import re
-
-        action_data = None
-        try:
-            # Try to extract JSON from code blocks
-            json_match = re.search(
-                r"```json\s*(\{.*?\})\s*```", assistant_content, re.DOTALL
-            )
-            if json_match:
-                action_data = json.loads(json_match.group(1))
-            elif assistant_content.strip().startswith("{"):
-                # Try parsing whole response as JSON
-                action_data = json.loads(assistant_content.strip())
-        except (json.JSONDecodeError, AttributeError):
-            pass  # Not a JSON action, treat as normal response
 
         # Add assistant response to history
         conversation_history.add_message(
             conversation_id=conversation_id, role="assistant", content=assistant_content
         )
+
+        # Determine which agents were involved
+        agents_involved = ["interaction_agent"]
+        if orchestration_data:
+            agents_involved.extend(["planner_agent", "orchestrator_agent"])
 
         # Create response message
         response_message = Message(
@@ -134,16 +98,17 @@ async def chat(
             metadata={
                 "conversation_id": conversation_id,
                 "user_message_id": message_id,
-                "model": agent_config_dict["model"],
-                "action": action_data,  # Include parsed action if present
+                "model": settings.default_model,
+                "orchestration": orchestration_data,  # Include orchestration if present
+                "agents_used": agents_involved,
             },
-            agent_id=selected_agent.id if selected_agent else None,
+            agent_id=None,  # Multi-agent response
         )
 
         return ChatResponse(
             message=response_message,
             conversation_id=conversation_id,
-            agents_involved=[selected_agent.id] if selected_agent else [],
+            agents_involved=agents_involved,
         )
 
     except HTTPException:
