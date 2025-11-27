@@ -107,6 +107,7 @@ class App {
       if (btnText) btnText.textContent = "Chat Mode";
       if (agentsBtn) agentsBtn.style.display = "inline-block";
       this.loadCanvasAgents();
+      this.setupCanvasDrop(); // Enable drag-drop
     } else {
       overlay.classList.remove("active");
       if (chatContainer) chatContainer.style.display = "flex";
@@ -118,26 +119,20 @@ class App {
   async loadCanvasAgents() {
     try {
       const agents = await api.getAgents();
-      const canvasContent = document.getElementById("canvas-content");
       const canvasAgentList = document.getElementById("canvas-agent-list");
 
-      if (!canvasContent || !canvasAgentList) {
-        console.error("Canvas elements not found");
+      if (!canvasAgentList) {
+        console.error("Canvas agent list not found");
         return;
       }
 
-      canvasContent.innerHTML = "";
       canvasAgentList.innerHTML = "";
 
       console.log("Loading agents:", agents);
 
       if (agents && agents.length > 0) {
-        agents.forEach((agent, index) => {
-          // Create node in canvas
-          const node = this.createAgentNode(agent, index);
-          canvasContent.appendChild(node);
-
-          // Create item in sidebar list
+        agents.forEach((agent) => {
+          // Create item in sidebar list (draggable)
           const listItem = this.createAgentListItem(agent);
           canvasAgentList.appendChild(listItem);
         });
@@ -155,19 +150,24 @@ class App {
     }
   }
 
-  createAgentNode(agent, index) {
+  createAgentNode(agent, x, y) {
     const node = document.createElement("div");
     node.className = "agent-node";
-    node.style.left = `${100 + index * 250}px`;
-    node.style.top = `${100 + index * 100}px`;
+    node.dataset.agentId = agent.id;
+    node.style.left = `${x}px`;
+    node.style.top = `${y}px`;
 
     node.innerHTML = `
       <div class="agent-node-header">${agent.config.name}</div>
-      <div class="agent-node-body">${agent.config.description}</div>
+      <div class="agent-node-input" data-port="input" title="Input connection"></div>
+      <div class="agent-node-output" data-port="output" title="Output connection"></div>
     `;
 
     // Make draggable
-    this.makeDraggable(node);
+    this.makeDraggableNode(node);
+
+    // Add connection port handlers
+    this.setupConnectionPorts(node);
 
     return node;
   }
@@ -175,6 +175,10 @@ class App {
   createAgentListItem(agent) {
     const item = document.createElement("div");
     item.className = "canvas-agent-item";
+    item.draggable = true;
+    item.dataset.agentId = agent.id;
+    item.dataset.agentData = JSON.stringify(agent);
+
     item.innerHTML = `
       <div class="canvas-agent-item-content">
         <div class="canvas-agent-item-name">${agent.config.name}</div>
@@ -185,6 +189,17 @@ class App {
         </div>
       </div>
     `;
+
+    // Drag start handler
+    item.addEventListener("dragstart", (e) => {
+      e.dataTransfer.effectAllowed = "copy";
+      e.dataTransfer.setData("application/json", item.dataset.agentData);
+      item.classList.add("dragging");
+    });
+
+    item.addEventListener("dragend", (e) => {
+      item.classList.remove("dragging");
+    });
 
     // Edit button handler
     const editBtn = item.querySelector(".edit-btn");
@@ -203,35 +218,132 @@ class App {
     return item;
   }
 
-  makeDraggable(element) {
-    let pos1 = 0,
-      pos2 = 0,
-      pos3 = 0,
-      pos4 = 0;
+  makeDraggableNode(element) {
+    const header = element.querySelector(".agent-node-header");
+    const dragHandle = header || element;
 
-    element.onmousedown = dragMouseDown;
+    let isDragging = false;
+    let offsetX = 0;
+    let offsetY = 0;
 
-    function dragMouseDown(e) {
+    dragHandle.addEventListener("mousedown", dragStart);
+
+    function dragStart(e) {
+      // Don't drag if clicking on port
+      if (e.target.dataset.port) return;
+
+      isDragging = true;
+
+      // Calculate offset from mouse to element's top-left corner
+      const rect = element.getBoundingClientRect();
+      offsetX = e.clientX - rect.left;
+      offsetY = e.clientY - rect.top;
+
+      element.style.cursor = "grabbing";
+
+      document.addEventListener("mousemove", drag);
+      document.addEventListener("mouseup", dragEnd);
+
       e.preventDefault();
-      pos3 = e.clientX;
-      pos4 = e.clientY;
-      document.onmouseup = closeDragElement;
-      document.onmousemove = elementDrag;
     }
 
-    function elementDrag(e) {
+    function drag(e) {
+      if (!isDragging) return;
+
       e.preventDefault();
-      pos1 = pos3 - e.clientX;
-      pos2 = pos4 - e.clientY;
-      pos3 = e.clientX;
-      pos4 = e.clientY;
-      element.style.top = element.offsetTop - pos2 + "px";
-      element.style.left = element.offsetLeft - pos1 + "px";
+
+      // Get parent's position
+      const parentRect = element.parentElement.getBoundingClientRect();
+
+      // Calculate new position: mouse position relative to parent, minus the offset where user clicked
+      const newX = e.clientX - parentRect.left - offsetX;
+      const newY = e.clientY - parentRect.top - offsetY;
+
+      element.style.left = newX + "px";
+      element.style.top = newY + "px";
     }
 
-    function closeDragElement() {
-      document.onmouseup = null;
-      document.onmousemove = null;
+    function dragEnd(e) {
+      isDragging = false;
+      element.style.cursor = "move";
+
+      document.removeEventListener("mousemove", drag);
+      document.removeEventListener("mouseup", dragEnd);
+    }
+  }
+
+  setupCanvasDrop() {
+    const canvasContent = document.getElementById("canvas-content");
+    if (!canvasContent) return;
+
+    canvasContent.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "copy";
+    });
+
+    canvasContent.addEventListener("drop", (e) => {
+      e.preventDefault();
+      const agentData = JSON.parse(e.dataTransfer.getData("application/json"));
+
+      // Get drop position relative to canvas
+      const rect = canvasContent.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+
+      // Create node at drop position
+      const node = this.createAgentNode(agentData, x, y);
+      canvasContent.appendChild(node);
+    });
+  }
+
+  setupConnectionPorts(node) {
+    const outputPort = node.querySelector('[data-port="output"]');
+    const inputPort = node.querySelector('[data-port="input"]');
+
+    if (outputPort) {
+      outputPort.addEventListener("mousedown", (e) => {
+        e.stopPropagation();
+        this.startConnection(node, "output", e);
+      });
+    }
+
+    if (inputPort) {
+      inputPort.addEventListener("mousedown", (e) => {
+        e.stopPropagation();
+        this.startConnection(node, "input", e);
+      });
+    }
+  }
+
+  startConnection(node, portType, event) {
+    // Store connection state
+    if (!this.connections) this.connections = [];
+    if (!this.tempConnection) {
+      this.tempConnection = {
+        fromNode: portType === "output" ? node : null,
+        toNode: portType === "input" ? node : null,
+        startPort: portType,
+      };
+
+      // Visual feedback - create temporary line
+      const svg = document.getElementById("canvas-svg");
+      if (!svg) {
+        const newSvg = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "svg"
+        );
+        newSvg.id = "canvas-svg";
+        newSvg.style.position = "absolute";
+        newSvg.style.top = "0";
+        newSvg.style.left = "0";
+        newSvg.style.width = "100%";
+        newSvg.style.height = "100%";
+        newSvg.style.pointerEvents = "none";
+        newSvg.style.zIndex = "1";
+        document.getElementById("canvas-content").appendChild(newSvg);
+      }
+
+      console.log("Connection started from", portType, "port");
     }
   }
 }

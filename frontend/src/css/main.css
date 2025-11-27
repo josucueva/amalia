@@ -432,27 +432,77 @@ body {
 /* Agent Node Styles for Canvas */
 .agent-node {
   position: absolute;
-  min-width: 200px;
+  min-width: 160px;
   padding: var(--spacing-md);
-  background-color: var(--bg-secondary);
+  background: rgba(255, 255, 255, 0.05);
   border: var(--border-width) solid var(--border-color);
-  border-radius: var(--border-radius);
-  cursor: move;
   user-select: none;
+  z-index: 2;
+  transition: all 0.2s ease;
+}
+
+.agent-node:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--text-primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .agent-node-header {
+  font-family: var(--font-family-display);
   font-weight: var(--font-weight-bold);
   font-size: var(--font-size-sm);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-bottom: var(--spacing-xs);
   color: var(--text-primary);
+  cursor: move;
+  text-align: center;
+}
+
+.agent-node-input,
+.agent-node-output {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background-color: var(--bg-primary);
+  border: var(--border-width) solid var(--border-color);
+  border-radius: 50%;
+  cursor: crosshair;
+  transition: all 0.2s ease;
+}
+
+.agent-node-input:hover,
+.agent-node-output:hover {
+  background-color: var(--text-primary);
+  border-color: var(--text-primary);
+  transform: scale(1.3);
+}
+
+.agent-node-input {
+  left: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.agent-node-input:hover {
+  transform: translateY(-50%) scale(1.3);
+}
+
+.agent-node-output {
+  right: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.agent-node-output:hover {
+  transform: translateY(-50%) scale(1.3);
 }
 
 .agent-node-body {
-  font-size: var(--font-size-xs);
-  color: var(--text-secondary);
+  display: none;
+}
+
+.canvas-agent-item.dragging {
+  opacity: 0.5;
 }
 
 /* Loading State */
