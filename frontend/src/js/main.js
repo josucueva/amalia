@@ -1,5 +1,11 @@
 /**
  * Main Application Entry Point
+ *
+ * Canvas Grid System:
+ * - 20px grid (matches CSS background pattern)
+ * - All node placements snap to grid for clean alignment
+ * - Dragging uses threshold detection and smooth grid snapping
+ * - Boundary checking ensures nodes stay within canvas
  */
 import api from "./api.js";
 import Chat from "./components/Chat.js";
@@ -15,6 +21,14 @@ class App {
     this.agentConfig = null;
     this.connectionManager = null;
     this.canvasMode = false;
+
+    // Canvas grid configuration
+    // Note: gridSize must match the CSS grid pattern in main.css (.canvas-content)
+    this.canvasConfig = {
+      gridSize: 20, // Grid cell size in pixels
+      snapToGrid: true, // Enable/disable grid snapping
+      dragThreshold: 5, // Minimum pixels movement to initiate drag
+    };
   }
 
   async init() {
@@ -273,6 +287,10 @@ class App {
   }
 
   createAgentNode(agent, x, y) {
+    // Snap position to grid
+    const snappedX = this.snapToGrid(x, this.canvasConfig.gridSize);
+    const snappedY = this.snapToGrid(y, this.canvasConfig.gridSize);
+
     // Create a unique instance of the agent for this node
     const instanceId = `instance_${Date.now()}_${Math.random()
       .toString(36)
@@ -280,7 +298,7 @@ class App {
     const agentInstance = {
       ...agent,
       instanceId: instanceId,
-      position: { x, y },
+      position: { x: snappedX, y: snappedY },
     };
 
     const node = document.createElement("div");
@@ -288,8 +306,8 @@ class App {
     node.dataset.instanceId = instanceId;
     node.dataset.agentId = agent.id; // Keep reference to template agent
     node.dataset.agentData = JSON.stringify(agentInstance);
-    node.style.left = `${x}px`;
-    node.style.top = `${y}px`;
+    node.style.left = `${snappedX}px`;
+    node.style.top = `${snappedY}px`;
 
     node.innerHTML = `
       <div class="agent-node-header">
@@ -383,35 +401,60 @@ class App {
     return item;
   }
 
+  /**
+   * Snap coordinate to grid
+   * @param {number} value - The coordinate value to snap
+   * @param {number} gridSize - The grid size in pixels
+   * @returns {number} Snapped coordinate
+   */
+  snapToGrid(value, gridSize) {
+    return Math.round(value / gridSize) * gridSize;
+  }
+
+  /**
+   * Make a node draggable with grid snapping support
+   * Implements best practices: event delegation, threshold detection, grid alignment
+   * @param {HTMLElement} element - The node element to make draggable
+   */
   makeDraggableNode(element) {
     const header = element.querySelector(".agent-node-header");
     const dragHandle = header || element;
 
+    // Drag state (encapsulated in closure)
     let isDragging = false;
+    let hasMoved = false;
     let startX = 0;
     let startY = 0;
-    let offsetX = 0;
-    let offsetY = 0;
-    const DRAG_THRESHOLD = 5; // pixels movement to consider it a drag
-    const app = this; // Store reference to app instance
+    let initialLeft = 0;
+    let initialTop = 0;
+
+    const app = this;
+    const { gridSize, snapToGrid, dragThreshold } = this.canvasConfig;
 
     dragHandle.addEventListener("mousedown", dragStart);
 
     function dragStart(e) {
-      // Don't drag if clicking on port
-      if (e.target.dataset.port) return;
+      // Don't drag if clicking on port or action buttons
+      if (e.target.dataset.port || e.target.closest(".agent-node-menu-btn"))
+        return;
 
+      // Store initial state
       isDragging = true;
+      hasMoved = false;
       startX = e.clientX;
       startY = e.clientY;
 
-      // Calculate offset from mouse to element's top-left corner
-      const rect = element.getBoundingClientRect();
-      offsetX = e.clientX - rect.left;
-      offsetY = e.clientY - rect.top;
+      // Get current position
+      const currentLeft = parseInt(element.style.left) || 0;
+      const currentTop = parseInt(element.style.top) || 0;
+      initialLeft = currentLeft;
+      initialTop = currentTop;
 
+      // Visual feedback
       element.style.cursor = "grabbing";
+      element.style.zIndex = "1000"; // Bring to front while dragging
 
+      // Bind events to document for better tracking
       document.addEventListener("mousemove", drag);
       document.addEventListener("mouseup", dragEnd);
 
@@ -424,22 +467,44 @@ class App {
 
       e.preventDefault();
 
+      // Calculate movement delta
+      const deltaX = e.clientX - startX;
+      const deltaY = e.clientY - startY;
+
       // Check if we've moved beyond threshold
-      const deltaX = Math.abs(e.clientX - startX);
-      const deltaY = Math.abs(e.clientY - startY);
+      if (
+        !hasMoved &&
+        (Math.abs(deltaX) > dragThreshold || Math.abs(deltaY) > dragThreshold)
+      ) {
+        hasMoved = true;
+      }
 
-      if (deltaX > DRAG_THRESHOLD || deltaY > DRAG_THRESHOLD) {
-        // Get parent's position
-        const parentRect = element.parentElement.getBoundingClientRect();
-
+      if (hasMoved) {
         // Calculate new position
-        const newX = e.clientX - parentRect.left - offsetX;
-        const newY = e.clientY - parentRect.top - offsetY;
+        let newX = initialLeft + deltaX;
+        let newY = initialTop + deltaY;
 
+        // Apply grid snapping
+        if (snapToGrid) {
+          newX = app.snapToGrid(newX, gridSize);
+          newY = app.snapToGrid(newY, gridSize);
+        }
+
+        // Ensure node stays within canvas bounds
+        const parent = element.parentElement;
+        if (parent) {
+          const maxX = parent.clientWidth - element.offsetWidth;
+          const maxY = parent.clientHeight - element.offsetHeight;
+
+          newX = Math.max(0, Math.min(newX, maxX));
+          newY = Math.max(0, Math.min(newY, maxY));
+        }
+
+        // Apply new position
         element.style.left = newX + "px";
         element.style.top = newY + "px";
 
-        // Update connection positions
+        // Update connections in real-time
         if (app.connectionManager) {
           const instanceId = element.dataset.instanceId;
           app.connectionManager.updateConnectionPositions(instanceId);
@@ -448,17 +513,17 @@ class App {
     }
 
     function dragEnd(e) {
-      const deltaX = Math.abs(e.clientX - startX);
-      const deltaY = Math.abs(e.clientY - startY);
-      const hasMoved = deltaX > DRAG_THRESHOLD || deltaY > DRAG_THRESHOLD;
-
       isDragging = false;
-      element.style.cursor = "move";
 
+      // Reset visual state
+      element.style.cursor = "move";
+      element.style.zIndex = "2"; // Reset z-index
+
+      // Clean up event listeners
       document.removeEventListener("mousemove", drag);
       document.removeEventListener("mouseup", dragEnd);
 
-      // Only prevent click if we actually moved
+      // Prevent click event if node was dragged (not just clicked)
       if (hasMoved) {
         // Use a short timeout to ensure this runs before the click event
         setTimeout(() => {
@@ -491,10 +556,16 @@ class App {
 
       // Get drop position relative to canvas
       const rect = canvasContent.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+      let x = e.clientX - rect.left;
+      let y = e.clientY - rect.top;
 
-      // Create node at drop position
+      // Offset to center the node on cursor (approximate node size)
+      const nodeHalfWidth = 50; // Half of typical node width
+      const nodeHalfHeight = 40; // Half of typical node height
+      x = Math.max(0, x - nodeHalfWidth);
+      y = Math.max(0, y - nodeHalfHeight);
+
+      // Create node at drop position (will be snapped to grid inside createAgentNode)
       const node = this.createAgentNode(agentData, x, y);
       canvasContent.appendChild(node);
 
@@ -621,9 +692,11 @@ class App {
     const rect = originalNode.getBoundingClientRect();
     const parentRect = originalNode.parentElement.getBoundingClientRect();
 
-    // Position duplicate slightly offset from original
-    const x = rect.left - parentRect.left + 20;
-    const y = rect.top - parentRect.top + 20;
+    // Position duplicate offset from original (will be snapped to grid)
+    // Use 2 grid cells offset for clear visual separation
+    const offset = this.canvasConfig.gridSize * 2;
+    const x = rect.left - parentRect.left + offset;
+    const y = rect.top - parentRect.top + offset;
 
     // Create a new independent instance (removes instanceId so a new one is generated)
     const templateAgent = {
