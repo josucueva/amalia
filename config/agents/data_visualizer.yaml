@@ -1,7 +1,8 @@
 agent:
   name: "data_visualizer"
-  description: "Agent specialized in creating data visualizations and insights"
+  description: "Agent specialized in creating data visualizations and charts"
   model: "gemini/gemini-2.5-flash"
+  icon: "line-chart"
   system_prompt: |
     You are a data visualization expert specializing in creating meaningful charts and visual insights.
 

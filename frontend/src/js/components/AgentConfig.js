@@ -16,8 +16,17 @@ class AgentConfig {
     this.reloadBtn = document.getElementById("reload-agents-btn");
     this.currentAgentId = null;
 
+    // Icon picker elements
+    this.iconPickerModal = document.getElementById("icon-picker-modal");
+    this.iconPickerGrid = document.getElementById("icon-picker-grid");
+    this.selectIconBtn = document.getElementById("select-icon-btn");
+    this.clearIconBtn = document.getElementById("clear-icon-btn");
+    this.closeIconPickerBtn = document.getElementById("close-icon-picker");
+    this.selectedIcon = null;
+
     this.init();
     this.loadAgents();
+    this.initIconPicker();
   }
 
   init() {
@@ -49,6 +58,135 @@ class AgentConfig {
     }
   }
 
+  initIconPicker() {
+    // ML/Data Science related icons from Lucide
+    this.mlIcons = [
+      { name: "database", label: "Database" },
+      { name: "bar-chart", label: "Bar Chart" },
+      { name: "line-chart", label: "Line Chart" },
+      { name: "pie-chart", label: "Pie Chart" },
+      { name: "activity", label: "Activity" },
+      { name: "brain", label: "Brain" },
+      { name: "cpu", label: "CPU" },
+      { name: "network", label: "Network" },
+      { name: "git-branch", label: "Pipeline" },
+      { name: "layers", label: "Layers" },
+      { name: "target", label: "Target" },
+      { name: "zap", label: "Spark" },
+      { name: "trending-up", label: "Trending" },
+      { name: "filter", label: "Filter" },
+      { name: "shuffle", label: "Shuffle" },
+      { name: "sliders", label: "Sliders" },
+      { name: "settings", label: "Settings" },
+      { name: "box", label: "Box" },
+      { name: "package", label: "Package" },
+      { name: "file-text", label: "File" },
+      { name: "folder", label: "Folder" },
+      { name: "archive", label: "Archive" },
+      { name: "clipboard", label: "Clipboard" },
+      { name: "check-circle", label: "Check" },
+      { name: "alert-circle", label: "Alert" },
+      { name: "info", label: "Info" },
+      { name: "sparkles", label: "Sparkles" },
+      { name: "wand", label: "Wand" },
+      { name: "beaker", label: "Beaker" },
+      { name: "microscope", label: "Microscope" },
+    ];
+
+    // Populate icon grid
+    this.iconPickerGrid.innerHTML = this.mlIcons
+      .map(
+        (icon) => `
+      <div class="icon-picker-item" data-icon="${icon.name}">
+        <i data-lucide="${icon.name}"></i>
+        <span>${icon.label}</span>
+      </div>
+    `
+      )
+      .join("");
+
+    // Initialize Lucide icons
+    if (window.lucide) {
+      window.lucide.createIcons();
+    }
+
+    // Icon picker events
+    if (this.selectIconBtn) {
+      this.selectIconBtn.addEventListener("click", () => this.openIconPicker());
+    }
+
+    if (this.clearIconBtn) {
+      this.clearIconBtn.addEventListener("click", () => this.clearIcon());
+    }
+
+    if (this.closeIconPickerBtn) {
+      this.closeIconPickerBtn.addEventListener("click", () =>
+        this.closeIconPicker()
+      );
+    }
+
+    if (this.iconPickerModal) {
+      this.iconPickerModal.addEventListener("click", (e) => {
+        if (e.target === this.iconPickerModal) {
+          this.closeIconPicker();
+        }
+      });
+    }
+
+    // Icon selection
+    this.iconPickerGrid
+      .querySelectorAll(".icon-picker-item")
+      .forEach((item) => {
+        item.addEventListener("click", (e) => {
+          e.stopPropagation(); // Prevent event bubbling
+          const iconName = item.dataset.icon;
+          this.selectIcon(iconName);
+        });
+      });
+  }
+
+  openIconPicker() {
+    this.iconPickerModal.style.display = "flex";
+    // Highlight currently selected icon
+    this.iconPickerGrid
+      .querySelectorAll(".icon-picker-item")
+      .forEach((item) => {
+        item.classList.toggle(
+          "selected",
+          item.dataset.icon === this.selectedIcon
+        );
+      });
+  }
+
+  closeIconPicker() {
+    if (this.iconPickerModal) {
+      this.iconPickerModal.style.setProperty("display", "none", "important");
+    }
+  }
+
+  selectIcon(iconName) {
+    this.selectedIcon = iconName;
+    const agentIconInput = document.getElementById("agent-icon");
+    if (agentIconInput) {
+      agentIconInput.value = iconName;
+    }
+
+    // Hide preview - we only show the icon name
+    const preview = document.getElementById("icon-preview");
+    if (preview) {
+      preview.style.display = "none";
+    }
+
+    // Close the modal
+    this.closeIconPicker();
+  }
+
+  clearIcon() {
+    this.selectedIcon = null;
+    document.getElementById("agent-icon").value = "";
+    document.getElementById("icon-preview").style.display = "none";
+  }
+
   openModal(agent = null, updateCallback = null) {
     this.currentAgentId = agent ? agent.id : null;
     this.instanceUpdateCallback = updateCallback; // Store callback for canvas instances
@@ -70,6 +208,12 @@ class AgentConfig {
       document.getElementById("agent-name").value = agent.config.name;
       document.getElementById("agent-description").value =
         agent.config.description;
+      document.getElementById("agent-icon").value = agent.config.icon || "";
+      this.selectedIcon = agent.config.icon || null;
+
+      // Hide icon preview - we only show the icon name in the input
+      document.getElementById("icon-preview").style.display = "none";
+
       document.getElementById("agent-model").value = agent.config.model;
       document.getElementById("agent-prompt").value =
         agent.config.system_prompt;
@@ -84,6 +228,8 @@ class AgentConfig {
     this.agentForm.reset();
     this.currentAgentId = null;
     this.instanceUpdateCallback = null; // Clear callback
+    this.selectedIcon = null;
+    document.getElementById("icon-preview").style.display = "none";
   }
 
   async handleSubmit(e) {
@@ -92,6 +238,7 @@ class AgentConfig {
     const config = {
       name: document.getElementById("agent-name").value,
       description: document.getElementById("agent-description").value,
+      icon: document.getElementById("agent-icon").value || null,
       model: document.getElementById("agent-model").value,
       system_prompt: document.getElementById("agent-prompt").value,
       a2a_enabled: document.getElementById("agent-a2a").checked,

@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="/src/css/main.css" />
     <link rel="stylesheet" href="/src/css/chat.css" />
     <link rel="stylesheet" href="/src/css/components.css" />
+    <script src="https://unpkg.com/lucide@latest"></script>
   </head>
   <body>
     <div class="app-container">
@@ -174,6 +175,46 @@
                 <textarea id="agent-description" rows="2" required></textarea>
               </div>
               <div class="form-group">
+                <label for="agent-icon">Icon</label>
+                <div
+                  style="
+                    display: flex;
+                    gap: var(--spacing-sm);
+                    align-items: center;
+                  "
+                >
+                  <input
+                    type="text"
+                    id="agent-icon"
+                    readonly
+                    placeholder="No icon selected"
+                    style="flex: 1"
+                  />
+                  <button
+                    type="button"
+                    id="select-icon-btn"
+                    class="btn btn-secondary"
+                    style="white-space: nowrap"
+                  >
+                    Choose Icon
+                  </button>
+                  <button
+                    type="button"
+                    id="clear-icon-btn"
+                    class="btn btn-secondary"
+                    title="Clear icon"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <div id="icon-preview" style="margin-top: 8px; display: none">
+                  <i
+                    data-lucide="help-circle"
+                    style="width: 32px; height: 32px"
+                  ></i>
+                </div>
+              </div>
+              <div class="form-group">
                 <label for="agent-model">Model</label>
                 <select id="agent-model">
                   <option value="gemini/gemini-2.5-flash" selected>
@@ -212,6 +253,21 @@
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Icon Picker Modal -->
+      <div class="modal" id="icon-picker-modal" style="display: none">
+        <div class="modal-content" style="max-width: 600px">
+          <div class="modal-header">
+            <h2>Choose an Icon</h2>
+            <button class="modal-close" id="close-icon-picker">✕</button>
+          </div>
+          <div class="modal-body">
+            <div class="icon-picker-grid" id="icon-picker-grid">
+              <!-- Icons will be populated here -->
+            </div>
           </div>
         </div>
       </div>

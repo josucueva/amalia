@@ -253,6 +253,11 @@ class App {
           const listItem = this.createAgentListItem(agent);
           canvasAgentList.appendChild(listItem);
         });
+
+        // Initialize Lucide icons after all items are added
+        if (window.lucide) {
+          window.lucide.createIcons();
+        }
       } else {
         canvasAgentList.innerHTML =
           '<div style="color: var(--text-secondary); font-size: var(--font-size-xs); text-align: center; padding: var(--spacing-lg) 0;">No agents configured</div>';
@@ -287,10 +292,21 @@ class App {
     node.style.top = `${y}px`;
 
     node.innerHTML = `
-      <div class="agent-node-header">${agent.config.name}</div>
+      <div class="agent-node-header">
+        ${
+          agent.config.icon
+            ? `<i data-lucide="${agent.config.icon}" class="agent-node-icon"></i>`
+            : `<span class="agent-node-name">${agent.config.name}</span>`
+        }
+      </div>
       <div class="agent-node-input" data-port="input" title="Input connection"></div>
       <div class="agent-node-output" data-port="output" title="Output connection"></div>
     `;
+
+    // Initialize Lucide icons
+    if (window.lucide) {
+      window.lucide.createIcons();
+    }
 
     // Make draggable
     this.makeDraggableNode(node);
@@ -319,7 +335,13 @@ class App {
 
     item.innerHTML = `
       <div class="canvas-agent-item-content">
-        <div class="canvas-agent-item-name">${agent.config.name}</div>
+        <div class="canvas-agent-item-name">
+          ${
+            agent.config.icon
+              ? `<i data-lucide="${agent.config.icon}" style="width: 16px; height: 16px; margin-right: 8px;"></i>`
+              : ""
+          }${agent.config.name}
+        </div>
         <div class="canvas-agent-item-desc">${agent.config.description}</div>
         <div class="canvas-agent-item-actions">
           <button class="canvas-agent-action-btn edit-btn">[ EDIT ]</button>
@@ -327,6 +349,11 @@ class App {
         </div>
       </div>
     `;
+
+    // Initialize Lucide icons
+    if (window.lucide) {
+      window.lucide.createIcons();
+    }
 
     // Drag start handler
     item.addEventListener("dragstart", (e) => {
@@ -470,6 +497,11 @@ class App {
       // Create node at drop position
       const node = this.createAgentNode(agentData, x, y);
       canvasContent.appendChild(node);
+
+      // Initialize Lucide icons after appending to DOM
+      if (globalThis.lucide) {
+        globalThis.lucide.createIcons();
+      }
     });
   }
 
@@ -530,9 +562,19 @@ class App {
             config: updatedConfig,
           };
           node.dataset.agentData = JSON.stringify(updatedInstance);
-          // Update the displayed name if it changed
+          // Update the displayed name and icon if changed
           const header = node.querySelector(".agent-node-header");
-          if (header) header.textContent = updatedConfig.name;
+          if (header) {
+            if (updatedConfig.icon) {
+              header.innerHTML = `<i data-lucide="${updatedConfig.icon}" class="agent-node-icon"></i>`;
+            } else {
+              header.innerHTML = `<span class="agent-node-name">${updatedConfig.name}</span>`;
+            }
+            // Re-initialize Lucide icons
+            if (globalThis.lucide) {
+              globalThis.lucide.createIcons();
+            }
+          }
         });
         this.hideNodeActionMenu();
       });
@@ -593,6 +635,11 @@ class App {
 
     const duplicateNode = this.createAgentNode(templateAgent, x, y);
     originalNode.parentElement.appendChild(duplicateNode);
+
+    // Re-initialize Lucide icons after appending to DOM
+    if (window.lucide) {
+      window.lucide.createIcons();
+    }
   }
 
   /**
@@ -708,7 +755,13 @@ class App {
       node.style.top = `${nodeData.position.y}px`;
 
       node.innerHTML = `
-        <div class="agent-node-header">${agent.config.name}</div>
+        <div class="agent-node-header">
+          ${
+            agent.config.icon
+              ? `<i data-lucide="${agent.config.icon}" class="agent-node-icon"></i>`
+              : `<span class="agent-node-name">${agent.config.name}</span>`
+          }
+        </div>
         <div class="agent-node-input" data-port="input" title="Input connection"></div>
         <div class="agent-node-output" data-port="output" title="Output connection"></div>
       `;
@@ -728,6 +781,11 @@ class App {
 
       canvasContent.appendChild(node);
       nodeElements.push(node);
+    }
+
+    // Initialize Lucide icons once after all nodes are added
+    if (window.lucide) {
+      window.lucide.createIcons();
     }
 
     // Create connections

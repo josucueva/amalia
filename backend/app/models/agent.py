@@ -26,6 +26,7 @@ class AgentConfig(BaseModel):
     description: str = Field(..., description="Agent description")
     model: str = Field(default="gpt-4o", description="LLM model to use")
     system_prompt: str = Field(..., description="System prompt defining agent behavior")
+    icon: Optional[str] = Field(default=None, description="Icon emoji for visual representation")
     a2a_enabled: bool = Field(default=False, description="Enable A2A communication")
     tools: List[str] = Field(default_factory=list, description="List of tool names this agent can use")
     communication: CommunicationConfig = Field(default_factory=CommunicationConfig)

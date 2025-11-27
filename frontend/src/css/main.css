@@ -486,13 +486,18 @@ body {
 /* Agent Node Styles for Canvas */
 .agent-node {
   position: absolute;
-  min-width: 160px;
+  min-width: 80px;
+  max-width: 120px;
   padding: var(--spacing-md);
   background: rgba(255, 255, 255, 0.05);
   border: var(--border-width) solid var(--border-color);
   user-select: none;
   z-index: 2;
   transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
 .agent-node:hover {
@@ -504,12 +509,31 @@ body {
 .agent-node-header {
   font-family: var(--font-family-display);
   font-weight: var(--font-weight-bold);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--text-primary);
   cursor: move;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  width: 100%;
+}
+
+.agent-node-icon {
+  width: 40px;
+  height: 40px;
+  color: var(--text-primary);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.agent-node-name {
+  font-size: var(--font-size-xs);
+  word-break: break-word;
+  max-width: 100%;
 }
 
 .agent-node-input,
@@ -614,6 +638,54 @@ body {
 .agent-node-menu-btn.delete:hover {
   color: #dc2626;
   background: rgba(220, 38, 38, 0.08);
+}
+
+/* Icon Picker Modal Styles */
+.icon-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: var(--spacing-sm);
+  max-height: 400px;
+  overflow-y: auto;
+  padding: var(--spacing-sm);
+}
+
+.icon-picker-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-md);
+  background: var(--bg-secondary);
+  border: var(--border-width) solid var(--border-color);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border-radius: var(--border-radius-small);
+  gap: var(--spacing-xs);
+}
+
+.icon-picker-item:hover {
+  background: var(--bg-hover);
+  border-color: var(--text-primary);
+  transform: translateY(-2px);
+}
+
+.icon-picker-item.selected {
+  background: rgba(79, 70, 229, 0.2);
+  border-color: var(--primary-color);
+}
+
+.icon-picker-item i {
+  width: 32px;
+  height: 32px;
+  color: var(--text-primary);
+}
+
+.icon-picker-item span {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  text-align: center;
+  word-break: break-word;
 }
 
 /* Loading State */

@@ -2,6 +2,7 @@ agent:
   name: "orchestrator_agent"
   description: "Hidden agent that executes plans by instantiating agents on the canvas"
   model: "gemini/gemini-2.5-flash"
+  icon: "layers"
   system_prompt: |
     You are AMALIA's orchestrator agent - the execution engine that brings plans to life.
 

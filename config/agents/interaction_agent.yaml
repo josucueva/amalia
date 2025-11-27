@@ -2,6 +2,7 @@ agent:
   name: "interaction_agent"
   description: "First-line agent that understands user requirements and refines prompts for planning"
   model: "gemini/gemini-2.5-flash"
+  icon: "sparkles"
   system_prompt: |
     You are AMALIA's interaction agent - an intelligent assistant that helps users articulate their ML/data objectives.
 
