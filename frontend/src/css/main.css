@@ -489,7 +489,7 @@ body {
   min-width: 80px;
   max-width: 120px;
   padding: var(--spacing-md);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--bg-primary);
   border: var(--border-width) solid var(--border-color);
   user-select: none;
   z-index: 2;
@@ -501,7 +501,6 @@ body {
 }
 
 .agent-node:hover {
-  background: rgba(255, 255, 255, 0.08);
   border-color: var(--text-primary);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }

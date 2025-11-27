@@ -25,7 +25,7 @@ class Chat {
     exampleQueries.forEach((btn) => {
       btn.addEventListener("click", () => {
         if (this.chatInput) {
-          this.chatInput.value = btn.textContent.replace(/"/g, "");
+          this.chatInput.value = btn.textContent.replaceAll('"', "");
           if (this.chatForm) {
             this.chatForm.dispatchEvent(new Event("submit"));
           }
@@ -69,7 +69,7 @@ class Chat {
       // Check if response contains orchestration data
       const orchestration = response.message.metadata?.orchestration;
 
-      if (orchestration && orchestration.orchestration) {
+      if (orchestration?.orchestration) {
         // Pipeline was created by the three-agent system
         await this.handlePipelineCreation(
           response.message.content,
@@ -95,8 +95,8 @@ class Chat {
     });
 
     // Trigger canvas update if in canvas mode
-    if (window.app && window.app.canvasMode) {
-      window.app.createPipelineFromData(
+    if (globalThis.app?.canvasMode) {
+      globalThis.app.createPipelineFromData(
         orchestrationData.nodes,
         orchestrationData.connections
       );

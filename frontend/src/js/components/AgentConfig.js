@@ -106,8 +106,8 @@ class AgentConfig {
       .join("");
 
     // Initialize Lucide icons
-    if (window.lucide) {
-      window.lucide.createIcons();
+    if (globalThis.lucide) {
+      globalThis.lucide.createIcons();
     }
 
     // Icon picker events
@@ -268,8 +268,8 @@ class AgentConfig {
       this.loadAgents();
 
       // Trigger canvas refresh if in canvas mode
-      if (window.app && window.app.canvasMode) {
-        window.app.loadCanvasAgents();
+      if (globalThis.app?.canvasMode) {
+        globalThis.app.loadCanvasAgents();
       }
     } catch (error) {
       const action = this.currentAgentId ? "update" : "create";
@@ -366,8 +366,8 @@ class AgentConfig {
       this.loadAgents();
 
       // Trigger canvas refresh if in canvas mode
-      if (window.app && window.app.canvasMode) {
-        window.app.loadCanvasAgents();
+      if (globalThis.app?.canvasMode) {
+        globalThis.app.loadCanvasAgents();
       }
     } catch (error) {
       showToast("Failed to delete agent", "error");

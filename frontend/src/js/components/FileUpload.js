@@ -3,7 +3,7 @@
  */
 import api from "../api.js";
 import state from "../utils/state.js";
-import { formatFileSize, showToast } from "../utils/helpers.js";
+import { showToast } from "../utils/helpers.js";
 
 class FileUpload {
   constructor() {
