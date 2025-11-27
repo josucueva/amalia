@@ -73,6 +73,16 @@ class App {
       });
     }
 
+    // Setup configure interaction agent button
+    const configureInteractionAgentBtn = document.getElementById(
+      "configure-interaction-agent-btn"
+    );
+    if (configureInteractionAgentBtn) {
+      configureInteractionAgentBtn.addEventListener("click", async () => {
+        await this.openInteractionAgentConfig();
+      });
+    }
+
     console.log("✓ Application initialized successfully");
   }
 
@@ -92,6 +102,24 @@ class App {
     this.uploadedFile = file;
 
     showToast(`File "${file.name}" ready to upload`, "info");
+  }
+
+  async openInteractionAgentConfig() {
+    try {
+      const agents = await api.getAgents();
+      const interactionAgent = agents.find(
+        (agent) => agent.config.name === "interaction_agent"
+      );
+
+      if (interactionAgent) {
+        this.agentConfig.openModal(interactionAgent);
+      } else {
+        showToast("Interaction agent not found", "error");
+      }
+    } catch (error) {
+      console.error("Error loading interaction agent:", error);
+      showToast("Failed to load interaction agent", "error");
+    }
   }
 
   toggleCanvasMode() {
@@ -130,8 +158,13 @@ class App {
 
       console.log("Loading agents:", agents);
 
-      if (agents && agents.length > 0) {
-        agents.forEach((agent) => {
+      // Filter out interaction_agent from canvas
+      const canvasAgents = agents.filter(
+        (agent) => agent.config.name !== "interaction_agent"
+      );
+
+      if (canvasAgents && canvasAgents.length > 0) {
+        canvasAgents.forEach((agent) => {
           // Create item in sidebar list (draggable)
           const listItem = this.createAgentListItem(agent);
           canvasAgentList.appendChild(listItem);
