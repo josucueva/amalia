@@ -9,6 +9,7 @@ export const API_ENDPOINTS = {
   chat: `${API_BASE_URL}/api/chat`,
   agents: `${API_BASE_URL}/api/agents`,
   files: `${API_BASE_URL}/api/files`,
+  canvas: `${API_BASE_URL}/api/canvas`,
 };
 
 export default {

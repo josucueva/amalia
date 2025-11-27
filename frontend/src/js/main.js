@@ -181,6 +181,23 @@ class App {
 
       this.loadCanvasAgents();
       this.setupCanvasDrop(); // Enable drag-drop
+
+      // Check for pending pipeline from BUILD command
+      const pendingPipeline = sessionStorage.getItem("pendingPipeline");
+      if (pendingPipeline) {
+        try {
+          const pipelineData = JSON.parse(pendingPipeline);
+          sessionStorage.removeItem("pendingPipeline");
+          setTimeout(() => {
+            this.createPipelineFromData(
+              pipelineData.nodes,
+              pipelineData.connections
+            );
+          }, 500);
+        } catch (error) {
+          console.error("Error loading pending pipeline:", error);
+        }
+      }
     } else {
       overlay.classList.remove("active");
       if (chatContainer) chatContainer.style.display = "flex";
@@ -622,6 +639,94 @@ class App {
     document.querySelectorAll(".agent-node").forEach((node) => node.remove());
     console.log("✓ Canvas cleared");
     showToast("Canvas cleared", "info");
+  }
+
+  /**
+   * Create pipeline from BUILD command response
+   */
+  async createPipelineFromData(nodes, connections) {
+    if (!this.canvasMode) {
+      console.warn("Not in canvas mode, storing pipeline for later");
+      return;
+    }
+
+    const canvasContent = document.getElementById("canvas-content");
+    if (!canvasContent) {
+      console.error("Canvas content not found");
+      return;
+    }
+
+    // Get all agents
+    const agents = await api.getAgents();
+    const agentMap = new Map(agents.map((a) => [a.id, a]));
+
+    // Create nodes
+    const nodeElements = [];
+    for (const nodeData of nodes) {
+      const agent = agentMap.get(nodeData.agentId);
+      if (!agent) {
+        console.error("Agent not found:", nodeData.agentId);
+        continue;
+      }
+
+      // Create node with specific instance ID and position
+      const node = document.createElement("div");
+      node.className = "agent-node";
+      node.dataset.instanceId = nodeData.instanceId;
+      node.dataset.agentId = nodeData.agentId;
+
+      const agentInstance = {
+        ...agent,
+        instanceId: nodeData.instanceId,
+        position: nodeData.position,
+      };
+
+      node.dataset.agentData = JSON.stringify(agentInstance);
+      node.style.left = `${nodeData.position.x}px`;
+      node.style.top = `${nodeData.position.y}px`;
+
+      node.innerHTML = `
+        <div class="agent-node-header">${agent.config.name}</div>
+        <div class="agent-node-input" data-port="input" title="Input connection"></div>
+        <div class="agent-node-output" data-port="output" title="Output connection"></div>
+      `;
+
+      // Make draggable
+      this.makeDraggableNode(node);
+
+      // Add connection port handlers
+      this.setupConnectionPorts(node);
+
+      // Add click handler for action menu
+      node.addEventListener("click", (e) => {
+        if (e.target.dataset.port) return;
+        const currentInstance = JSON.parse(node.dataset.agentData);
+        this.showNodeActionMenu(node, currentInstance);
+      });
+
+      canvasContent.appendChild(node);
+      nodeElements.push(node);
+    }
+
+    // Create connections
+    if (this.connectionManager && connections.length > 0) {
+      setTimeout(() => {
+        for (const conn of connections) {
+          this.connectionManager.createConnection(
+            conn.fromInstanceId,
+            "output",
+            conn.toInstanceId,
+            "input"
+          );
+        }
+        console.log(`✓ Created ${connections.length} connections`);
+      }, 100);
+    }
+
+    console.log(
+      `✓ Pipeline created: ${nodes.length} nodes, ${connections.length} connections`
+    );
+    showToast(`Pipeline created with ${nodes.length} agents`, "success");
   }
 }
 

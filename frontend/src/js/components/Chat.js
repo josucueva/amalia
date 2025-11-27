@@ -66,12 +66,64 @@ class Chat {
       // Remove typing indicator
       this.removeTypingIndicator();
 
-      // Add assistant response
-      this.addMessage(response.message);
+      // Check if response contains an action in metadata
+      const action = response.message.metadata?.action;
+
+      if (action && action.action === "build_pipeline") {
+        // Handle build pipeline action
+        await this.handleBuildCommand(action.message || "Building pipeline...");
+      } else {
+        // Add normal assistant response
+        this.addMessage(response.message);
+      }
     } catch (error) {
       this.removeTypingIndicator();
       showToast("Failed to send message. Please try again.", "error");
       console.error("Error sending message:", error);
+    }
+  }
+
+  async handleBuildCommand(agentMessage) {
+    // Show the agent's message first
+    this.addMessage({
+      role: "assistant",
+      content: agentMessage,
+      timestamp: new Date().toISOString(),
+    });
+
+    this.showTypingIndicator();
+
+    try {
+      // Call build pipeline endpoint
+      const response = await api.buildPipeline("BUILD");
+
+      this.removeTypingIndicator();
+
+      // Add system message
+      this.addMessage({
+        role: "assistant",
+        content: `✅ ${response.message}\n\nSwitch to Canvas Mode to see your pipeline!`,
+        timestamp: new Date().toISOString(),
+      });
+
+      // Trigger canvas update if in canvas mode
+      if (window.app && window.app.canvasMode) {
+        window.app.createPipelineFromData(response.nodes, response.connections);
+      } else {
+        // Store pipeline data for when user switches to canvas mode
+        sessionStorage.setItem("pendingPipeline", JSON.stringify(response));
+      }
+
+      showToast("Pipeline created successfully!", "success");
+    } catch (error) {
+      this.removeTypingIndicator();
+      this.addMessage({
+        role: "assistant",
+        content: `❌ Failed to build pipeline: ${error.message}\n\nMake sure the backend is running.`,
+        timestamp: new Date().toISOString(),
+      });
+      showToast("Failed to build pipeline", "error");
+      console.error("Error building pipeline:", error);
     }
   }
 

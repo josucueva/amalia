@@ -175,6 +175,13 @@ class ApiClient {
     return this.delete(`${API_ENDPOINTS.files}/${fileId}`);
   }
 
+  // Canvas API
+  async buildPipeline(command) {
+    return this.post(`${API_ENDPOINTS.canvas}/build`, {
+      command,
+    });
+  }
+
   // Health check
   async healthCheck() {
     return this.get(API_ENDPOINTS.health);

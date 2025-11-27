@@ -101,6 +101,24 @@ async def chat(
                 status_code=500, detail=f"Error generating response: {str(llm_error)}"
             )
 
+        # Check if response contains a JSON action
+        import json
+        import re
+
+        action_data = None
+        try:
+            # Try to extract JSON from code blocks
+            json_match = re.search(
+                r"```json\s*(\{.*?\})\s*```", assistant_content, re.DOTALL
+            )
+            if json_match:
+                action_data = json.loads(json_match.group(1))
+            elif assistant_content.strip().startswith("{"):
+                # Try parsing whole response as JSON
+                action_data = json.loads(assistant_content.strip())
+        except (json.JSONDecodeError, AttributeError):
+            pass  # Not a JSON action, treat as normal response
+
         # Add assistant response to history
         conversation_history.add_message(
             conversation_id=conversation_id, role="assistant", content=assistant_content
@@ -117,6 +135,7 @@ async def chat(
                 "conversation_id": conversation_id,
                 "user_message_id": message_id,
                 "model": agent_config_dict["model"],
+                "action": action_data,  # Include parsed action if present
             },
             agent_id=selected_agent.id if selected_agent else None,
         )
