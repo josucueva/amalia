@@ -2,6 +2,7 @@
 Canvas routes for managing agent pipelines and connections.
 """
 
+import json
 from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
@@ -210,7 +211,7 @@ async def execute_node(
                         "type": "function",
                         "function": {
                             "name": tc["name"],
-                            "arguments": str(tc["arguments"])
+                            "arguments": json.dumps(tc["arguments"])
                             if not isinstance(tc["arguments"], str)
                             else tc["arguments"],
                         },

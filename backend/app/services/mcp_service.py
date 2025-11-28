@@ -319,7 +319,14 @@ class MCPService:
         """Disconnect from all MCP servers and clean up resources."""
         disconnect_tasks = [server.disconnect() for server in self.servers.values()]
         if disconnect_tasks:
-            await asyncio.gather(*disconnect_tasks, return_exceptions=True)
+            server_names = list(self.servers.keys())
+            results = await asyncio.gather(*disconnect_tasks, return_exceptions=True)
+            # Log any exceptions that occurred during disconnect
+            for server_name, result in zip(server_names, results):
+                if isinstance(result, Exception):
+                    logger.warning(
+                        "Error disconnecting MCP server", server=server_name, error=str(result)
+                    )
         self.servers.clear()
 
     def get_tool_count(self) -> int:
