@@ -2,17 +2,22 @@
 Canvas routes for managing agent pipelines and connections.
 """
 
+from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 import structlog
 
 from app.services.agent_pipeline import AgentPipelineService
 from app.services.llm_service import get_llm_service
+from app.services.mcp_service import MCPService
 from app.config import get_settings
 
 logger = structlog.get_logger()
 router = APIRouter()
+
+# Maximum number of tool call iterations to prevent infinite loops
+MAX_TOOL_ITERATIONS = 10
 
 
 class NodePosition(BaseModel):
@@ -58,6 +63,46 @@ class ExecuteNodeResponse(BaseModel):
     error: Optional[str] = None
 
 
+async def _execute_tool_calls(
+    mcp_service: MCPService, tool_calls: List[Dict[str, Any]]
+) -> List[Dict[str, Any]]:
+    """Execute a list of tool calls and return the results.
+
+    Args:
+        mcp_service: The MCP service instance to use.
+        tool_calls: List of tool call specifications.
+
+    Returns:
+        List of tool results with tool_call_id and output.
+    """
+    tool_results = []
+    for tool_call in tool_calls:
+        try:
+            tool_result = await mcp_service.execute_tool(tool_call["name"], tool_call["arguments"])
+            # Format result content
+            if isinstance(tool_result, list):
+                output = "\n".join(
+                    str(item.get("text", item)) if isinstance(item, dict) else str(item)
+                    for item in tool_result
+                )
+            else:
+                output = str(tool_result)
+
+            tool_results.append(
+                {"tool_call_id": tool_call["id"], "role": "tool", "content": output}
+            )
+        except Exception as e:
+            logger.error("Tool execution failed", tool=tool_call["name"], error=str(e))
+            tool_results.append(
+                {
+                    "tool_call_id": tool_call["id"],
+                    "role": "tool",
+                    "content": f"Error executing tool: {str(e)}",
+                }
+            )
+    return tool_results
+
+
 @router.post("/execute", response_model=ExecuteNodeResponse)
 async def execute_node(
     request_data: ExecuteNodeRequest,
@@ -73,15 +118,14 @@ async def execute_node(
     Returns:
         ExecuteNodeResponse: Execution result
     """
+    mcp_service = None
+
     try:
-        from datetime import datetime, timezone
-        from app.services.mcp_service import MCPService
-        
         logger.info(
             "Executing agent node",
             instance_id=request_data.instanceId,
             agent_type=request_data.agentType,
-            inputs_count=len(request_data.inputs)
+            inputs_count=len(request_data.inputs),
         )
 
         # Get agent registry
@@ -93,17 +137,18 @@ async def execute_node(
         agent = agent_registry.get_agent(request_data.agentType)
         if not agent:
             raise HTTPException(
-                status_code=404,
-                detail=f"Agent type '{request_data.agentType}' not found"
+                status_code=404, detail=f"Agent type '{request_data.agentType}' not found"
             )
 
         # Prepare input for agent execution
         # Combine all inputs into a single context
         if request_data.inputs:
-            combined_input = "\n\n".join([
-                f"Input {i+1}:\n{inp.get('output', '')}" 
-                for i, inp in enumerate(request_data.inputs)
-            ])
+            combined_input = "\n\n".join(
+                [
+                    f"Input {i+1}:\n{inp.get('output', '')}"
+                    for i, inp in enumerate(request_data.inputs)
+                ]
+            )
         else:
             combined_input = "No input data provided. Please process this request independently."
 
@@ -112,62 +157,89 @@ async def execute_node(
         llm_service = get_llm_service(settings)
 
         # Initialize MCP service if agent has MCP servers configured
-        mcp_service = None
         available_tools = []
-        
+
         if agent.config.mcp_servers:
             mcp_service = MCPService()
             await mcp_service.connect_servers(agent.config.mcp_servers)
-            
-            # Get available tools in OpenAI format
-            mcp_tools = mcp_service.get_available_tools()
-            available_tools = [
-                {
-                    "type": "function",
-                    "function": {
-                        "name": tool["name"],
-                        "description": tool["description"],
-                        "parameters": tool["inputSchema"]
-                    }
-                }
-                for tool in mcp_tools
-            ]
-            
+
+            # Get available tools in OpenAI function calling format
+            available_tools = mcp_service.get_tools_for_llm()
             logger.info("MCP tools loaded", tool_count=len(available_tools))
 
+        # Build conversation messages for the LLM
+        messages = [
+            {"role": "system", "content": agent.config.system_prompt},
+            {"role": "user", "content": combined_input},
+        ]
+
         # Execute the agent using LLM service with tools
-        result = await llm_service.generate_agent_response(
-            user_message=combined_input,
-            agent_config={**agent.config.dict(), "tools": available_tools} if available_tools else agent.config.dict(),
-            conversation_history=[]
+        result = await llm_service.generate_response(
+            messages=messages,
+            model=agent.config.model,
+            temperature=agent.config.temperature,
+            max_tokens=agent.config.max_tokens,
+            tools=available_tools if available_tools else None,
         )
 
-        # Handle tool calls if present
-        if isinstance(result, dict) and "tool_calls" in result:
-            # Execute tools and get results
-            tool_results = []
-            for tool_call in result["tool_calls"]:
-                try:
-                    tool_result = await mcp_service.execute_tool(
-                        tool_call["name"],
-                        tool_call["arguments"]
-                    )
-                    tool_results.append({
-                        "tool_call_id": tool_call["id"],
-                        "output": str(tool_result)
-                    })
-                except Exception as e:
-                    logger.error("Tool execution failed", tool=tool_call["name"], error=str(e))
-                    tool_results.append({
-                        "tool_call_id": tool_call["id"],
-                        "output": f"Error: {str(e)}"
-                    })
-            
-            # Get final response from LLM with tool results
-            # This would require another LLM call with tool results
-            # For simplicity, we'll return the tool results as output
-            result = f"Tools executed: {len(tool_results)}\n\n" + "\n\n".join(
-                [f"Tool result: {tr['output']}" for tr in tool_results]
+        # Handle tool calls with proper LLM loop
+        iteration = 0
+        while (
+            isinstance(result, dict) and "tool_calls" in result and iteration < MAX_TOOL_ITERATIONS
+        ):
+            iteration += 1
+            tool_calls = result["tool_calls"]
+
+            logger.info(
+                "Processing tool calls",
+                iteration=iteration,
+                tool_count=len(tool_calls),
+                tools=[tc["name"] for tc in tool_calls],
+            )
+
+            # Execute tools and collect results
+            tool_results = await _execute_tool_calls(mcp_service, tool_calls)
+
+            # Build the assistant message with tool calls
+            assistant_message = {
+                "role": "assistant",
+                "content": None,
+                "tool_calls": [
+                    {
+                        "id": tc["id"],
+                        "type": "function",
+                        "function": {
+                            "name": tc["name"],
+                            "arguments": str(tc["arguments"])
+                            if not isinstance(tc["arguments"], str)
+                            else tc["arguments"],
+                        },
+                    }
+                    for tc in tool_calls
+                ],
+            }
+
+            # Add assistant message and tool results to conversation
+            messages.append(assistant_message)
+            for tr in tool_results:
+                messages.append(
+                    {"role": "tool", "tool_call_id": tr["tool_call_id"], "content": tr["content"]}
+                )
+
+            # Get next response from LLM
+            result = await llm_service.generate_response(
+                messages=messages,
+                model=agent.config.model,
+                temperature=agent.config.temperature,
+                max_tokens=agent.config.max_tokens,
+                tools=available_tools,
+            )
+
+        if iteration >= MAX_TOOL_ITERATIONS:
+            logger.warning(
+                "Max tool iterations reached",
+                instance_id=request_data.instanceId,
+                iterations=iteration,
             )
 
         # Cleanup MCP connections
@@ -185,7 +257,6 @@ async def execute_node(
     except HTTPException:
         raise
     except Exception as e:
-        from datetime import datetime, timezone
         logger.error("Error executing node", error=str(e), instance_id=request_data.instanceId)
         return ExecuteNodeResponse(
             instanceId=request_data.instanceId,
@@ -193,8 +264,15 @@ async def execute_node(
             timestamp=datetime.now(timezone.utc).isoformat(),
             inputs=len(request_data.inputs),
             output="",
-            error=str(e)
+            error=str(e),
         )
+    finally:
+        # Ensure MCP connections are cleaned up even on error
+        if mcp_service:
+            try:
+                await mcp_service.disconnect_all()
+            except Exception as cleanup_error:
+                logger.warning("Error during MCP cleanup", error=str(cleanup_error))
 
 
 @router.post("/build", response_model=BuildPipelineResponse)
@@ -229,9 +307,9 @@ async def build_pipeline(
 
         # Execute simple build (for backward compatibility)
         result = pipeline_service.execute_simple_build()
-        
+
         orchestration = result["orchestration"]
-        
+
         return BuildPipelineResponse(
             success=True,
             message=orchestration.get("message", "Pipeline created"),
@@ -244,4 +322,3 @@ async def build_pipeline(
     except Exception as e:
         logger.error("Error building pipeline", error=str(e))
         raise HTTPException(status_code=500, detail=str(e))
-
