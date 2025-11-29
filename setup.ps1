@@ -50,7 +50,7 @@ Push-Location backend
 # Create virtual environment
 if (-not (Test-Path ".venv")) {
     Write-Host "Creating Python virtual environment..." -ForegroundColor Yellow
-    python -m .venv .venv
+    python -m venv .venv
     Write-Host "OK Virtual environment created" -ForegroundColor Green
 }
 
