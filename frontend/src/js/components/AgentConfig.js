@@ -423,10 +423,11 @@ class AgentConfig {
     this.mcpServers = {}; // Clear MCP servers
     document.getElementById("icon-preview").style.display = "none";
 
-    // Close MCP config panel if open
+    // Close MCP config panel and model config panel if open
     const modalContainer = document.querySelector(".agent-modal-container");
     if (modalContainer) {
       modalContainer.classList.remove("mcp-panel-active");
+      modalContainer.classList.remove("model-panel-active");
     }
 
     // Reset icon form group visibility
