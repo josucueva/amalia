@@ -209,6 +209,30 @@ class ApiClient {
     return this.delete(`${API_ENDPOINTS.models}/${modelId}`);
   }
 
+  // MCP Server API methods
+  async listMCPServers(availableOnly = false) {
+    const url = availableOnly
+      ? `${API_ENDPOINTS.mcpServers}?available_only=true`
+      : API_ENDPOINTS.mcpServers;
+    return this.get(url);
+  }
+
+  async getMCPServer(serverId) {
+    return this.get(`${API_ENDPOINTS.mcpServers}/${serverId}`);
+  }
+
+  async addMCPServer(data) {
+    return this.post(API_ENDPOINTS.mcpServers, data);
+  }
+
+  async updateMCPServer(serverId, data) {
+    return this.put(`${API_ENDPOINTS.mcpServers}/${serverId}`, data);
+  }
+
+  async deleteMCPServer(serverId) {
+    return this.delete(`${API_ENDPOINTS.mcpServers}/${serverId}`);
+  }
+
   // Health check
   async healthCheck() {
     return this.get(API_ENDPOINTS.health);

@@ -100,6 +100,26 @@ class LLMService:
             if stream:
                 return self._stream_response(response)
             else:
+                # Validate response has choices
+                if not response.choices or len(response.choices) == 0:
+                    # Log full response for debugging
+                    logger.error(
+                        "LLM returned empty response",
+                        model=model,
+                        has_choices=hasattr(response, 'choices'),
+                        choices_length=len(response.choices) if hasattr(response, 'choices') else None,
+                        response_dict=response.model_dump() if hasattr(response, 'model_dump') else str(response),
+                    )
+                    
+                    # Check for safety filters or blocked content
+                    if hasattr(response, 'prompt_feedback'):
+                        logger.error(
+                            "Response may be blocked by safety filters",
+                            prompt_feedback=response.prompt_feedback,
+                        )
+                    
+                    return "I apologize, but I couldn't generate a response. This might be due to content filters or an API issue. Please try rephrasing your request."
+                
                 # Check for tool calls
                 choice = response.choices[0]
                 

@@ -46,6 +46,7 @@ agent:
 
   temperature: 0.2
   max_tokens: 2000
+  mcp_server_ids: []
 
   metadata:
     category: "data_processing"

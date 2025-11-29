@@ -31,5 +31,16 @@
     "supports_function_calling": true,
     "max_tokens": 8192,
     "description": "Advanced Gemini 2.5 model with enhanced capabilities"
+  },
+  "model-c10840691616": {
+    "id": "model-c10840691616",
+    "display_name": "a",
+    "model_name": "a",
+    "provider": "openai",
+    "api_key_name": "a",
+    "is_available": false,
+    "supports_function_calling": true,
+    "max_tokens": null,
+    "description": null
   }
 }

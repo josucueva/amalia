@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 import structlog
 
 from app.config import get_settings
-from app.api.routes import chat, agents, files, health, canvas, models
+from app.api.routes import chat, agents, files, health, canvas, models, mcp_servers
 from app.utils.logger import setup_logging
 
 
@@ -82,6 +82,7 @@ app.include_router(agents.router, prefix="/api/agents", tags=["agents"])
 app.include_router(files.router, prefix="/api/files", tags=["files"])
 app.include_router(canvas.router, prefix="/api/canvas", tags=["canvas"])
 app.include_router(models.router, tags=["models"])
+app.include_router(mcp_servers.router, tags=["mcp-servers"])
 
 
 @app.get("/")

@@ -36,8 +36,9 @@ agent:
     can_send_to:
       - "interaction_agent"
 
-  temperature: 0.6
+  temperature: 0.4
   max_tokens: 2000
+  mcp_server_ids: []
 
   metadata:
     category: "visualization"

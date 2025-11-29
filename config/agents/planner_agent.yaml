@@ -70,6 +70,7 @@ agent:
 
   temperature: 0.4
   max_tokens: 2000
+  mcp_server_ids: []
 
   metadata:
     category: "planning"

@@ -10,6 +10,7 @@ from typing import Dict, Any, Optional, Tuple, List
 from app.services.llm_service import LLMService
 from app.services.mcp_service import MCPService
 from app.services.model_service import ModelService
+from app.services.mcp_server_service import get_mcp_server_service
 from app.agents.registry import AgentRegistry
 from app.models.agent import Agent
 
@@ -112,9 +113,30 @@ class AgentPipelineService:
                         )
                         break
 
-            if agent.config.mcp_servers and model_supports_tools:
+            # Load MCP servers from both legacy config and new server IDs
+            mcp_servers_config = {}
+            
+            # New: Prefer mcp_server_ids if the field exists (even if empty list)
+            # This allows users to explicitly disable MCP servers
+            if hasattr(agent.config, 'mcp_server_ids') and agent.config.mcp_server_ids is not None:
+                # Use the new server IDs approach
+                mcp_server_service = get_mcp_server_service()
+                for server_id in agent.config.mcp_server_ids:
+                    server = mcp_server_service.get_server(server_id)
+                    if server and server.is_available:
+                        from app.models.agent import MCPServerConfig
+                        mcp_servers_config[server_id] = MCPServerConfig(
+                            command=server.command,
+                            args=server.args,
+                            env=server.env
+                        )
+            elif agent.config.mcp_servers:
+                # Legacy: Fall back to old mcp_servers dict only if new field doesn't exist
+                mcp_servers_config = agent.config.mcp_servers
+
+            if mcp_servers_config and model_supports_tools:
                 mcp_service = MCPService()
-                await mcp_service.connect_servers(agent.config.mcp_servers)
+                await mcp_service.connect_servers(mcp_servers_config)
 
                 # Get available tools in OpenAI function calling format
                 available_tools = mcp_service.get_tools_for_llm()
@@ -123,7 +145,7 @@ class AgentPipelineService:
                     agent=agent.config.name,
                     tool_count=len(available_tools),
                 )
-            elif agent.config.mcp_servers and not model_supports_tools:
+            elif mcp_servers_config and not model_supports_tools:
                 logger.warning(
                     "MCP servers configured but model doesn't support function calling",
                     agent=agent.config.name,

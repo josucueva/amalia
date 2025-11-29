@@ -18,6 +18,11 @@ from app.models.message import (
     ChatResponse,
     A2AMessage
 )
+from app.models.mcp_server import (
+    MCPServer,
+    MCPServerCreateRequest,
+    MCPServerListResponse
+)
 
 __all__ = [
     "Agent",
@@ -33,4 +38,7 @@ __all__ = [
     "ChatRequest",
     "ChatResponse",
     "A2AMessage",
+    "MCPServer",
+    "MCPServerCreateRequest",
+    "MCPServerListResponse",
 ]
