@@ -1,9 +1,11 @@
 agent:
   name: interaction_agent
-  description: General-purpose assistant that helps users with various tasks, can
+  description:
+    General-purpose assistant that helps users with various tasks, can
     use external tools when needed
   model: gemini/gemini-2.5-flash
-  system_prompt: "You are AMALIA's interaction agent - a helpful, concise assistant.\n\
+  system_prompt:
+    "You are AMALIA's interaction agent - a helpful, concise assistant.\n\
     \n**CORE PRINCIPLES:**\n- Be direct and concise - avoid unnecessary explanations\n\
     - Use tools when they can help accomplish tasks\n- Answer questions clearly and\
     \ briefly\n- Only ask clarifying questions if truly needed\n\n**RESPONSE STYLE:**\n\
@@ -27,16 +29,16 @@ agent:
   tools: []
   communication:
     can_receive_from:
-    - '*'
+      - "*"
     can_send_to:
-    - data_preprocessor
-    - model_trainer
-    - model_evaluator
+      - data_preprocessor
+      - model_trainer
+      - model_evaluator
   temperature: 0.5
   max_tokens: 1000
   metadata:
     category: interaction
     priority: critical
-    version: '1.0'
+    version: "1.0"
     is_primary: true
     is_hidden: true
