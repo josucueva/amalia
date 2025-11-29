@@ -1,6 +1,7 @@
 """
 API routes for LLM model management.
 """
+
 from fastapi import APIRouter, HTTPException
 from typing import List
 import structlog
@@ -26,12 +27,12 @@ async def list_models(available_only: bool = False):
     """
     try:
         service = get_model_service()
-        
+
         if available_only:
             models = service.get_available_models()
         else:
             models = service.get_all_models()
-        
+
         return LLMModelListResponse(models=models, count=len(models))
     except Exception as e:
         logger.error("Error listing models", error=str(e))
@@ -52,10 +53,10 @@ async def get_model(model_id: str):
     try:
         service = get_model_service()
         model = service.get_model(model_id)
-        
+
         if not model:
             raise HTTPException(status_code=404, detail=f"Model {model_id} not found")
-        
+
         return model
     except HTTPException:
         raise
@@ -77,10 +78,10 @@ async def create_model(req: LLMModelCreateRequest):
     """
     try:
         service = get_model_service()
-        
+
         # Generate unique ID
         model_id = f"model-{uuid.uuid4().hex[:12]}"
-        
+
         model = LLMModel(
             id=model_id,
             display_name=req.display_name,
@@ -91,10 +92,10 @@ async def create_model(req: LLMModelCreateRequest):
             max_tokens=req.max_tokens,
             description=req.description,
         )
-        
+
         created_model = service.add_model(model)
         logger.info("Model created", model_id=model_id, display_name=req.display_name)
-        
+
         return created_model
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -117,7 +118,7 @@ async def update_model(model_id: str, req: LLMModelCreateRequest):
     """
     try:
         service = get_model_service()
-        
+
         model = LLMModel(
             id=model_id,
             display_name=req.display_name,
@@ -128,10 +129,10 @@ async def update_model(model_id: str, req: LLMModelCreateRequest):
             max_tokens=req.max_tokens,
             description=req.description,
         )
-        
+
         updated_model = service.update_model(model_id, model)
         logger.info("Model updated", model_id=model_id)
-        
+
         return updated_model
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
@@ -154,10 +155,10 @@ async def delete_model(model_id: str):
     try:
         service = get_model_service()
         success = service.delete_model(model_id)
-        
+
         if not success:
             raise HTTPException(status_code=404, detail=f"Model {model_id} not found")
-        
+
         logger.info("Model deleted", model_id=model_id)
         return {"message": "Model deleted successfully", "model_id": model_id}
     except HTTPException:

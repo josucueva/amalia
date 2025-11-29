@@ -1,6 +1,7 @@
 """
 LLM service for handling model interactions.
 """
+
 import os
 import json
 from typing import List, Dict, Any, Optional, AsyncIterator, Union
@@ -106,32 +107,44 @@ class LLMService:
                     logger.error(
                         "LLM returned empty response",
                         model=model,
-                        has_choices=hasattr(response, 'choices'),
-                        choices_length=len(response.choices) if hasattr(response, 'choices') else None,
-                        response_dict=response.model_dump() if hasattr(response, 'model_dump') else str(response),
+                        has_choices=hasattr(response, "choices"),
+                        choices_length=(
+                            len(response.choices)
+                            if hasattr(response, "choices")
+                            else None
+                        ),
+                        response_dict=(
+                            response.model_dump()
+                            if hasattr(response, "model_dump")
+                            else str(response)
+                        ),
                     )
-                    
+
                     # Check for safety filters or blocked content
-                    if hasattr(response, 'prompt_feedback'):
+                    if hasattr(response, "prompt_feedback"):
                         logger.error(
                             "Response may be blocked by safety filters",
                             prompt_feedback=response.prompt_feedback,
                         )
-                    
+
                     return "I apologize, but I couldn't generate a response. This might be due to content filters or an API issue. Please try rephrasing your request."
-                
+
                 # Check for tool calls
                 choice = response.choices[0]
-                
+
                 # Log the raw response for debugging
                 logger.debug(
                     "LLM raw response",
                     model=model,
                     has_tool_calls=hasattr(choice.message, "tool_calls"),
-                    tool_calls=choice.message.tool_calls if hasattr(choice.message, "tool_calls") else None,
+                    tool_calls=(
+                        choice.message.tool_calls
+                        if hasattr(choice.message, "tool_calls")
+                        else None
+                    ),
                     content=choice.message.content,
                 )
-                
+
                 if hasattr(choice.message, "tool_calls") and choice.message.tool_calls:
                     # Return tool calls for external processing
                     return {
@@ -139,7 +152,11 @@ class LLMService:
                             {
                                 "id": tc.id,
                                 "name": tc.function.name,
-                                "arguments": json.loads(tc.function.arguments) if tc.function.arguments else {},
+                                "arguments": (
+                                    json.loads(tc.function.arguments)
+                                    if tc.function.arguments
+                                    else {}
+                                ),
                             }
                             for tc in choice.message.tool_calls
                         ]
@@ -153,7 +170,11 @@ class LLMService:
                     logger.info(
                         "LLM response generated",
                         model=model,
-                        tokens=response.usage.total_tokens if hasattr(response, "usage") else 0,
+                        tokens=(
+                            response.usage.total_tokens
+                            if hasattr(response, "usage")
+                            else 0
+                        ),
                         cost=cost,
                     )
                 except Exception as e:

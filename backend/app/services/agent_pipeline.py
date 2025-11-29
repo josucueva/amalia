@@ -2,6 +2,7 @@
 Agent pipeline service for handling multi-agent workflows.
 Implements the hidden agent flow: Interaction → Planner → Orchestrator
 """
+
 import json
 import re
 import structlog
@@ -22,11 +23,11 @@ MAX_TOOL_ITERATIONS = 10
 
 class AgentPipelineService:
     """Service for orchestrating multi-agent pipelines."""
-    
+
     def __init__(self, llm_service: LLMService, agent_registry: AgentRegistry):
         """
         Initialize the pipeline service.
-        
+
         Args:
             llm_service: LLM service instance
             agent_registry: Agent registry instance
@@ -34,7 +35,7 @@ class AgentPipelineService:
         self.llm_service = llm_service
         self.agent_registry = agent_registry
         self.model_service = ModelService()
-    
+
     async def _execute_tool_calls(
         self, mcp_service: MCPService, tool_calls: List[Dict[str, Any]]
     ) -> List[Dict[str, Any]]:
@@ -56,7 +57,11 @@ class AgentPipelineService:
                 # Format result content
                 if isinstance(tool_result, list):
                     output = "\n".join(
-                        str(item.get("text", item)) if isinstance(item, dict) else str(item)
+                        (
+                            str(item.get("text", item))
+                            if isinstance(item, dict)
+                            else str(item)
+                        )
                         for item in tool_result
                     )
                 else:
@@ -66,7 +71,9 @@ class AgentPipelineService:
                     {"tool_call_id": tool_call["id"], "role": "tool", "content": output}
                 )
             except Exception as e:
-                logger.error("Tool execution failed", tool=tool_call["name"], error=str(e))
+                logger.error(
+                    "Tool execution failed", tool=tool_call["name"], error=str(e)
+                )
                 tool_results.append(
                     {
                         "tool_call_id": tool_call["id"],
@@ -115,20 +122,22 @@ class AgentPipelineService:
 
             # Load MCP servers from both legacy config and new server IDs
             mcp_servers_config = {}
-            
+
             # New: Prefer mcp_server_ids if the field exists (even if empty list)
             # This allows users to explicitly disable MCP servers
-            if hasattr(agent.config, 'mcp_server_ids') and agent.config.mcp_server_ids is not None:
+            if (
+                hasattr(agent.config, "mcp_server_ids")
+                and agent.config.mcp_server_ids is not None
+            ):
                 # Use the new server IDs approach
                 mcp_server_service = get_mcp_server_service()
                 for server_id in agent.config.mcp_server_ids:
                     server = mcp_server_service.get_server(server_id)
                     if server and server.is_available:
                         from app.models.agent import MCPServerConfig
+
                         mcp_servers_config[server_id] = MCPServerConfig(
-                            command=server.command,
-                            args=server.args,
-                            env=server.env
+                            command=server.command, args=server.args, env=server.env
                         )
             elif agent.config.mcp_servers:
                 # Legacy: Fall back to old mcp_servers dict only if new field doesn't exist
@@ -166,7 +175,9 @@ class AgentPipelineService:
 
             # Build initial message context
             if agent.config.system_prompt:
-                messages.append({"role": "system", "content": agent.config.system_prompt})
+                messages.append(
+                    {"role": "system", "content": agent.config.system_prompt}
+                )
             if conversation_history:
                 messages.extend(conversation_history)
             messages.append({"role": "user", "content": user_message})
@@ -200,9 +211,11 @@ class AgentPipelineService:
                             "type": "function",
                             "function": {
                                 "name": tc["name"],
-                                "arguments": json.dumps(tc["arguments"])
-                                if not isinstance(tc["arguments"], str)
-                                else tc["arguments"],
+                                "arguments": (
+                                    json.dumps(tc["arguments"])
+                                    if not isinstance(tc["arguments"], str)
+                                    else tc["arguments"]
+                                ),
                             },
                         }
                         for tc in tool_calls
@@ -243,14 +256,14 @@ class AgentPipelineService:
             # Cleanup MCP connections
             if mcp_service:
                 await mcp_service.disconnect_all()
-    
+
     def _extract_json_from_response(self, response: str) -> Optional[Dict[str, Any]]:
         """
         Extract JSON from LLM response.
-        
+
         Args:
             response: LLM response text
-            
+
         Returns:
             Parsed JSON dict or None
         """
@@ -267,23 +280,21 @@ class AgentPipelineService:
                 return json.loads(response.strip())
         except (json.JSONDecodeError, AttributeError) as e:
             logger.warning("Failed to extract JSON from response", error=str(e))
-        
+
         return None
-    
+
     async def process_with_pipeline(
-        self,
-        user_message: str,
-        conversation_history: list
+        self, user_message: str, conversation_history: list
     ) -> Tuple[str, Optional[Dict[str, Any]]]:
         """
         Process a user message through the three-agent pipeline.
-        
+
         Flow: Interaction Agent → Planner Agent → Orchestrator Agent
-        
+
         Args:
             user_message: User's original message
             conversation_history: Previous messages
-            
+
         Returns:
             Tuple of (final_response, orchestration_data)
         """
@@ -292,86 +303,92 @@ class AgentPipelineService:
         if not interaction_agent:
             logger.error("Interaction agent not found")
             return "Interaction agent is not available.", None
-        
+
         logger.info("Step 1: Processing with interaction agent")
         interaction_response = await self._generate_agent_response_with_tools(
             agent=interaction_agent,
             user_message=user_message,
             conversation_history=conversation_history,
         )
-        
+
         # Check if interaction agent wants to plan a pipeline
         action_data = self._extract_json_from_response(interaction_response)
-        
+
         if not action_data or action_data.get("action") != "plan_pipeline":
             # No pipeline planning needed, return interaction agent's response
             logger.info("No pipeline planning requested")
             return interaction_response, None
-        
+
         improved_prompt = action_data.get("improved_prompt", user_message)
-        logger.info("Step 2: Interaction agent created improved prompt", 
-                   prompt_length=len(improved_prompt))
-        
+        logger.info(
+            "Step 2: Interaction agent created improved prompt",
+            prompt_length=len(improved_prompt),
+        )
+
         # Step 2: Planner Agent - Create execution plan
         planner_agent = self.agent_registry.get_agent_by_name("planner_agent")
         if not planner_agent:
             logger.error("Planner agent not found")
             return "Pipeline planning is not available.", None
-        
+
         logger.info("Step 3: Processing with planner agent")
         planner_response = await self._generate_agent_response_with_tools(
             agent=planner_agent,
             user_message=improved_prompt,
             conversation_history=[],  # Fresh context for planner
         )
-        
+
         plan_data = self._extract_json_from_response(planner_response)
-        
+
         if not plan_data or "plan" not in plan_data:
             logger.error("Planner failed to create valid plan")
             return "Failed to create execution plan.", None
-        
+
         plan = plan_data["plan"]
-        logger.info("Step 4: Planner created plan", 
-                   phases=len(plan.get("phases", [])),
-                   complexity=plan.get("complexity"))
-        
+        logger.info(
+            "Step 4: Planner created plan",
+            phases=len(plan.get("phases", [])),
+            complexity=plan.get("complexity"),
+        )
+
         # Step 3: Orchestrator Agent - Create canvas configuration
         orchestrator_agent = self.agent_registry.get_agent_by_name("orchestrator_agent")
         if not orchestrator_agent:
             logger.error("Orchestrator agent not found")
             return "Pipeline orchestration is not available.", None
-        
+
         # Convert plan to a message for orchestrator
         orchestrator_input = json.dumps(plan_data, indent=2)
-        
+
         logger.info("Step 5: Processing with orchestrator agent")
         orchestrator_response = await self._generate_agent_response_with_tools(
             agent=orchestrator_agent,
             user_message=f"Create a canvas configuration for this plan:\n\n{orchestrator_input}",
             conversation_history=[],  # Fresh context for orchestrator
         )
-        
+
         orchestration_data = self._extract_json_from_response(orchestrator_response)
-        
+
         if not orchestration_data or "orchestration" not in orchestration_data:
             logger.error("Orchestrator failed to create valid configuration")
             return "Failed to create pipeline configuration.", None
-        
+
         orchestration = orchestration_data["orchestration"]
-        
+
         # Map agent types to agent IDs
         orchestration = self._resolve_agent_types(orchestration)
-        
-        logger.info("Step 6: Orchestrator created configuration",
-                   nodes=len(orchestration.get("nodes", [])),
-                   connections=len(orchestration.get("connections", [])))
-        
+
+        logger.info(
+            "Step 6: Orchestrator created configuration",
+            nodes=len(orchestration.get("nodes", [])),
+            connections=len(orchestration.get("connections", [])),
+        )
+
         # Create final user-facing message
         objective = plan.get("objective", "your pipeline")
         phases_count = len(plan.get("phases", []))
         nodes_count = len(orchestration.get("nodes", []))
-        
+
         final_message = f"""✅ Pipeline created successfully!
 
 **Objective:** {objective}
@@ -382,21 +399,21 @@ class AgentPipelineService:
 - Complexity: {plan.get("complexity", "unknown")}
 
 Switch to Canvas Mode to see your pipeline in action!"""
-        
+
         return final_message, {"orchestration": orchestration}
-    
+
     def _resolve_agent_types(self, orchestration: Dict[str, Any]) -> Dict[str, Any]:
         """
         Resolve agent type names to actual agent IDs.
-        
+
         Args:
             orchestration: Orchestration data with agentType fields
-            
+
         Returns:
             Updated orchestration with agentId fields
         """
         nodes = orchestration.get("nodes", [])
-        
+
         for node in nodes:
             agent_type = node.get("agentType")
             if agent_type and "agentId" not in node:
@@ -405,63 +422,67 @@ Switch to Canvas Mode to see your pipeline in action!"""
                 if agent:
                     node["agentId"] = agent.id
                 else:
-                    logger.warning(f"Agent type '{agent_type}' not found, keeping type name")
+                    logger.warning(
+                        f"Agent type '{agent_type}' not found, keeping type name"
+                    )
                     node["agentId"] = agent_type
-        
+
         orchestration["nodes"] = nodes
         return orchestration
-    
+
     def execute_simple_build(self) -> Dict[str, Any]:
         """
         Simple build command for backward compatibility.
         Creates a basic pipeline with 2 random agents.
-        
+
         Returns:
             Orchestration data with nodes and connections
         """
         import random
         import time
-        
+
         # Get all available agents (excluding hidden and interaction agents)
         agents = self.agent_registry.list_agents()
         available_agents = [
-            agent for agent in agents 
-            if agent.config.name not in ["interaction_agent", "planner_agent", "orchestrator_agent"]
+            agent
+            for agent in agents
+            if agent.config.name
+            not in ["interaction_agent", "planner_agent", "orchestrator_agent"]
             and not agent.config.metadata.get("is_hidden", False)
         ]
-        
+
         if len(available_agents) < 2:
             raise ValueError("Not enough agents available")
-        
+
         # Select two random agents
         selected_agents = random.sample(available_agents, 2)
-        
+
         # Generate instance IDs
         timestamp = int(time.time() * 1000)
         instance1_id = f"instance_{timestamp}_{random.randint(1000, 9999)}"
         instance2_id = f"instance_{timestamp + 1}_{random.randint(1000, 9999)}"
-        
+
         orchestration = {
             "nodes": [
                 {
                     "instanceId": instance1_id,
                     "agentId": selected_agents[0].id,
-                    "position": {"x": 200, "y": 200}
+                    "position": {"x": 200, "y": 200},
                 },
                 {
                     "instanceId": instance2_id,
                     "agentId": selected_agents[1].id,
-                    "position": {"x": 500, "y": 200}
-                }
+                    "position": {"x": 500, "y": 200},
+                },
             ],
             "connections": [
                 {
                     "id": f"conn_{timestamp}",
                     "fromInstanceId": instance1_id,
-                    "toInstanceId": instance2_id
+                    "toInstanceId": instance2_id,
                 }
             ],
-            "message": f"Simple pipeline with {selected_agents[0].config.name} → {selected_agents[1].config.name}"
+            "message": f"Simple pipeline with {selected_agents[0].config.name} → {selected_agents[1].config.name}",
         }
-        
+
         return {"orchestration": orchestration}

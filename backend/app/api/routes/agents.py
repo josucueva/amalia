@@ -10,7 +10,10 @@ import uuid
 
 from app.models import Agent, AgentCreateRequest, AgentListResponse, AgentStatus
 from app.agents.registry import AgentRegistry
-from app.agents.config_loader import load_agent_configs_from_yaml, save_agent_config_to_yaml
+from app.agents.config_loader import (
+    load_agent_configs_from_yaml,
+    save_agent_config_to_yaml,
+)
 
 logger = structlog.get_logger()
 router = APIRouter()
@@ -39,7 +42,7 @@ def get_registry(req: Request) -> AgentRegistry:
 async def list_agents(request: Request, include_hidden: bool = False):
     """
     List all registered agents.
-    
+
     Args:
         include_hidden: Include hidden agents (planner, orchestrator)
 
@@ -48,13 +51,13 @@ async def list_agents(request: Request, include_hidden: bool = False):
     """
     try:
         all_agents = get_registry(request).list_agents()
-        
+
         # Filter out hidden agents unless explicitly requested
         if not include_hidden:
             agents = [agent for agent in all_agents if not agent.is_hidden()]
         else:
             agents = all_agents
-            
+
         return AgentListResponse(agents=agents, total=len(agents))
     except Exception as e:
         logger.error("Error listing agents", error=str(e))

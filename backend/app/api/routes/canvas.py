@@ -79,7 +79,9 @@ async def _execute_tool_calls(
     tool_results = []
     for tool_call in tool_calls:
         try:
-            tool_result = await mcp_service.execute_tool(tool_call["name"], tool_call["arguments"])
+            tool_result = await mcp_service.execute_tool(
+                tool_call["name"], tool_call["arguments"]
+            )
             # Format result content
             if isinstance(tool_result, list):
                 output = "\n".join(
@@ -138,7 +140,8 @@ async def execute_node(
         agent = agent_registry.get_agent(request_data.agentType)
         if not agent:
             raise HTTPException(
-                status_code=404, detail=f"Agent type '{request_data.agentType}' not found"
+                status_code=404,
+                detail=f"Agent type '{request_data.agentType}' not found",
             )
 
         # Prepare input for agent execution
@@ -151,7 +154,9 @@ async def execute_node(
                 ]
             )
         else:
-            combined_input = "No input data provided. Please process this request independently."
+            combined_input = (
+                "No input data provided. Please process this request independently."
+            )
 
         # Get LLM service
         settings = get_settings()
@@ -186,7 +191,9 @@ async def execute_node(
         # Handle tool calls with proper LLM loop
         iteration = 0
         while (
-            isinstance(result, dict) and "tool_calls" in result and iteration < MAX_TOOL_ITERATIONS
+            isinstance(result, dict)
+            and "tool_calls" in result
+            and iteration < MAX_TOOL_ITERATIONS
         ):
             iteration += 1
             tool_calls = result["tool_calls"]
@@ -211,9 +218,11 @@ async def execute_node(
                         "type": "function",
                         "function": {
                             "name": tc["name"],
-                            "arguments": json.dumps(tc["arguments"])
-                            if not isinstance(tc["arguments"], str)
-                            else tc["arguments"],
+                            "arguments": (
+                                json.dumps(tc["arguments"])
+                                if not isinstance(tc["arguments"], str)
+                                else tc["arguments"]
+                            ),
                         },
                     }
                     for tc in tool_calls
@@ -224,7 +233,11 @@ async def execute_node(
             messages.append(assistant_message)
             for tr in tool_results:
                 messages.append(
-                    {"role": "tool", "tool_call_id": tr["tool_call_id"], "content": tr["content"]}
+                    {
+                        "role": "tool",
+                        "tool_call_id": tr["tool_call_id"],
+                        "content": tr["content"],
+                    }
                 )
 
             # Get next response from LLM
@@ -258,7 +271,9 @@ async def execute_node(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error("Error executing node", error=str(e), instance_id=request_data.instanceId)
+        logger.error(
+            "Error executing node", error=str(e), instance_id=request_data.instanceId
+        )
         return ExecuteNodeResponse(
             instanceId=request_data.instanceId,
             agentType=request_data.agentType,

@@ -1,6 +1,7 @@
 """
 MCP Server persistence and management service.
 """
+
 import json
 import uuid
 from pathlib import Path
@@ -42,15 +43,21 @@ class MCPServerService:
     def _load_servers(self):
         """Load MCP servers from JSON file."""
         try:
-            with open(self.servers_file, 'r') as f:
+            with open(self.servers_file, "r") as f:
                 data = json.load(f)
                 self.servers = {
                     server_id: MCPServer(**server_data)
                     for server_id, server_data in data.items()
                 }
-            logger.info("MCP servers loaded", count=len(self.servers), file=str(self.servers_file))
+            logger.info(
+                "MCP servers loaded",
+                count=len(self.servers),
+                file=str(self.servers_file),
+            )
         except Exception as e:
-            logger.error("Error loading MCP servers", error=str(e), file=str(self.servers_file))
+            logger.error(
+                "Error loading MCP servers", error=str(e), file=str(self.servers_file)
+            )
             # Don't create defaults on error - let user explicitly add servers
             self.servers = {}
             logger.warning("Started with empty MCP servers list")
@@ -62,10 +69,14 @@ class MCPServerService:
                 id="filesystem",
                 name="Filesystem",
                 command="npx",
-                args=["-y", "@modelcontextprotocol/server-filesystem", "/app/data/uploads"],
+                args=[
+                    "-y",
+                    "@modelcontextprotocol/server-filesystem",
+                    "/app/data/uploads",
+                ],
                 env={},
                 description="Access and manage files in the uploads directory",
-                is_available=True
+                is_available=True,
             ),
         ]
 
@@ -77,17 +88,26 @@ class MCPServerService:
         """Save MCP servers to JSON file atomically."""
         try:
             # Write to temporary file first
-            temp_file = self.servers_file.with_suffix('.tmp')
-            data = {server_id: server.model_dump() for server_id, server in self.servers.items()}
+            temp_file = self.servers_file.with_suffix(".tmp")
+            data = {
+                server_id: server.model_dump()
+                for server_id, server in self.servers.items()
+            }
 
-            with open(temp_file, 'w') as f:
+            with open(temp_file, "w") as f:
                 json.dump(data, f, indent=2)
 
             # Atomic replace
             temp_file.replace(self.servers_file)
-            logger.info("MCP servers saved", count=len(self.servers), file=str(self.servers_file))
+            logger.info(
+                "MCP servers saved",
+                count=len(self.servers),
+                file=str(self.servers_file),
+            )
         except Exception as e:
-            logger.error("Error saving MCP servers", error=str(e), file=str(self.servers_file))
+            logger.error(
+                "Error saving MCP servers", error=str(e), file=str(self.servers_file)
+            )
             raise
 
     def get_all_servers(self) -> list[MCPServer]:

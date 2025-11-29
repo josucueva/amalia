@@ -1,11 +1,16 @@
 """
 API routes for MCP server management.
 """
+
 from fastapi import APIRouter, HTTPException
 import structlog
 import uuid
 
-from app.models.mcp_server import MCPServer, MCPServerCreateRequest, MCPServerListResponse
+from app.models.mcp_server import (
+    MCPServer,
+    MCPServerCreateRequest,
+    MCPServerListResponse,
+)
 from app.services.mcp_server_service import get_mcp_server_service
 
 router = APIRouter(prefix="/api/mcp-servers", tags=["mcp-servers"])
@@ -53,7 +58,9 @@ async def get_mcp_server(server_id: str):
         server = service.get_server(server_id)
 
         if not server:
-            raise HTTPException(status_code=404, detail=f"MCP server {server_id} not found")
+            raise HTTPException(
+                status_code=404, detail=f"MCP server {server_id} not found"
+            )
 
         return server
     except HTTPException:
@@ -79,7 +86,7 @@ async def create_mcp_server(req: MCPServerCreateRequest):
 
         # Generate unique ID from name
         server_id = req.name.lower().replace(" ", "-").replace("_", "-")
-        
+
         # If ID exists, append random suffix
         if service.get_server(server_id):
             server_id = f"{server_id}-{uuid.uuid4().hex[:6]}"
@@ -91,7 +98,7 @@ async def create_mcp_server(req: MCPServerCreateRequest):
             args=req.args,
             env=req.env,
             description=req.description,
-            is_available=True
+            is_available=True,
         )
 
         created_server = service.add_server(server)
@@ -127,7 +134,7 @@ async def update_mcp_server(server_id: str, req: MCPServerCreateRequest):
             args=req.args,
             env=req.env,
             description=req.description,
-            is_available=True
+            is_available=True,
         )
 
         updated_server = service.update_server(server_id, server)
@@ -157,7 +164,9 @@ async def delete_mcp_server(server_id: str):
         success = service.delete_server(server_id)
 
         if not success:
-            raise HTTPException(status_code=404, detail=f"MCP server {server_id} not found")
+            raise HTTPException(
+                status_code=404, detail=f"MCP server {server_id} not found"
+            )
 
         logger.info("MCP server deleted", server_id=server_id)
         return {"message": "MCP server deleted successfully", "server_id": server_id}

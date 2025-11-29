@@ -1,6 +1,7 @@
 """
 Service for managing LLM model configurations.
 """
+
 import json
 import os
 from pathlib import Path
@@ -37,15 +38,19 @@ class ModelService:
             return
 
         try:
-            with open(self.models_file, 'r') as f:
+            with open(self.models_file, "r") as f:
                 data = json.load(f)
                 self.models = {
                     model_id: LLMModel(**model_data)
                     for model_id, model_data in data.items()
                 }
-            logger.info("Models loaded", count=len(self.models), file=str(self.models_file))
+            logger.info(
+                "Models loaded", count=len(self.models), file=str(self.models_file)
+            )
         except Exception as e:
-            logger.error("Error loading models", error=str(e), file=str(self.models_file))
+            logger.error(
+                "Error loading models", error=str(e), file=str(self.models_file)
+            )
             self._create_default_models()
 
     def _create_default_models(self):
@@ -60,7 +65,7 @@ class ModelService:
                 is_available=True,
                 supports_function_calling=False,
                 max_tokens=8000,
-                description="Fast and capable 70B model (no function calling support)"
+                description="Fast and capable 70B model (no function calling support)",
             ),
             LLMModel(
                 id="gemini-2.5-flash",
@@ -71,7 +76,7 @@ class ModelService:
                 is_available=True,
                 supports_function_calling=True,
                 max_tokens=8192,
-                description="Fast Gemini 2.5 model"
+                description="Fast Gemini 2.5 model",
             ),
             LLMModel(
                 id="gemini-2.5-pro",
@@ -82,10 +87,10 @@ class ModelService:
                 is_available=True,
                 supports_function_calling=True,
                 max_tokens=8192,
-                description="Advanced Gemini 2.5 model with enhanced capabilities"
+                description="Advanced Gemini 2.5 model with enhanced capabilities",
             ),
         ]
-        
+
         self.models = {model.id: model for model in default_models}
         self._save_models()
         logger.info("Default models created", count=len(self.models))
@@ -94,17 +99,23 @@ class ModelService:
         """Save models to JSON file atomically."""
         try:
             # Write to temporary file first
-            temp_file = self.models_file.with_suffix('.tmp')
-            data = {model_id: model.model_dump() for model_id, model in self.models.items()}
-            
-            with open(temp_file, 'w') as f:
+            temp_file = self.models_file.with_suffix(".tmp")
+            data = {
+                model_id: model.model_dump() for model_id, model in self.models.items()
+            }
+
+            with open(temp_file, "w") as f:
                 json.dump(data, f, indent=2)
-            
+
             # Atomic replace
             temp_file.replace(self.models_file)
-            logger.info("Models saved", count=len(self.models), file=str(self.models_file))
+            logger.info(
+                "Models saved", count=len(self.models), file=str(self.models_file)
+            )
         except Exception as e:
-            logger.error("Error saving models", error=str(e), file=str(self.models_file))
+            logger.error(
+                "Error saving models", error=str(e), file=str(self.models_file)
+            )
             raise
 
     def _check_availability(self, model: LLMModel) -> bool:
@@ -119,7 +130,7 @@ class ModelService:
         """
         if not model.api_key_name:
             return True
-        
+
         return bool(os.environ.get(model.api_key_name))
 
     def get_all_models(self) -> list[LLMModel]:
@@ -132,7 +143,7 @@ class ModelService:
         # Update availability based on current environment
         for model in self.models.values():
             model.is_available = self._check_availability(model)
-        
+
         return list(self.models.values())
 
     def get_available_models(self) -> list[LLMModel]:
@@ -172,7 +183,7 @@ class ModelService:
         """
         if model.id in self.models:
             raise ValueError(f"Model with ID {model.id} already exists")
-        
+
         model.is_available = self._check_availability(model)
         self.models[model.id] = model
         self._save_models()
@@ -192,7 +203,7 @@ class ModelService:
         """
         if model_id not in self.models:
             raise ValueError(f"Model with ID {model_id} not found")
-        
+
         model.id = model_id  # Ensure ID doesn't change
         model.is_available = self._check_availability(model)
         self.models[model_id] = model
@@ -212,7 +223,7 @@ class ModelService:
         """
         if model_id not in self.models:
             return False
-        
+
         del self.models[model_id]
         self._save_models()
         logger.info("Model deleted", model_id=model_id)
