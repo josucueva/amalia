@@ -257,6 +257,23 @@ class AgentPipelineService:
             if mcp_service:
                 await mcp_service.disconnect_all()
 
+    def _extract_file_path_from_message(self, message: str) -> Optional[str]:
+        """
+        Extract file path from user message.
+
+        Args:
+            message: User message potentially containing file attachment info
+
+        Returns:
+            File path or None
+        """
+        import re
+        # Look for pattern: [File attached: filename at path: /app/data/...]
+        match = re.search(r"\[File attached:.*?at path: ([^\]]+)\]", message)
+        if match:
+            return match.group(1).strip()
+        return None
+
     def _extract_json_from_response(self, response: str) -> Optional[Dict[str, Any]]:
         """
         Extract JSON from LLM response.
@@ -320,9 +337,18 @@ class AgentPipelineService:
             return interaction_response, None
 
         improved_prompt = action_data.get("improved_prompt", user_message)
+        
+        # Extract file path if present
+        file_path = self._extract_file_path_from_message(user_message)
+        if file_path:
+            logger.info("File path extracted from message", file_path=file_path)
+            # Add file path to improved prompt for planner
+            improved_prompt = f"{improved_prompt}\n\n[ATTACHED_FILE: {file_path}]"
+        
         logger.info(
             "Step 2: Interaction agent created improved prompt",
             prompt_length=len(improved_prompt),
+            has_file=bool(file_path),
         )
 
         # Step 2: Planner Agent - Create execution plan
@@ -377,11 +403,18 @@ class AgentPipelineService:
 
         # Map agent types to agent IDs
         orchestration = self._resolve_agent_types(orchestration)
+        
+        # Add file path to first node if file was attached
+        if file_path and orchestration.get("nodes"):
+            first_node = orchestration["nodes"][0]
+            first_node["filePath"] = file_path
+            logger.info("File path added to first node", instance_id=first_node.get("instanceId"), file_path=file_path)
 
         logger.info(
             "Step 6: Orchestrator created configuration",
             nodes=len(orchestration.get("nodes", [])),
             connections=len(orchestration.get("connections", [])),
+            has_file=bool(file_path),
         )
 
         # Create final user-facing message

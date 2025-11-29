@@ -443,6 +443,8 @@ class App {
           agentType: agentId, // Send agentId as agentType
           inputs,
           config: instanceConfig, // Send instance-specific config
+          mcpServerIds: agentData.mcpServerIds || [], // Send MCP server IDs
+          filePath: agentData.filePath || null, // Send file path if attached
         }),
       });
 
@@ -495,11 +497,21 @@ class App {
 
     const inputBadge = node.querySelector(".input-badge");
     const outputBadge = node.querySelector(".output-badge");
+    const agentData = JSON.parse(node.dataset.agentData || "{}");
 
-    // Show input badge if node received inputs
-    if (inputBadge && executionData.inputs > 0) {
-      inputBadge.style.display = "flex";
-      inputBadge.title = `${executionData.inputs} input(s) received`;
+    // Show input badge if node received inputs OR has a file attached
+    if (inputBadge) {
+      const hasInputs = executionData.inputs > 0;
+      const hasFile = agentData.filePath;
+
+      if (hasInputs || hasFile) {
+        inputBadge.style.display = "flex";
+        if (hasFile && executionData.inputs === 0) {
+          inputBadge.title = "File input attached";
+        } else {
+          inputBadge.title = `${executionData.inputs} input(s) received`;
+        }
+      }
     }
 
     // Show output badge if node produced output
@@ -556,6 +568,10 @@ class App {
       };
     });
 
+    // Check if this node has a file attached
+    const hasFileInput = agentInstance.filePath;
+    const totalInputs = inputData.length + (hasFileInput ? 1 : 0);
+
     // Create modal
     const modal = document.createElement("div");
     modal.className = "modal";
@@ -606,9 +622,29 @@ class App {
 
           <!-- Input Data Section -->
           <div class="data-section">
-            <h3>Input Data (${inputData.length} connection${
-      inputData.length === 1 ? "" : "s"
+            <h3>Input Data (${totalInputs} source${
+      totalInputs === 1 ? "" : "s"
     })</h3>
+            ${
+              hasFileInput
+                ? `
+              <div class="data-connections">
+                <div class="connection-data">
+                  <div class="connection-header">
+                    <span class="connection-label">File Input</span>
+                    <span class="connection-id monospace">Attached File</span>
+                  </div>
+                  <pre class="data-preview file-path-display">
+File Path: ${agentInstance.filePath}
+
+Note: Agent should use MCP filesystem tools to read this file.
+The file path has been passed to the agent's execution context.
+                  </pre>
+                </div>
+              </div>
+            `
+                : ""
+            }
             ${
               inputData.length > 0
                 ? `
@@ -640,7 +676,9 @@ class App {
                   .join("")}
               </div>
             `
-                : '<p class="no-data">No input connections</p>'
+                : !hasFileInput
+                ? '<p class="no-data">No input connections</p>'
+                : ""
             }
           </div>
 
@@ -1341,6 +1379,7 @@ class App {
 
       // Show normal controls
       menu.innerHTML = `
+        <button class="agent-node-menu-btn" data-action="execute-prompt" title="Execute with custom prompt">EXECUTE</button>
         ${
           hasExecutionData
             ? '<button class="agent-node-menu-btn" data-action="view-data">VIEW DATA</button>'
@@ -1352,11 +1391,11 @@ class App {
       `;
     }
 
-    // Position menu above the node
+    // Position menu to the right of the node
     const nodeRect = node.getBoundingClientRect();
     const parentRect = node.parentElement.getBoundingClientRect();
-    menu.style.left = nodeRect.left - parentRect.left + "px";
-    menu.style.bottom = parentRect.bottom - nodeRect.top + 8 + "px";
+    menu.style.left = nodeRect.right - parentRect.left + 8 + "px";
+    menu.style.top = nodeRect.top - parentRect.top + "px";
 
     node.parentElement.appendChild(menu);
 
@@ -1394,6 +1433,17 @@ class App {
       }
     } else {
       // Normal menu event listeners
+      const executePromptBtn = menu.querySelector(
+        '[data-action="execute-prompt"]'
+      );
+      if (executePromptBtn) {
+        executePromptBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          this.showExecutePromptModal(node, agentInstance);
+          this.hideNodeActionMenu();
+        });
+      }
+
       const viewDataBtn = menu.querySelector('[data-action="view-data"]');
       if (viewDataBtn) {
         viewDataBtn.addEventListener("click", (e) => {
@@ -1496,6 +1546,178 @@ class App {
       document.removeEventListener("click", this.menuCloseListener);
       this.menuCloseListener = null;
     }
+  }
+
+  showExecutePromptModal(node, agentInstance) {
+    const instanceId = node.dataset.instanceId;
+
+    // Create modal
+    const modal = document.createElement("div");
+    modal.className = "modal";
+    modal.id = "execute-prompt-modal";
+    modal.style.display = "flex";
+
+    modal.innerHTML = `
+      <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-header">
+          <h2>Execute Agent: ${
+            agentInstance.config?.name || agentInstance.id
+          }</h2>
+          <button class="modal-close" onclick="document.getElementById('execute-prompt-modal').remove()">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="execute-user-prompt">User Prompt</label>
+            <textarea
+              id="execute-user-prompt"
+              class="form-control"
+              rows="6"
+              placeholder="Enter a custom prompt to execute this agent directly (bypasses interaction agent for testing)..."
+              autofocus
+            ></textarea>
+            <small class="form-help">
+              This prompt will be sent directly to the agent for execution. 
+              Use this to test individual agents without going through the full pipeline.
+            </small>
+          </div>
+          <div class="form-group">
+            <label>Agent Info</label>
+            <div class="agent-info-grid">
+              <div class="info-field">
+                <span class="info-label">Type:</span>
+                <span class="info-value">${
+                  agentInstance.config?.name || "N/A"
+                }</span>
+              </div>
+              <div class="info-field">
+                <span class="info-label">Model:</span>
+                <span class="info-value">${
+                  agentInstance.config?.model || "N/A"
+                }</span>
+              </div>
+              <div class="info-field">
+                <span class="info-label">Instance ID:</span>
+                <span class="info-value monospace">${instanceId}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" onclick="document.getElementById('execute-prompt-modal').remove()">
+            Cancel
+          </button>
+          <button class="btn btn-primary" id="execute-prompt-btn">
+            Execute Agent
+          </button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Initialize Lucide icons
+    if (globalThis.lucide) {
+      globalThis.lucide.createIcons();
+    }
+
+    // Handle execute button
+    const executeBtn = document.getElementById("execute-prompt-btn");
+    const promptTextarea = document.getElementById("execute-user-prompt");
+
+    executeBtn.addEventListener("click", async () => {
+      const userPrompt = promptTextarea.value.trim();
+
+      if (!userPrompt) {
+        showToast("Please enter a prompt", "warning");
+        promptTextarea.focus();
+        return;
+      }
+
+      // Close modal
+      modal.remove();
+
+      // Execute the node with the custom prompt
+      try {
+        this.setNodeExecutionState(node, "running");
+
+        // Get input from connected nodes
+        const connections = this.connectionManager.getConnectionsData();
+        const inputs = connections
+          .filter((conn) => conn.to.instanceId === instanceId)
+          .map((conn) => this.executionResults.get(conn.from.instanceId))
+          .filter((result) => result !== undefined);
+
+        // Add user prompt as additional context
+        const promptInput = {
+          instanceId: "user_prompt",
+          agentType: "user_input",
+          output: userPrompt,
+          timestamp: new Date().toISOString(),
+          inputs: 0,
+        };
+
+        // Prepend user prompt to inputs
+        const allInputs = [promptInput, ...inputs];
+
+        // Execute via API
+        const response = await fetch(`${API_BASE_URL}/api/canvas/execute`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            instanceId,
+            agentType: node.dataset.agentId,
+            inputs: allInputs,
+            config: agentInstance.config || null,
+            mcpServerIds: agentInstance.mcpServerIds || [],
+            filePath: agentInstance.filePath || null,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to execute agent: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+
+        if (result.error) {
+          throw new Error(result.error);
+        }
+
+        // Store and display results
+        this.executionResults.set(instanceId, result);
+        this.updateNodeDataBadges(node, result);
+        this.setNodeExecutionState(node, "completed");
+
+        showToast("Agent executed successfully", "success");
+      } catch (error) {
+        console.error("Error executing agent:", error);
+        this.setNodeExecutionState(node, "error");
+        showToast(`Execution failed: ${error.message}`, "error");
+      }
+    });
+
+    // Close on overlay click
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) {
+        modal.remove();
+      }
+    });
+
+    // Close on Escape key
+    const escapeHandler = (e) => {
+      if (e.key === "Escape") {
+        modal.remove();
+        document.removeEventListener("keydown", escapeHandler);
+      }
+    };
+    document.addEventListener("keydown", escapeHandler);
+
+    // Focus the textarea
+    setTimeout(() => promptTextarea.focus(), 100);
   }
 
   duplicateAgentNode(originalNode, agentInstance) {
@@ -1634,11 +1856,17 @@ class App {
         ...agent,
         instanceId: nodeData.instanceId,
         position: nodeData.position,
+        mcpServerIds: nodeData.mcpServerIds || [],
+        filePath: nodeData.filePath || null,
       };
 
       node.dataset.agentData = JSON.stringify(agentInstance);
       node.style.left = `${nodeData.position.x}px`;
       node.style.top = `${nodeData.position.y}px`;
+
+      // Count MCP tools for consistency with manually created nodes
+      const mcpServers = agent.config.mcp_servers || {};
+      const toolCount = Object.keys(mcpServers).length;
 
       node.innerHTML = `
         <div class="agent-node-header">
@@ -1647,9 +1875,32 @@ class App {
               ? `<i data-lucide="${agent.config.icon}" class="agent-node-icon"></i>`
               : `<span class="agent-node-name">${agent.config.name}</span>`
           }
+          ${
+            toolCount > 0
+              ? `<span class="tool-count-badge">${toolCount}</span>`
+              : ""
+          }
         </div>
+        <div class="agent-node-model" title="Model: ${agent.config.model}">${
+        agent.config.model
+      }</div>
+        ${
+          nodeData.filePath
+            ? '<div class="node-file-indicator" title="File attached: ' +
+              nodeData.filePath.split("/").pop() +
+              '"><i data-lucide="file-text"></i></div>'
+            : ""
+        }
         <div class="agent-node-input" data-port="input" title="Input connection"></div>
         <div class="agent-node-output" data-port="output" title="Output connection"></div>
+        <div class="agent-node-data-badges">
+          <span class="data-badge input-badge" style="display: none;" title="Has input data">
+            <i data-lucide="arrow-down-to-line"></i>
+          </span>
+          <span class="data-badge output-badge" style="display: none;" title="Has output data">
+            <i data-lucide="arrow-up-from-line"></i>
+          </span>
+        </div>
       `;
 
       // Make draggable

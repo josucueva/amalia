@@ -12,6 +12,8 @@ import structlog
 from app.services.agent_pipeline import AgentPipelineService
 from app.services.llm_service import get_llm_service
 from app.services.mcp_service import MCPService
+from app.services.mcp_server_service import get_mcp_server_service
+from app.services.model_service import ModelService
 from app.config import get_settings
 
 logger = structlog.get_logger()
@@ -54,6 +56,8 @@ class ExecuteNodeRequest(BaseModel):
     agentType: str
     inputs: List[dict] = []
     config: Optional[Dict[str, Any]] = None  # Instance-specific config overrides
+    mcpServerIds: Optional[List[str]] = None  # MCP server IDs for this instance
+    filePath: Optional[str] = None  # File path attached to this node
 
 
 class ExecuteNodeResponse(BaseModel):
@@ -158,6 +162,19 @@ async def execute_node(
             combined_input = (
                 "No input data provided. Please process this request independently."
             )
+        
+        # If this node has a file attached, prepend file path to input
+        if request_data.filePath:
+            file_instruction = f"""[FILE ATTACHED]
+You have access to a file at path: {request_data.filePath}
+
+Use the read_file or read_text_file tool to load and process this file.
+
+IMPORTANT: The file path is: {request_data.filePath}
+
+"""
+            combined_input = file_instruction + combined_input
+            logger.info("File path added to node input", instance_id=request_data.instanceId, file_path=request_data.filePath)
 
         # Get LLM service
         settings = get_settings()
@@ -166,7 +183,55 @@ async def execute_node(
         # Initialize MCP service if agent has MCP servers configured
         available_tools = []
 
-        if agent.config.mcp_servers:
+        # Use instance-specific MCP server IDs if provided, otherwise fall back to agent config
+        mcp_server_ids_to_use = (
+            request_data.mcpServerIds
+            if request_data.mcpServerIds is not None
+            else (
+                agent.config.mcp_server_ids
+                if hasattr(agent.config, "mcp_server_ids")
+                else None
+            )
+        )
+
+        # Check if model supports function calling
+        model_supports_tools = True
+        model_service = ModelService()
+        models = model_service.get_all_models()
+        for model in models:
+            if model.model_name == (
+                request_data.config.get("model", agent.config.model)
+                if request_data.config
+                else agent.config.model
+            ):
+                model_supports_tools = model.supports_function_calling
+                break
+
+        if mcp_server_ids_to_use and model_supports_tools:
+            # Load MCP servers using the new server IDs approach
+            mcp_service = MCPService()
+            mcp_server_service = get_mcp_server_service()
+            mcp_servers_config = {}
+
+            for server_id in mcp_server_ids_to_use:
+                server = mcp_server_service.get_server(server_id)
+                if server and server.is_available:
+                    from app.models.agent import MCPServerConfig
+
+                    mcp_servers_config[server_id] = MCPServerConfig(
+                        command=server.command, args=server.args, env=server.env
+                    )
+
+            if mcp_servers_config:
+                await mcp_service.connect_servers(mcp_servers_config)
+                available_tools = mcp_service.get_tools_for_llm()
+                logger.info(
+                    "MCP tools loaded for instance",
+                    instance_id=request_data.instanceId,
+                    tool_count=len(available_tools),
+                )
+        elif agent.config.mcp_servers:
+            # Legacy: Fall back to old mcp_servers dict if no server IDs provided
             mcp_service = MCPService()
             await mcp_service.connect_servers(agent.config.mcp_servers)
 

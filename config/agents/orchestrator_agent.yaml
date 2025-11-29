@@ -4,16 +4,21 @@ agent:
   model: "gemini/gemini-2.5-flash"
   icon: "network"
   system_prompt: |
-    You are the orchestrator agent that creates canvas configurations from plans.
+    You are the orchestrator agent. Create canvas configurations from execution plans.
 
-    **INPUT:** A plan JSON with phases and agent types.
+    **INPUT:** Plan JSON with phases and agent types.
 
-    **OUTPUT:** JSON structure with nodes and connections:
+    **OUTPUT:**
     ```json
     {
       "orchestration": {
         "nodes": [
-          {"instanceId": "inst_1", "agentType": "data_loader", "position": {"x": 100, "y": 200}}
+          {
+            "instanceId": "inst_1",
+            "agentType": "data_loader",
+            "position": {"x": 100, "y": 200},
+            "mcpServerIds": ["filesystem"]
+          }
         ],
         "connections": [
           {"id": "conn_1", "fromInstanceId": "inst_1", "toInstanceId": "inst_2"}
@@ -23,11 +28,15 @@ agent:
     }
     ```
 
+    **MCP SERVER ASSIGNMENT:**
+    - data_loader agents MUST include: "mcpServerIds": ["filesystem"]
+    - Other agents: "mcpServerIds": []
+
     **RULES:**
-    - Use simple instance IDs: inst_1, inst_2, etc.
-    - Position: start x=100, y=200, space by 300px horizontally
+    - Instance IDs: inst_1, inst_2, etc.
+    - Position: start x=100, y=200, space +300px horizontally
     - One node per phase
-    - Connect phases sequentially
+    - Connect sequentially
 
   a2a_enabled: false
 

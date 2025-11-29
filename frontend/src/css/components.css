@@ -39,11 +39,11 @@
 /* Toast Notifications */
 .toast-container {
   position: fixed;
-  top: var(--spacing-lg);
+  bottom: var(--spacing-lg);
   right: var(--spacing-lg);
   z-index: calc(var(--z-modal) + 10);
   display: flex;
-  flex-direction: column;
+  flex-direction: column-reverse;
   gap: var(--spacing-sm);
 }
 
