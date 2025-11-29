@@ -13,6 +13,7 @@ import FileUpload from "./components/FileUpload.js";
 import AgentConfig from "./components/AgentConfig.js";
 import ConnectionManager from "./managers/ConnectionManager.js";
 import { showToast } from "./utils/helpers.js";
+import state from "./utils/state.js";
 import config from "./config.js";
 
 const { API_BASE_URL } = config;
@@ -109,11 +110,29 @@ class App {
         fileInputInline.click();
       });
 
-      fileInputInline.addEventListener("change", (e) => {
+      fileInputInline.addEventListener("change", async (e) => {
         const file = e.target.files[0];
         if (file) {
-          this.handleFileUpload(file);
+          await this.handleFileUpload(file);
         }
+      });
+    }
+
+    // Setup remove file button
+    const removeFileBtn = document.getElementById("remove-file-btn");
+    const filePreview = document.getElementById("file-preview");
+    if (removeFileBtn && filePreview) {
+      removeFileBtn.addEventListener("click", () => {
+        console.log("[DEBUG] Removing file from state (main.js)");
+        state.setState({ currentFile: null });
+        filePreview.style.display = "none";
+        if (fileInputInline) {
+          fileInputInline.value = "";
+        }
+        console.log(
+          "[DEBUG] File removed, state.currentFile:",
+          state.getState().currentFile
+        );
       });
     }
 
@@ -161,22 +180,51 @@ class App {
     console.log("✓ Application initialized successfully");
   }
 
-  handleFileUpload(file) {
+  async handleFileUpload(file) {
+    console.log("[DEBUG] handleFileUpload called with:", file.name, file.size);
+
     if (!file.name.endsWith(".csv")) {
       showToast("Please upload a CSV file", "error");
       return;
     }
 
-    const filePreview = document.getElementById("file-preview");
-    const fileName = filePreview.querySelector(".file-name");
+    // Validate file size (50MB)
+    const maxSize = 50 * 1024 * 1024;
+    if (file.size > maxSize) {
+      showToast("File size exceeds 50MB limit", "error");
+      return;
+    }
 
-    fileName.textContent = file.name;
-    filePreview.style.display = "flex";
+    try {
+      showToast("Uploading file...", "info");
+      console.log("[DEBUG] Calling api.uploadFile...");
 
-    // Store file for later use
-    this.uploadedFile = file;
+      // Actually upload the file to the server
+      const response = await api.uploadFile(file);
+      console.log("[DEBUG] Upload response:", response);
 
-    showToast(`File "${file.name}" ready to upload`, "info");
+      // Store in state for chat to access
+      state.setState({ currentFile: response });
+      console.log("[DEBUG] State updated with currentFile:", response);
+
+      // Verify state was set
+      const currentState = state.getState();
+      console.log(
+        "[DEBUG] Verified state.currentFile:",
+        currentState.currentFile
+      );
+
+      // Show file preview in chat
+      const filePreview = document.getElementById("file-preview");
+      const fileName = filePreview.querySelector(".file-name");
+      fileName.textContent = `📄 ${file.name} (${response.size_mb} MB)`;
+      filePreview.style.display = "flex";
+
+      showToast(`File "${file.name}" uploaded successfully`, "success");
+    } catch (error) {
+      console.error("[DEBUG] Upload error:", error);
+      showToast("File upload failed. Please try again.", "error");
+    }
   }
 
   async openInteractionAgentConfig() {

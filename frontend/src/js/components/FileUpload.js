@@ -104,8 +104,11 @@ class FileUpload {
   }
 
   async uploadFile(file) {
+    console.log("[DEBUG] uploadFile called with:", file.name, file.size);
+
     // Validate file type
     if (!file.name.endsWith(".csv")) {
+      console.log("[DEBUG] File validation failed: not CSV");
       showToast("Only CSV files are supported", "error");
       return;
     }
@@ -113,17 +116,28 @@ class FileUpload {
     // Validate file size (50MB)
     const maxSize = 50 * 1024 * 1024;
     if (file.size > maxSize) {
+      console.log("[DEBUG] File validation failed: too large");
       showToast("File size exceeds 50MB limit", "error");
       return;
     }
 
     try {
+      console.log("[DEBUG] Starting file upload...");
       showToast("Uploading file...", "info");
 
       const response = await api.uploadFile(file);
+      console.log("[DEBUG] Upload response:", response);
 
       // Update state
       state.setState({ currentFile: response });
+      console.log("[DEBUG] State updated with currentFile:", response);
+
+      // Verify state was set
+      const currentState = state.getState();
+      console.log(
+        "[DEBUG] Verified state.currentFile:",
+        currentState.currentFile
+      );
 
       // Show file preview
       this.showFilePreview(file.name, response.size_mb);
@@ -133,8 +147,8 @@ class FileUpload {
 
       showToast(`File "${file.name}" uploaded successfully`, "success");
     } catch (error) {
+      console.error("[DEBUG] Upload error:", error);
       showToast("File upload failed. Please try again.", "error");
-      console.error("Upload error:", error);
     }
   }
 
@@ -145,9 +159,14 @@ class FileUpload {
   }
 
   removeFile() {
+    console.log("[DEBUG] Removing file from state");
     state.setState({ currentFile: null });
     this.filePreview.style.display = "none";
     this.fileInput.value = "";
+    console.log(
+      "[DEBUG] File removed, state.currentFile:",
+      state.getState().currentFile
+    );
   }
 }
 

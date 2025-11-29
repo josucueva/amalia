@@ -54,11 +54,36 @@ class Chat {
     this.showTypingIndicator();
 
     try {
+      // Get current file from state if one was uploaded
+      const currentFile = state.getState().currentFile;
+
+      // DEBUG: Log current file state
+      console.log("[DEBUG] Current file from state:", currentFile);
+
       // Send message to backend
-      const response = await api.sendMessage(
+      const requestData = {
         message,
-        state.getState().conversationId
-      );
+        conversation_id: state.getState().conversationId,
+        stream: false,
+      };
+
+      // Include file info if a file was uploaded
+      if (currentFile) {
+        requestData.attached_file = {
+          filename: currentFile.filename,
+          path: currentFile.path,
+          size_mb: currentFile.size_mb,
+          file_id: currentFile.file_id,
+        };
+        console.log(
+          "[DEBUG] Attaching file to request:",
+          requestData.attached_file
+        );
+      } else {
+        console.log("[DEBUG] No file attached to this message");
+      }
+
+      const response = await api.sendMessage(requestData);
 
       // Update conversation ID
       state.setState({ conversationId: response.conversation_id });

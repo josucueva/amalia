@@ -123,12 +123,20 @@ class ApiClient {
   }
 
   // Chat API
-  async sendMessage(message, conversationId = null) {
-    return this.post(API_ENDPOINTS.chat, {
-      message,
-      conversation_id: conversationId,
-      stream: false,
-    });
+  async sendMessage(requestData) {
+    // Support both old format (message, conversationId) and new format (requestData object)
+    if (typeof requestData === "string") {
+      // Old format: sendMessage(message, conversationId)
+      const message = requestData;
+      const conversationId = arguments[1] || null;
+      requestData = {
+        message,
+        conversation_id: conversationId,
+        stream: false,
+      };
+    }
+
+    return this.post(API_ENDPOINTS.chat, requestData);
   }
 
   async getConversationHistory(conversationId) {

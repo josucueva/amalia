@@ -42,5 +42,16 @@
     "supports_function_calling": true,
     "max_tokens": null,
     "description": null
+  },
+  "model-3ccd0e6e8510": {
+    "id": "model-3ccd0e6e8510",
+    "display_name": "Openrouter Grok 4.1 Fast Free",
+    "model_name": "openrouter/x-ai/grok-4.1-fast:free",
+    "provider": "custom",
+    "api_key_name": "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",
+    "is_available": false,
+    "supports_function_calling": false,
+    "max_tokens": 4000,
+    "description": null
   }
 }

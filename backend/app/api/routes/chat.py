@@ -52,14 +52,39 @@ async def chat(
         # Get or create conversation history
         history = conversation_history.get_history(conversation_id, max_messages=20)
 
-        # Add user message to history
+        # Prepare user message with file context if attached
+        user_message = request_data.message
+
+        # DEBUG: Log request data
+        logger.info(
+            "[DEBUG] Request data",
+            message_preview=user_message[:50],
+            has_attached_file=bool(request_data.attached_file),
+            attached_file=(
+                request_data.attached_file if request_data.attached_file else None
+            ),
+        )
+
+        if request_data.attached_file:
+            file_info = request_data.attached_file
+            file_context = f"\n\n[File attached: {file_info.get('filename')} ({file_info.get('size_mb', 0)} MB) at path: {file_info.get('path')}]"
+            user_message_with_context = user_message + file_context
+            logger.info(
+                "File attached to message",
+                filename=file_info.get("filename"),
+                path=file_info.get("path"),
+            )
+        else:
+            user_message_with_context = user_message
+
+        # Add user message to history (without file context for display)
         conversation_history.add_message(
             conversation_id=conversation_id, role="user", content=request_data.message
         )
 
         # Get agent registry from app state
         agent_registry = getattr(request.app.state, "agent_registry", None)
-        
+
         if not agent_registry:
             raise HTTPException(status_code=500, detail="Agent registry not available")
 
@@ -68,14 +93,17 @@ async def chat(
 
         # Process through the three-agent pipeline
         try:
-            assistant_content, orchestration_data = await pipeline_service.process_with_pipeline(
-                user_message=request_data.message,
-                conversation_history=history
+            assistant_content, orchestration_data = (
+                await pipeline_service.process_with_pipeline(
+                    user_message=user_message_with_context,  # Use message with file context
+                    conversation_history=history,
+                )
             )
         except Exception as pipeline_error:
             logger.error("Pipeline processing error", error=str(pipeline_error))
             raise HTTPException(
-                status_code=500, detail=f"Error processing pipeline: {str(pipeline_error)}"
+                status_code=500,
+                detail=f"Error processing pipeline: {str(pipeline_error)}",
             )
 
         # Add assistant response to history
