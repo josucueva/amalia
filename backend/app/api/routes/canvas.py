@@ -53,6 +53,7 @@ class ExecuteNodeRequest(BaseModel):
     instanceId: str
     agentType: str
     inputs: List[dict] = []
+    config: Optional[Dict[str, Any]] = None  # Instance-specific config overrides
 
 
 class ExecuteNodeResponse(BaseModel):
@@ -173,18 +174,40 @@ async def execute_node(
             available_tools = mcp_service.get_tools_for_llm()
             logger.info("MCP tools loaded", tool_count=len(available_tools))
 
+        # Use instance config overrides if provided
+        instance_model = (
+            request_data.config.get("model", agent.config.model)
+            if request_data.config
+            else agent.config.model
+        )
+        instance_temperature = (
+            request_data.config.get("temperature", agent.config.temperature)
+            if request_data.config
+            else agent.config.temperature
+        )
+        instance_max_tokens = (
+            request_data.config.get("max_tokens", agent.config.max_tokens)
+            if request_data.config
+            else agent.config.max_tokens
+        )
+        instance_system_prompt = (
+            request_data.config.get("system_prompt", agent.config.system_prompt)
+            if request_data.config
+            else agent.config.system_prompt
+        )
+
         # Build conversation messages for the LLM
         messages = [
-            {"role": "system", "content": agent.config.system_prompt},
+            {"role": "system", "content": instance_system_prompt},
             {"role": "user", "content": combined_input},
         ]
 
         # Execute the agent using LLM service with tools
         result = await llm_service.generate_response(
             messages=messages,
-            model=agent.config.model,
-            temperature=agent.config.temperature,
-            max_tokens=agent.config.max_tokens,
+            model=instance_model,
+            temperature=instance_temperature,
+            max_tokens=instance_max_tokens,
             tools=available_tools if available_tools else None,
         )
 
@@ -243,9 +266,9 @@ async def execute_node(
             # Get next response from LLM
             result = await llm_service.generate_response(
                 messages=messages,
-                model=agent.config.model,
-                temperature=agent.config.temperature,
-                max_tokens=agent.config.max_tokens,
+                model=instance_model,
+                temperature=instance_temperature,
+                max_tokens=instance_max_tokens,
                 tools=available_tools,
             )
 

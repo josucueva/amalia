@@ -418,6 +418,10 @@ class App {
     const instanceId = node.dataset.instanceId;
     const agentId = node.dataset.agentId; // This is the agent ID (e.g., "data_loader")
 
+    // Get instance data to extract config overrides
+    const agentData = JSON.parse(node.dataset.agentData || "{}");
+    const instanceConfig = agentData.config || null;
+
     // Get input from connected nodes
     const connections = this.connectionManager.getConnectionsData();
     const inputs = connections
@@ -436,6 +440,7 @@ class App {
           instanceId,
           agentType: agentId, // Send agentId as agentType
           inputs,
+          config: instanceConfig, // Send instance-specific config
         }),
       });
 
@@ -709,6 +714,9 @@ class App {
             : ""
         }
       </div>
+      <div class="agent-node-model" title="Model: ${agent.config.model}">${
+      agent.config.model
+    }</div>
       <div class="agent-node-input" data-port="input" title="Input connection"></div>
       <div class="agent-node-output" data-port="output" title="Output connection"></div>
     `;
@@ -1125,6 +1133,7 @@ class App {
               config: updatedConfig,
             };
             node.dataset.agentData = JSON.stringify(updatedInstance);
+
             // Update the displayed name and icon if changed
             const header = node.querySelector(".agent-node-header");
             if (header) {
@@ -1137,6 +1146,13 @@ class App {
               if (globalThis.lucide) {
                 globalThis.lucide.createIcons();
               }
+            }
+
+            // Update the model display
+            const modelDisplay = node.querySelector(".agent-node-model");
+            if (modelDisplay) {
+              modelDisplay.textContent = updatedConfig.model;
+              modelDisplay.title = `Model: ${updatedConfig.model}`;
             }
           });
           this.hideNodeActionMenu();

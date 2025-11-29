@@ -51,4 +51,3 @@ agent:
   metadata:
     category: "data_processing"
     priority: "high"
-    version: "1.0"
