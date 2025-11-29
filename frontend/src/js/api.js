@@ -185,6 +185,30 @@ class ApiClient {
     });
   }
 
+  // Models API
+  async listModels(availableOnly = false) {
+    const url = availableOnly
+      ? `${API_ENDPOINTS.models}?available_only=true`
+      : API_ENDPOINTS.models;
+    return this.get(url);
+  }
+
+  async getModel(modelId) {
+    return this.get(`${API_ENDPOINTS.models}/${modelId}`);
+  }
+
+  async addModel(data) {
+    return this.post(API_ENDPOINTS.models, data);
+  }
+
+  async updateModel(modelId, data) {
+    return this.put(`${API_ENDPOINTS.models}/${modelId}`, data);
+  }
+
+  async deleteModel(modelId) {
+    return this.delete(`${API_ENDPOINTS.models}/${modelId}`);
+  }
+
   // Health check
   async healthCheck() {
     return this.get(API_ENDPOINTS.health);

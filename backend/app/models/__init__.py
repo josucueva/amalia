@@ -7,7 +7,8 @@ from app.models.agent import (
     AgentStatus,
     AgentCreateRequest,
     AgentListResponse,
-    CommunicationConfig
+    CommunicationConfig,
+    MCPServerConfig
 )
 from app.models.message import (
     Message,
@@ -25,6 +26,7 @@ __all__ = [
     "AgentCreateRequest",
     "AgentListResponse",
     "CommunicationConfig",
+    "MCPServerConfig",
     "Message",
     "MessageRole",
     "MessageStatus",

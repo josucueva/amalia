@@ -5,12 +5,17 @@ Implements the hidden agent flow: Interaction → Planner → Orchestrator
 import json
 import re
 import structlog
-from typing import Dict, Any, Optional, Tuple
+from typing import Dict, Any, Optional, Tuple, List
 
 from app.services.llm_service import LLMService
+from app.services.mcp_service import MCPService
 from app.agents.registry import AgentRegistry
+from app.models.agent import Agent
 
 logger = structlog.get_logger()
+
+# Maximum number of tool call iterations to prevent infinite loops
+MAX_TOOL_ITERATIONS = 10
 
 
 class AgentPipelineService:
@@ -26,6 +31,173 @@ class AgentPipelineService:
         """
         self.llm_service = llm_service
         self.agent_registry = agent_registry
+    
+    async def _execute_tool_calls(
+        self, mcp_service: MCPService, tool_calls: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
+        """Execute a list of tool calls and return the results.
+
+        Args:
+            mcp_service: The MCP service instance to use.
+            tool_calls: List of tool call specifications.
+
+        Returns:
+            List of tool results with tool_call_id and output.
+        """
+        tool_results = []
+        for tool_call in tool_calls:
+            try:
+                tool_result = await mcp_service.execute_tool(
+                    tool_call["name"], tool_call["arguments"]
+                )
+                # Format result content
+                if isinstance(tool_result, list):
+                    output = "\n".join(
+                        str(item.get("text", item)) if isinstance(item, dict) else str(item)
+                        for item in tool_result
+                    )
+                else:
+                    output = str(tool_result)
+
+                tool_results.append(
+                    {"tool_call_id": tool_call["id"], "role": "tool", "content": output}
+                )
+            except Exception as e:
+                logger.error("Tool execution failed", tool=tool_call["name"], error=str(e))
+                tool_results.append(
+                    {
+                        "tool_call_id": tool_call["id"],
+                        "role": "tool",
+                        "content": f"Error executing tool: {str(e)}",
+                    }
+                )
+        return tool_results
+
+    async def _generate_agent_response_with_tools(
+        self,
+        agent: Agent,
+        user_message: str,
+        conversation_history: list,
+    ) -> str:
+        """Generate agent response with MCP tool support.
+
+        Args:
+            agent: The agent to use
+            user_message: User's message
+            conversation_history: Previous messages
+
+        Returns:
+            Final agent response as string
+        """
+        mcp_service = None
+
+        try:
+            # Initialize MCP service if agent has MCP servers configured
+            available_tools = []
+
+            if agent.config.mcp_servers:
+                mcp_service = MCPService()
+                await mcp_service.connect_servers(agent.config.mcp_servers)
+
+                # Get available tools in OpenAI function calling format
+                available_tools = mcp_service.get_tools_for_llm()
+                logger.info(
+                    "MCP tools loaded for agent",
+                    agent=agent.config.name,
+                    tool_count=len(available_tools),
+                )
+
+            # Generate initial response
+            result = await self.llm_service.generate_agent_response(
+                user_message=user_message,
+                agent_config=agent.config.dict(),
+                conversation_history=conversation_history,
+                tools=available_tools if available_tools else None,
+            )
+
+            # Handle tool calls with proper LLM loop
+            iteration = 0
+            messages = []
+
+            # Build initial message context
+            if agent.config.system_prompt:
+                messages.append({"role": "system", "content": agent.config.system_prompt})
+            if conversation_history:
+                messages.extend(conversation_history)
+            messages.append({"role": "user", "content": user_message})
+
+            while (
+                isinstance(result, dict)
+                and "tool_calls" in result
+                and iteration < MAX_TOOL_ITERATIONS
+            ):
+                iteration += 1
+                tool_calls = result["tool_calls"]
+
+                logger.info(
+                    "Processing tool calls",
+                    agent=agent.config.name,
+                    iteration=iteration,
+                    tool_count=len(tool_calls),
+                    tools=[tc["name"] for tc in tool_calls],
+                )
+
+                # Execute tools and collect results
+                tool_results = await self._execute_tool_calls(mcp_service, tool_calls)
+
+                # Build the assistant message with tool calls
+                assistant_message = {
+                    "role": "assistant",
+                    "content": None,
+                    "tool_calls": [
+                        {
+                            "id": tc["id"],
+                            "type": "function",
+                            "function": {
+                                "name": tc["name"],
+                                "arguments": json.dumps(tc["arguments"])
+                                if not isinstance(tc["arguments"], str)
+                                else tc["arguments"],
+                            },
+                        }
+                        for tc in tool_calls
+                    ],
+                }
+
+                # Add assistant message and tool results to conversation
+                messages.append(assistant_message)
+                for tr in tool_results:
+                    messages.append(
+                        {
+                            "role": "tool",
+                            "tool_call_id": tr["tool_call_id"],
+                            "content": tr["content"],
+                        }
+                    )
+
+                # Get next response from LLM
+                result = await self.llm_service.generate_response(
+                    messages=messages,
+                    model=agent.config.model,
+                    temperature=agent.config.temperature,
+                    max_tokens=agent.config.max_tokens,
+                    tools=available_tools,
+                )
+
+            if iteration >= MAX_TOOL_ITERATIONS:
+                logger.warning(
+                    "Max tool iterations reached",
+                    agent=agent.config.name,
+                    iterations=iteration,
+                )
+
+            # Return final response as string
+            return result if isinstance(result, str) else str(result)
+
+        finally:
+            # Cleanup MCP connections
+            if mcp_service:
+                await mcp_service.disconnect_all()
     
     def _extract_json_from_response(self, response: str) -> Optional[Dict[str, Any]]:
         """
@@ -77,10 +249,10 @@ class AgentPipelineService:
             return "Interaction agent is not available.", None
         
         logger.info("Step 1: Processing with interaction agent")
-        interaction_response = await self.llm_service.generate_agent_response(
+        interaction_response = await self._generate_agent_response_with_tools(
+            agent=interaction_agent,
             user_message=user_message,
-            agent_config=interaction_agent.config.dict(),
-            conversation_history=conversation_history
+            conversation_history=conversation_history,
         )
         
         # Check if interaction agent wants to plan a pipeline
@@ -102,10 +274,10 @@ class AgentPipelineService:
             return "Pipeline planning is not available.", None
         
         logger.info("Step 3: Processing with planner agent")
-        planner_response = await self.llm_service.generate_agent_response(
+        planner_response = await self._generate_agent_response_with_tools(
+            agent=planner_agent,
             user_message=improved_prompt,
-            agent_config=planner_agent.config.dict(),
-            conversation_history=[]  # Fresh context for planner
+            conversation_history=[],  # Fresh context for planner
         )
         
         plan_data = self._extract_json_from_response(planner_response)
@@ -129,10 +301,10 @@ class AgentPipelineService:
         orchestrator_input = json.dumps(plan_data, indent=2)
         
         logger.info("Step 5: Processing with orchestrator agent")
-        orchestrator_response = await self.llm_service.generate_agent_response(
+        orchestrator_response = await self._generate_agent_response_with_tools(
+            agent=orchestrator_agent,
             user_message=f"Create a canvas configuration for this plan:\n\n{orchestrator_input}",
-            agent_config=orchestrator_agent.config.dict(),
-            conversation_history=[]  # Fresh context for orchestrator
+            conversation_history=[],  # Fresh context for orchestrator
         )
         
         orchestration_data = self._extract_json_from_response(orchestrator_response)

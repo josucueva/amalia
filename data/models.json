@@ -1,0 +1,35 @@
+{
+  "groq-llama-3.3-70b": {
+    "id": "groq-llama-3.3-70b",
+    "display_name": "Groq Llama 3.3 70B",
+    "model_name": "groq/llama-3.3-70b-versatile",
+    "provider": "groq",
+    "api_key_name": "GROQ_API_KEY",
+    "is_available": true,
+    "supports_function_calling": true,
+    "max_tokens": 8000,
+    "description": "Fast and capable 70B model with function calling support"
+  },
+  "gemini-2.5-flash": {
+    "id": "gemini-2.5-flash",
+    "display_name": "Gemini 2.5 Flash",
+    "model_name": "gemini/gemini-2.5-flash",
+    "provider": "gemini",
+    "api_key_name": "GOOGLE_API_KEY",
+    "is_available": true,
+    "supports_function_calling": true,
+    "max_tokens": 8192,
+    "description": "Fast Gemini 2.5 model"
+  },
+  "gemini-2.5-pro": {
+    "id": "gemini-2.5-pro",
+    "display_name": "Gemini 2.5 Pro",
+    "model_name": "gemini/gemini-2.5-pro",
+    "provider": "gemini",
+    "api_key_name": "GOOGLE_API_KEY",
+    "is_available": true,
+    "supports_function_calling": true,
+    "max_tokens": 8192,
+    "description": "Advanced Gemini 2.5 model with enhanced capabilities"
+  }
+}

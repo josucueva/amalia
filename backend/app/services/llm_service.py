@@ -37,6 +37,9 @@ class LLMService:
             os.environ["GEMINI_API_KEY"] = self.settings.google_api_key
             os.environ["GOOGLE_API_KEY"] = self.settings.google_api_key
 
+        if self.settings.groq_api_key:
+            os.environ["GROQ_API_KEY"] = self.settings.groq_api_key
+
     async def generate_response(
         self,
         messages: List[Dict[str, str]],

@@ -10,6 +10,7 @@ export const API_ENDPOINTS = {
   agents: `${API_BASE_URL}/api/agents`,
   files: `${API_BASE_URL}/api/files`,
   canvas: `${API_BASE_URL}/api/canvas`,
+  models: `${API_BASE_URL}/api/models`,
 };
 
 export default {

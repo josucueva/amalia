@@ -10,7 +10,7 @@ import uuid
 
 from app.models import Agent, AgentCreateRequest, AgentListResponse, AgentStatus
 from app.agents.registry import AgentRegistry
-from app.agents.config_loader import load_agent_configs_from_yaml
+from app.agents.config_loader import load_agent_configs_from_yaml, save_agent_config_to_yaml
 
 logger = structlog.get_logger()
 router = APIRouter()
@@ -141,7 +141,8 @@ async def update_agent(agent_id: str, req: AgentCreateRequest, request: Request)
         )
 
         get_registry(request).update_agent(updated_agent)
-        logger.info("Agent updated", agent_id=agent_id)
+        save_agent_config_to_yaml(updated_agent)
+        logger.info("Agent updated and saved to YAML", agent_id=agent_id)
 
         return updated_agent
     except HTTPException:

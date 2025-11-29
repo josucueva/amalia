@@ -4,6 +4,7 @@
 import api from "../api.js";
 import state from "../utils/state.js";
 import { showToast } from "../utils/helpers.js";
+import modelConfig from "./ModelConfig.js";
 
 class AgentConfig {
   constructor() {
@@ -17,6 +18,11 @@ class AgentConfig {
     this.currentAgentId = null;
     this.currentAgentData = null; // Store original agent data to preserve metadata
     this.mcpServers = {}; // Store MCP server configurations
+    this.models = []; // Available models from API
+
+    // Model selector elements
+    this.modelSelect = document.getElementById("agent-model");
+    this.addModelBtn = document.getElementById("add-model-btn");
 
     // Icon picker elements
     this.iconPickerModal = document.getElementById("icon-picker-modal");
@@ -28,8 +34,10 @@ class AgentConfig {
 
     this.init();
     this.loadAgents();
+    this.loadModels();
     this.initIconPicker();
     this.initMCPSection();
+    this.initModelSection();
   }
 
   init() {
@@ -580,6 +588,58 @@ class AgentConfig {
     } catch (error) {
       showToast("Failed to delete agent", "error");
       console.error("Error deleting agent:", error);
+    }
+  }
+
+  // Model Management Methods
+  initModelSection() {
+    // Add click handler for add model button
+    if (this.addModelBtn) {
+      this.addModelBtn.addEventListener("click", () => {
+        modelConfig.open((newModel) => {
+          // Callback when model is added
+          this.loadModels();
+        });
+      });
+    }
+  }
+
+  async loadModels() {
+    try {
+      const response = await api.listModels(true); // Only available models
+      this.models = response.models || [];
+      this.populateModelDropdown();
+    } catch (error) {
+      console.error("Error loading models:", error);
+      showToast("Failed to load models", "error");
+    }
+  }
+
+  populateModelDropdown() {
+    if (!this.modelSelect) return;
+
+    const currentValue = this.modelSelect.value;
+
+    // Clear existing options
+    this.modelSelect.innerHTML = "";
+
+    // Add models from API
+    this.models.forEach((model) => {
+      const option = document.createElement("option");
+      option.value = model.model_name;
+      option.textContent = model.display_name;
+      option.dataset.modelId = model.id;
+      this.modelSelect.appendChild(option);
+    });
+
+    // Restore selection if it exists in the new list
+    if (currentValue) {
+      const matchingOption = Array.from(this.modelSelect.options).find(
+        (opt) => opt.value === currentValue
+      );
+      if (matchingOption) {
+        this.modelSelect.value = currentValue;
+      }
     }
   }
 }
