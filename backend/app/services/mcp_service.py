@@ -180,6 +180,10 @@ class MCPServer:
             RuntimeError: If tool execution fails.
         """
         try:
+            # Ensure arguments is always a dict (MCP expects a record, not null)
+            if arguments is None:
+                arguments = {}
+            
             result = await self._send_request(
                 "tools/call", {"name": tool_name, "arguments": arguments}
             )
@@ -282,18 +286,35 @@ class MCPService:
             List of tools in OpenAI function calling format.
         """
         tools = self.get_available_tools()
-        return [
-            {
+        formatted_tools = []
+        
+        for tool in tools:
+            if not tool.get("name"):
+                continue
+                
+            # Get input schema, ensure it's properly formatted
+            input_schema = tool.get("inputSchema", {})
+            if not isinstance(input_schema, dict):
+                input_schema = {"type": "object", "properties": {}}
+            
+            # Ensure required fields exist
+            if "type" not in input_schema:
+                input_schema["type"] = "object"
+            if "properties" not in input_schema:
+                input_schema["properties"] = {}
+            
+            formatted_tool = {
                 "type": "function",
                 "function": {
                     "name": tool["name"],
                     "description": tool.get("description", ""),
-                    "parameters": tool.get("inputSchema", {"type": "object", "properties": {}}),
+                    "parameters": input_schema,
                 },
             }
-            for tool in tools
-            if tool.get("name")
-        ]
+            
+            formatted_tools.append(formatted_tool)
+            
+        return formatted_tools
 
     async def execute_tool(self, tool_name: str, arguments: Dict[str, Any]) -> Any:
         """Execute a tool by finding it in connected servers.

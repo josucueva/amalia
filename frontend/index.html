@@ -360,6 +360,121 @@
               </form>
             </div>
           </div>
+
+          <!-- Model Configuration Panel -->
+          <div class="model-config-panel" id="model-config-panel">
+            <div class="modal-header">
+              <h2>Add New Model</h2>
+              <button class="modal-close" id="close-model-config">✕</button>
+            </div>
+            <div class="modal-body">
+              <form id="model-config-form">
+                <div class="form-group">
+                  <label for="model-display-name"
+                    >Display Name
+                    <span style="color: var(--error-color)">*</span></label
+                  >
+                  <input
+                    type="text"
+                    id="model-display-name"
+                    name="display_name"
+                    placeholder="e.g., Groq Llama 3.3 70B"
+                    required
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label for="model-provider"
+                    >Provider
+                    <span style="color: var(--error-color)">*</span></label
+                  >
+                  <select id="model-provider" name="provider" required>
+                    <option value="">Select a provider</option>
+                    <option value="openai">OpenAI</option>
+                    <option value="anthropic">Anthropic</option>
+                    <option value="groq">Groq</option>
+                    <option value="gemini">Gemini</option>
+                    <option value="ollama">Ollama</option>
+                    <option value="together">Together AI</option>
+                    <option value="azure">Azure OpenAI</option>
+                    <option value="custom">Custom</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="model-name"
+                    >Model Name
+                    <span style="color: var(--error-color)">*</span></label
+                  >
+                  <input
+                    type="text"
+                    id="model-name"
+                    name="model_name"
+                    placeholder="e.g., groq/llama-3.3-70b-versatile"
+                    required
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label for="model-api-key-name"
+                    >API Key Environment Variable</label
+                  >
+                  <input
+                    type="text"
+                    id="model-api-key-name"
+                    name="api_key_name"
+                    placeholder="e.g., GROQ_API_KEY"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label>
+                    <input
+                      type="checkbox"
+                      id="model-supports-functions"
+                      name="supports_function_calling"
+                      checked
+                    />
+                    Supports Function Calling
+                  </label>
+                </div>
+
+                <div class="form-group">
+                  <label for="model-max-tokens">Max Tokens</label>
+                  <input
+                    type="number"
+                    id="model-max-tokens"
+                    name="max_tokens"
+                    placeholder="e.g., 8000"
+                    min="1"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label for="model-description">Description</label>
+                  <textarea
+                    id="model-description"
+                    name="description"
+                    placeholder="Brief description of the model"
+                    rows="3"
+                  ></textarea>
+                </div>
+
+                <div class="form-actions">
+                  <button
+                    type="button"
+                    class="btn btn-secondary"
+                    id="cancel-model-btn"
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" class="btn btn-primary">
+                    Add Model
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
         </div>
       </div>
 

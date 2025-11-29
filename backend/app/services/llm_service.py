@@ -87,6 +87,12 @@ class LLMService:
             if tools:
                 request_params["tools"] = tools
                 request_params["tool_choice"] = "auto"
+                logger.info(
+                    "Tools provided to LLM",
+                    model=model,
+                    tool_count=len(tools),
+                    tool_names=[t["function"]["name"] for t in tools],
+                )
 
             # Call LiteLLM
             response = await acompletion(**request_params)
@@ -96,6 +102,16 @@ class LLMService:
             else:
                 # Check for tool calls
                 choice = response.choices[0]
+                
+                # Log the raw response for debugging
+                logger.debug(
+                    "LLM raw response",
+                    model=model,
+                    has_tool_calls=hasattr(choice.message, "tool_calls"),
+                    tool_calls=choice.message.tool_calls if hasattr(choice.message, "tool_calls") else None,
+                    content=choice.message.content,
+                )
+                
                 if hasattr(choice.message, "tool_calls") and choice.message.tool_calls:
                     # Return tool calls for external processing
                     return {
@@ -103,7 +119,7 @@ class LLMService:
                             {
                                 "id": tc.id,
                                 "name": tc.function.name,
-                                "arguments": json.loads(tc.function.arguments),
+                                "arguments": json.loads(tc.function.arguments) if tc.function.arguments else {},
                             }
                             for tc in choice.message.tool_calls
                         ]

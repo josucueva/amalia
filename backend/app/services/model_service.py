@@ -58,9 +58,9 @@ class ModelService:
                 provider=ModelProvider.GROQ,
                 api_key_name="GROQ_API_KEY",
                 is_available=True,
-                supports_function_calling=True,
+                supports_function_calling=False,
                 max_tokens=8000,
-                description="Fast and capable 70B model with function calling support"
+                description="Fast and capable 70B model (no function calling support)"
             ),
             LLMModel(
                 id="gemini-2.5-flash",

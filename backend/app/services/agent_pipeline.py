@@ -9,6 +9,7 @@ from typing import Dict, Any, Optional, Tuple, List
 
 from app.services.llm_service import LLMService
 from app.services.mcp_service import MCPService
+from app.services.model_service import ModelService
 from app.agents.registry import AgentRegistry
 from app.models.agent import Agent
 
@@ -31,6 +32,7 @@ class AgentPipelineService:
         """
         self.llm_service = llm_service
         self.agent_registry = agent_registry
+        self.model_service = ModelService()
     
     async def _execute_tool_calls(
         self, mcp_service: MCPService, tool_calls: List[Dict[str, Any]]
@@ -95,7 +97,22 @@ class AgentPipelineService:
             # Initialize MCP service if agent has MCP servers configured
             available_tools = []
 
-            if agent.config.mcp_servers:
+            # Check if the model supports function calling
+            model_supports_tools = True
+            if agent.config.model:
+                # Try to find model by full name (e.g., "groq/llama-3.3-70b-versatile")
+                models = self.model_service.get_all_models()
+                for model in models:
+                    if model.model_name == agent.config.model:
+                        model_supports_tools = model.supports_function_calling
+                        logger.info(
+                            "Model function calling support check",
+                            model=agent.config.model,
+                            supports_function_calling=model_supports_tools,
+                        )
+                        break
+
+            if agent.config.mcp_servers and model_supports_tools:
                 mcp_service = MCPService()
                 await mcp_service.connect_servers(agent.config.mcp_servers)
 
@@ -105,6 +122,12 @@ class AgentPipelineService:
                     "MCP tools loaded for agent",
                     agent=agent.config.name,
                     tool_count=len(available_tools),
+                )
+            elif agent.config.mcp_servers and not model_supports_tools:
+                logger.warning(
+                    "MCP servers configured but model doesn't support function calling",
+                    agent=agent.config.name,
+                    model=agent.config.model,
                 )
 
             # Generate initial response

@@ -6,9 +6,9 @@
     "provider": "groq",
     "api_key_name": "GROQ_API_KEY",
     "is_available": true,
-    "supports_function_calling": true,
+    "supports_function_calling": false,
     "max_tokens": 8000,
-    "description": "Fast and capable 70B model with function calling support"
+    "description": "Fast and capable 70B model (no function calling support)"
   },
   "gemini-2.5-flash": {
     "id": "gemini-2.5-flash",
