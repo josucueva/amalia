@@ -397,6 +397,8 @@ class App {
         const result = await this.executeNode(node);
         this.executionResults.set(node.dataset.instanceId, result);
         this.setNodeExecutionState(node, "completed");
+        // Update data badges to show input/output status
+        this.updateNodeDataBadges(node, result);
       } catch (error) {
         console.error(
           `Error executing node ${node.dataset.instanceId}:`,
@@ -483,6 +485,35 @@ class App {
     }
   }
 
+  /**
+   * Update data badges on a node based on execution results
+   * @param {HTMLElement} node - The agent node element
+   * @param {Object} executionData - The execution result data
+   */
+  updateNodeDataBadges(node, executionData) {
+    if (!node || !executionData) return;
+
+    const inputBadge = node.querySelector(".input-badge");
+    const outputBadge = node.querySelector(".output-badge");
+
+    // Show input badge if node received inputs
+    if (inputBadge && executionData.inputs > 0) {
+      inputBadge.style.display = "flex";
+      inputBadge.title = `${executionData.inputs} input(s) received`;
+    }
+
+    // Show output badge if node produced output
+    if (outputBadge && executionData.output) {
+      outputBadge.style.display = "flex";
+      outputBadge.title = "Output generated";
+    }
+
+    // Re-initialize Lucide icons for badges
+    if (globalThis.lucide) {
+      globalThis.lucide.createIcons();
+    }
+  }
+
   pauseExecution() {
     this.executionPaused = true;
     showToast("Execution paused", "info");
@@ -496,6 +527,232 @@ class App {
   cancelExecution() {
     this.executionCancelled = true;
     showToast("Cancelling execution...", "warning");
+  }
+
+  /**
+   * Show detailed data viewer modal for a specific node
+   * @param {string} instanceId - The node instance ID
+   * @param {Object} agentInstance - The agent instance data
+   */
+  showNodeDataViewer(instanceId, agentInstance) {
+    const result = this.executionResults.get(instanceId);
+
+    if (!result) {
+      showToast("No execution data available for this agent", "info");
+      return;
+    }
+
+    // Get input data from connected nodes
+    const connections = this.connectionManager.getConnectionsData();
+    const inputConnections = connections.filter(
+      (conn) => conn.to.instanceId === instanceId
+    );
+    const inputData = inputConnections.map((conn) => {
+      const inputResult = this.executionResults.get(conn.from.instanceId);
+      return {
+        fromAgent: conn.from.agentId,
+        fromInstance: conn.from.instanceId,
+        data: inputResult || null,
+      };
+    });
+
+    // Create modal
+    const modal = document.createElement("div");
+    modal.className = "modal";
+    modal.id = "node-data-viewer-modal";
+    modal.style.display = "flex";
+
+    modal.innerHTML = `
+      <div class="modal-content data-viewer-modal-content">
+        <div class="modal-header">
+          <h2>Node Data: ${agentInstance.config?.name || agentInstance.id}</h2>
+          <button class="modal-close" onclick="document.getElementById('node-data-viewer-modal').remove()">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+        <div class="modal-body data-viewer-body">
+          <!-- Metadata Section -->
+          <div class="data-section">
+            <h3>Execution Metadata</h3>
+            <div class="data-grid">
+              <div class="data-field">
+                <label>Instance ID:</label>
+                <span class="data-value monospace">${result.instanceId}</span>
+              </div>
+              <div class="data-field">
+                <label>Agent Type:</label>
+                <span class="data-value">${result.agentType}</span>
+              </div>
+              <div class="data-field">
+                <label>Timestamp:</label>
+                <span class="data-value">${new Date(
+                  result.timestamp
+                ).toLocaleString()}</span>
+              </div>
+              <div class="data-field">
+                <label>Input Count:</label>
+                <span class="data-value badge-count">${result.inputs}</span>
+              </div>
+              <div class="data-field">
+                <label>Status:</label>
+                <span class="data-value status-${
+                  result.error ? "error" : "success"
+                }">
+                  ${result.error ? "Error" : "Success"}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Input Data Section -->
+          <div class="data-section">
+            <h3>Input Data (${inputData.length} connection${
+      inputData.length === 1 ? "" : "s"
+    })</h3>
+            ${
+              inputData.length > 0
+                ? `
+              <div class="data-connections">
+                ${inputData
+                  .map(
+                    (input, idx) => `
+                  <div class="connection-data">
+                    <div class="connection-header">
+                      <span class="connection-label">From: ${
+                        input.fromAgent
+                      }</span>
+                      <span class="connection-id monospace">${
+                        input.fromInstance
+                      }</span>
+                    </div>
+                    ${
+                      input.data
+                        ? `
+                      <pre class="data-preview">${this.formatDataForDisplay(
+                        input.data.output
+                      )}</pre>
+                    `
+                        : '<p class="no-data">No data available</p>'
+                    }
+                  </div>
+                `
+                  )
+                  .join("")}
+              </div>
+            `
+                : '<p class="no-data">No input connections</p>'
+            }
+          </div>
+
+          <!-- Output Data Section -->
+          <div class="data-section">
+            <h3>Output Data</h3>
+            ${
+              result.error
+                ? `
+              <div class="error-display">
+                <span>ERROR: ${result.error}</span>
+              </div>
+            `
+                : `
+              <pre class="data-preview output-preview">${this.formatDataForDisplay(
+                result.output
+              )}</pre>
+            `
+            }
+          </div>
+
+          <!-- Actions Section -->
+          <div class="data-section data-actions">
+            <button class="btn btn-secondary" onclick="navigator.clipboard.writeText(${JSON.stringify(
+              JSON.stringify(result.output)
+            )}).then(() => showToast('Output copied to clipboard', 'success'))">
+              COPY OUTPUT
+            </button>
+            <button class="btn btn-secondary" onclick="${this.getDownloadDataHandler(
+              result
+            )}">
+              DOWNLOAD JSON
+            </button>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary" onclick="document.getElementById('node-data-viewer-modal').remove()">
+            Close
+          </button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Initialize Lucide icons
+    if (globalThis.lucide) {
+      globalThis.lucide.createIcons();
+    }
+
+    // Close on overlay click
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) {
+        modal.remove();
+      }
+    });
+
+    // Close on Escape key
+    const escapeHandler = (e) => {
+      if (e.key === "Escape") {
+        modal.remove();
+        document.removeEventListener("keydown", escapeHandler);
+      }
+    };
+    document.addEventListener("keydown", escapeHandler);
+  }
+
+  /**
+   * Format data for display in the data viewer
+   * @param {any} data - The data to format
+   * @returns {string} Formatted string
+   */
+  formatDataForDisplay(data) {
+    if (data === null || data === undefined) {
+      return "(no data)";
+    }
+
+    if (typeof data === "string") {
+      // Truncate very long strings
+      if (data.length > 2000) {
+        return data.substring(0, 2000) + "\n... (truncated)";
+      }
+      return data;
+    }
+
+    try {
+      return JSON.stringify(data, null, 2);
+    } catch (error) {
+      console.warn("Failed to stringify data:", error);
+      return String(data);
+    }
+  }
+
+  /**
+   * Get download handler for execution data
+   * @param {Object} result - The execution result
+   * @returns {string} JavaScript code for download handler
+   */
+  getDownloadDataHandler(result) {
+    const dataStr = JSON.stringify(result, null, 2);
+    const escaped = dataStr.replaceAll('"', "&quot;").replaceAll("'", "\\'");
+    return `(() => {
+      const data = '${escaped}';
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'execution-${result.instanceId}-${Date.now()}.json';
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('Data downloaded', 'success');
+    })()`;
   }
 
   showExecutionLogs(instanceId) {
@@ -719,6 +976,14 @@ class App {
     }</div>
       <div class="agent-node-input" data-port="input" title="Input connection"></div>
       <div class="agent-node-output" data-port="output" title="Output connection"></div>
+      <div class="agent-node-data-badges">
+        <span class="data-badge input-badge" style="display: none;" title="Has input data">
+          <i data-lucide="arrow-down-to-line"></i>
+        </span>
+        <span class="data-badge output-badge" style="display: none;" title="Has output data">
+          <i data-lucide="arrow-up-from-line"></i>
+        </span>
+      </div>
     `;
 
     // Initialize Lucide icons
@@ -1071,8 +1336,16 @@ class App {
         <button class="agent-node-menu-btn" data-action="logs">LOGS</button>
       `;
     } else {
+      // Check if node has execution results
+      const hasExecutionData = this.executionResults.has(instanceId);
+
       // Show normal controls
       menu.innerHTML = `
+        ${
+          hasExecutionData
+            ? '<button class="agent-node-menu-btn" data-action="view-data">VIEW DATA</button>'
+            : ""
+        }
         <button class="agent-node-menu-btn" data-action="edit">EDIT</button>
         <button class="agent-node-menu-btn" data-action="duplicate">DUPLICATE</button>
         <button class="agent-node-menu-btn delete" data-action="delete">DELETE</button>
@@ -1121,6 +1394,15 @@ class App {
       }
     } else {
       // Normal menu event listeners
+      const viewDataBtn = menu.querySelector('[data-action="view-data"]');
+      if (viewDataBtn) {
+        viewDataBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          this.showNodeDataViewer(instanceId, agentInstance);
+          this.hideNodeActionMenu();
+        });
+      }
+
       menu
         .querySelector('[data-action="edit"]')
         .addEventListener("click", (e) => {
