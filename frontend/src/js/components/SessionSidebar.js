@@ -142,9 +142,16 @@ class SessionSidebar {
       const session = await api.createSession();
       state.setState({ currentSession: session });
 
-      // Clear chat messages
+      // Clear chat and show welcome message
       if (globalThis.chat) {
         globalThis.chat.clearMessages();
+        globalThis.chat.showWelcomeMessage();
+      }
+
+      // Clear canvas and show welcome message if in canvas mode
+      if (globalThis.app && globalThis.app.canvasMode) {
+        globalThis.app.clearCanvas();
+        globalThis.app.showCanvasWelcome();
       }
 
       // Reload sessions list
@@ -165,7 +172,6 @@ class SessionSidebar {
       // Load session messages into chat
       if (globalThis.chat) {
         globalThis.chat.clearMessages();
-
         if (session.messages && session.messages.length > 0) {
           session.messages.forEach((msg) => {
             globalThis.chat.addMessage({
@@ -174,11 +180,24 @@ class SessionSidebar {
               timestamp: msg.timestamp,
             });
           });
+        } else {
+          globalThis.chat.showWelcomeMessage();
+        }
+      }
+
+      // Clear canvas and load session-specific pipeline
+      if (globalThis.app) {
+        // Clear existing canvas
+        if (globalThis.app.canvasMode) {
+          globalThis.app.clearCanvas();
+          if (!session.pipelines || session.pipelines.length === 0) {
+            globalThis.app.showCanvasWelcome();
+          }
         }
 
-        // Load last pipeline if in canvas mode
+        // Load last pipeline if in canvas mode and session has pipelines
         if (
-          globalThis.app?.canvasMode &&
+          globalThis.app.canvasMode &&
           session.pipelines &&
           session.pipelines.length > 0
         ) {
@@ -203,9 +222,21 @@ class SessionSidebar {
     try {
       await api.deleteSession(sessionId);
 
-      // If deleting current session, create new one
+      // If deleting current session, clear it and show welcome state
       if (state.getState().currentSession?.id === sessionId) {
-        await this.createNewSession();
+        state.setState({ currentSession: null });
+
+        // Clear chat and show welcome message
+        if (globalThis.chat) {
+          globalThis.chat.clearMessages();
+          globalThis.chat.showWelcomeMessage();
+        }
+
+        // Clear canvas and show welcome message
+        if (globalThis.app && globalThis.app.canvasMode) {
+          globalThis.app.clearCanvas();
+          globalThis.app.showCanvasWelcome();
+        }
       }
 
       // Reload sessions list

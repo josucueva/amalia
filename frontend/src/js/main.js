@@ -76,6 +76,15 @@ class App {
     // Make chat globally accessible for session sidebar
     globalThis.chat = this.chat;
 
+    // Show welcome message if chat is empty on first load
+    if (
+      this.chat &&
+      this.chat.messagesContainer &&
+      this.chat.messagesContainer.children.length === 0
+    ) {
+      this.chat.showWelcomeMessage();
+    }
+
     // Setup canvas mode toggle
     const canvasBtn = document.getElementById("canvas-btn");
     if (canvasBtn) {
@@ -1132,6 +1141,15 @@ The file path has been passed to the agent's execution context.
 
     if (this.canvasMode) {
       this.initializeCanvasMode();
+      // Show welcome if no session or no pipelines
+      const currentSession = globalThis.state?.getState().currentSession;
+      if (
+        !currentSession ||
+        !currentSession.pipelines ||
+        currentSession.pipelines.length === 0
+      ) {
+        this.showCanvasWelcome();
+      }
     }
   }
 
@@ -1417,6 +1435,12 @@ The file path has been passed to the agent's execution context.
    * @param {HTMLElement} element - The node element to make draggable
    */
   makeDraggableNode(element) {
+    // Remove canvas welcome message if present when node is added
+    const canvasContent = document.getElementById("canvas-content");
+    if (canvasContent) {
+      const welcomeMsg = canvasContent.querySelector(".canvas-welcome");
+      if (welcomeMsg) welcomeMsg.remove();
+    }
     const header = element.querySelector(".agent-node-header");
     const dragHandle = header || element;
 
@@ -2092,7 +2116,35 @@ The file path has been passed to the agent's execution context.
     }
 
     console.log("✓ Canvas cleared");
-    showToast("Canvas cleared", "info");
+  }
+
+  showCanvasWelcome() {
+    const canvasContent = document.getElementById("canvas-content");
+    if (!canvasContent) return;
+
+    // Remove existing welcome message if any
+    const existingWelcome = canvasContent.querySelector(".canvas-welcome");
+    if (existingWelcome) {
+      existingWelcome.remove();
+    }
+
+    // Only show welcome if no agent nodes are present
+    if (canvasContent.querySelectorAll(".agent-node").length > 0) return;
+
+    const welcomeDiv = document.createElement("div");
+    welcomeDiv.className = "canvas-welcome";
+    welcomeDiv.innerHTML = `
+      <div class="canvas-welcome-content">
+        <h2>Canvas Mode</h2>
+        <p>Start chatting to build your first pipeline</p>
+        <div class="canvas-welcome-hint">
+          <span>💡</span>
+          <p>Or drag agents from the sidebar to create a custom workflow</p>
+        </div>
+      </div>
+    `;
+
+    canvasContent.appendChild(welcomeDiv);
   }
 
   /**
@@ -2108,6 +2160,12 @@ The file path has been passed to the agent's execution context.
     if (!canvasContent) {
       console.error("Canvas content not found");
       return;
+    }
+
+    // Remove welcome message if present
+    const welcomeMsg = canvasContent.querySelector(".canvas-welcome");
+    if (welcomeMsg) {
+      welcomeMsg.remove();
     }
 
     // Get all agents

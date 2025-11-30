@@ -521,6 +521,61 @@ body {
     );
 }
 
+.canvas-welcome {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  text-align: center;
+  pointer-events: none;
+  animation: fadeIn 0.3s ease;
+}
+
+.canvas-welcome-content {
+  padding: var(--spacing-2xl);
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: var(--border-width) solid var(--border-color);
+}
+
+.canvas-welcome-content h2 {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--spacing-md);
+  color: var(--text-primary);
+}
+
+.canvas-welcome-content > p {
+  font-size: var(--font-size-lg);
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-xl);
+}
+
+.canvas-welcome-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border: var(--border-width) solid var(--border-color);
+  margin-top: var(--spacing-lg);
+}
+
+.canvas-welcome-hint span {
+  font-size: var(--font-size-xl);
+}
+
+.canvas-welcome-hint p {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
+}
+
 /* Agent Node Styles for Canvas */
 .agent-node {
   position: absolute;

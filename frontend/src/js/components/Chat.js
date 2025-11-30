@@ -130,6 +130,12 @@ class Chat {
     this.chatInput.value = "";
     this.autoResizeTextarea();
 
+    // Remove welcome message if present
+    const welcomeMsg = this.messagesContainer.querySelector(".welcome-message");
+    if (welcomeMsg) {
+      welcomeMsg.remove();
+    }
+
     // Add user message to chat
     this.addMessage({
       role: "user",
@@ -143,16 +149,18 @@ class Chat {
     try {
       // Get or create current session
       let currentSession = state.getState().currentSession;
+      const isFirstMessage = !currentSession;
+
       if (!currentSession) {
         const sessionResponse = await api.createSession();
         currentSession = sessionResponse;
         state.setState({ currentSession });
         console.log("[Session] Created new session:", currentSession.id);
+      }
 
-        // Reload session sidebar to show the new session
-        if (globalThis.app?.sessionSidebar) {
-          await globalThis.app.sessionSidebar.loadSessions();
-        }
+      // Reload session sidebar to show the new session (for first message)
+      if (isFirstMessage && globalThis.app?.sessionSidebar) {
+        await globalThis.app.sessionSidebar.loadSessions();
       }
 
       // Get current file from state if one was uploaded
@@ -314,6 +322,41 @@ class Chat {
 
   clearMessages() {
     this.messagesContainer.innerHTML = "";
+  }
+
+  showWelcomeMessage() {
+    if (!this.messagesContainer) return;
+
+    // Remove any previous welcome message to avoid duplicates or bad placement
+    const prevWelcome =
+      this.messagesContainer.querySelector(".welcome-message");
+    if (prevWelcome) prevWelcome.remove();
+
+    const welcomeDiv = document.createElement("div");
+    welcomeDiv.className = "welcome-message";
+    welcomeDiv.innerHTML = `
+      <div class="welcome-content">
+        <h2 style="font-family: var(--font-family-display); font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--spacing-md); color: var(--text-primary);">Welcome to Amalia</h2>
+        <p style="font-size: var(--font-size-lg); color: var(--text-secondary); margin-bottom: var(--spacing-2xl);">Start a conversation to create your first session</p>
+        <div class="welcome-suggestions" style="display: flex; flex-direction: column; gap: var(--spacing-sm); margin-top: var(--spacing-xl);">
+          <button class="example-query" style="padding: var(--spacing-md) var(--spacing-lg); background: rgba(255,255,255,0.02); border: var(--border-width) solid var(--border-color); color: var(--text-primary); font-size: var(--font-size-sm); cursor: pointer; transition: all 0.2s ease; text-align: left; font-family: var(--font-family);">"Load and analyze my dataset"</button>
+          <button class="example-query" style="padding: var(--spacing-md) var(--spacing-lg); background: rgba(255,255,255,0.02); border: var(--border-width) solid var(--border-color); color: var(--text-primary); font-size: var(--font-size-sm); cursor: pointer; transition: all 0.2s ease; text-align: left; font-family: var(--font-family);">"Build a classification model"</button>
+          <button class="example-query" style="padding: var(--spacing-md) var(--spacing-lg); background: rgba(255,255,255,0.02); border: var(--border-width) solid var(--border-color); color: var(--text-primary); font-size: var(--font-size-sm); cursor: pointer; transition: all 0.2s ease; text-align: left; font-family: var(--font-family);">"Visualize data distribution"</button>
+        </div>
+      </div>
+    `;
+
+    this.messagesContainer.appendChild(welcomeDiv);
+
+    // Re-attach event listeners to example queries
+    welcomeDiv.querySelectorAll(".example-query").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        if (this.chatInput) {
+          this.chatInput.value = btn.textContent.replaceAll('"', "");
+          this.handleSubmit(new Event("submit"));
+        }
+      });
+    });
   }
 }
 
