@@ -260,7 +260,19 @@ class AgentConfig {
       // Hide icon preview - we only show the icon name in the input
       document.getElementById("icon-preview").style.display = "none";
 
-      document.getElementById("agent-model").value = agent.config.model;
+      // Set model value - ensure it's set after dropdown is populated
+      const modelSelect = document.getElementById("agent-model");
+      if (modelSelect && agent.config.model) {
+        modelSelect.value = agent.config.model;
+        // If the value didn't set (model not in dropdown), log a warning
+        if (modelSelect.value !== agent.config.model) {
+          console.warn(
+            `Model ${agent.config.model} not found in dropdown, available models:`,
+            Array.from(modelSelect.options).map((opt) => opt.value)
+          );
+        }
+      }
+
       document.getElementById("agent-prompt").value =
         agent.config.system_prompt;
       document.getElementById("agent-a2a").checked = agent.config.a2a_enabled;
@@ -282,6 +294,26 @@ class AgentConfig {
       // Reset MCP servers for new agent
       this.selectedMCPServerIds = [];
       this.renderMCPServersList();
+
+      // Set default model if none selected
+      if (this.models && this.models.length > 0 && this.modelSelect) {
+        // Try to find the default model from config (gemini-2.5-flash)
+        const defaultModel = this.models.find(
+          (m) => m.id === "gemini-2.5-flash"
+        );
+        if (defaultModel) {
+          this.modelSelect.value = defaultModel.model_name;
+        } else {
+          // Fall back to first available model
+          const firstAvailable = this.models.find((m) => m.is_available);
+          if (firstAvailable) {
+            this.modelSelect.value = firstAvailable.model_name;
+          } else if (this.models[0]) {
+            // Last resort: just use first model
+            this.modelSelect.value = this.models[0].model_name;
+          }
+        }
+      }
     }
 
     this.agentModal.style.display = "flex";
@@ -592,6 +624,22 @@ class AgentConfig {
       );
       if (matchingOption) {
         this.modelSelect.value = currentValue;
+        return;
+      }
+    }
+
+    // If no current value or it doesn't exist anymore, set default
+    if (!this.modelSelect.value || this.modelSelect.value === "") {
+      // Try to select gemini-2.5-flash as default
+      const defaultModel = this.models.find((m) => m.id === "gemini-2.5-flash");
+      if (defaultModel) {
+        this.modelSelect.value = defaultModel.model_name;
+      } else {
+        // Fall back to first available model
+        const firstAvailable = this.models.find((m) => m.is_available);
+        if (firstAvailable) {
+          this.modelSelect.value = firstAvailable.model_name;
+        }
       }
     }
   }

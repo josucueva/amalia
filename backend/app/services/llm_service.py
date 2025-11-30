@@ -41,6 +41,9 @@ class LLMService:
         if self.settings.groq_api_key:
             os.environ["GROQ_API_KEY"] = self.settings.groq_api_key
 
+        if self.settings.openrouter_api_key:
+            os.environ["OPENROUTER_API_KEY"] = self.settings.openrouter_api_key
+
     async def generate_response(
         self,
         messages: List[Dict[str, str]],

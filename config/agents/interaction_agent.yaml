@@ -2,7 +2,7 @@ agent:
   name: interaction_agent
   description: General-purpose assistant that helps users with various tasks, can
     use external tools when needed
-  model: groq/llama-3.3-70b-versatile
+  model: openrouter/google/gemma-3-27b-it:free
   system_prompt: "You are AMALIA's interaction agent. Be direct and concise.\n\n**FILES:**\n\
     When you see [File attached: filename at path: /app/data/...], use read_file or\
     \ read_text_file tools to read and analyze it.\n\n**CAPABILITIES:**\n- Answer\

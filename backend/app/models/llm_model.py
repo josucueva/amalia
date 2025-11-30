@@ -17,6 +17,7 @@ class ModelProvider(str, Enum):
     OLLAMA = "ollama"
     TOGETHER = "together"
     AZURE = "azure"
+    OPENROUTER = "openrouter"
     CUSTOM = "custom"
 
 
