@@ -9,6 +9,7 @@ import uuid
 
 from app.models.llm_model import LLMModel, LLMModelCreateRequest, LLMModelListResponse
 from app.services.model_service import get_model_service
+from app.utils.env_manager import update_env_file, generate_env_var_name
 
 router = APIRouter(prefix="/api/models", tags=["models"])
 logger = structlog.get_logger()
@@ -81,13 +82,28 @@ async def create_model(req: LLMModelCreateRequest):
 
         # Generate unique ID
         model_id = f"model-{uuid.uuid4().hex[:12]}"
+        
+        # Handle API key if provided
+        api_key_name = req.api_key_name
+        if req.api_key_value:
+            # If API key value is provided but no env var name, generate one
+            if not api_key_name:
+                api_key_name = generate_env_var_name(req.provider, req.model_name)
+            
+            # Save API key to .env file
+            success = update_env_file(api_key_name, req.api_key_value)
+            if not success:
+                logger.warning(
+                    "Failed to save API key to .env file",
+                    api_key_name=api_key_name
+                )
 
         model = LLMModel(
             id=model_id,
             display_name=req.display_name,
             model_name=req.model_name,
             provider=req.provider,
-            api_key_name=req.api_key_name,
+            api_key_name=api_key_name,
             supports_function_calling=req.supports_function_calling,
             max_tokens=req.max_tokens,
             description=req.description,
@@ -118,13 +134,28 @@ async def update_model(model_id: str, req: LLMModelCreateRequest):
     """
     try:
         service = get_model_service()
+        
+        # Handle API key if provided
+        api_key_name = req.api_key_name
+        if req.api_key_value:
+            # If API key value is provided but no env var name, generate one
+            if not api_key_name:
+                api_key_name = generate_env_var_name(req.provider, req.model_name)
+            
+            # Save API key to .env file
+            success = update_env_file(api_key_name, req.api_key_value)
+            if not success:
+                logger.warning(
+                    "Failed to save API key to .env file",
+                    api_key_name=api_key_name
+                )
 
         model = LLMModel(
             id=model_id,
             display_name=req.display_name,
             model_name=req.model_name,
             provider=req.provider,
-            api_key_name=req.api_key_name,
+            api_key_name=api_key_name,
             supports_function_calling=req.supports_function_calling,
             max_tokens=req.max_tokens,
             description=req.description,

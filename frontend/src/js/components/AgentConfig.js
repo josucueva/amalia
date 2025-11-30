@@ -25,6 +25,8 @@ class AgentConfig {
     // Model selector elements
     this.modelSelect = document.getElementById("agent-model");
     this.addModelBtn = document.getElementById("add-model-btn");
+    this.editModelBtn = document.getElementById("edit-model-btn");
+    this.deleteModelBtn = document.getElementById("delete-model-btn");
 
     // Icon picker elements
     this.iconPickerModal = document.getElementById("icon-picker-modal");
@@ -476,11 +478,68 @@ class AgentConfig {
         });
       });
     }
+
+    // Edit model button
+    if (this.editModelBtn) {
+      this.editModelBtn.addEventListener("click", () => {
+        const selectedOption =
+          this.modelSelect.options[this.modelSelect.selectedIndex];
+        if (!selectedOption || !selectedOption.dataset.modelId) {
+          showToast("Please select a model to edit", "info");
+          return;
+        }
+
+        const modelId = selectedOption.dataset.modelId;
+        const model = this.models.find((m) => m.id === modelId);
+
+        if (model) {
+          modelConfig.open((updatedModel) => {
+            // Callback when model is updated
+            this.loadModels();
+          }, model);
+        }
+      });
+    }
+
+    // Delete model button
+    if (this.deleteModelBtn) {
+      this.deleteModelBtn.addEventListener("click", async () => {
+        const selectedOption =
+          this.modelSelect.options[this.modelSelect.selectedIndex];
+        if (!selectedOption || !selectedOption.dataset.modelId) {
+          showToast("Please select a model to delete", "info");
+          return;
+        }
+
+        const modelId = selectedOption.dataset.modelId;
+        const model = this.models.find((m) => m.id === modelId);
+
+        if (!model) return;
+
+        const confirmed = confirm(
+          `Are you sure you want to delete the model "${model.display_name}"?\n\nThis will NOT delete the API key from your .env file.`
+        );
+
+        if (confirmed) {
+          try {
+            await api.deleteModel(modelId);
+            showToast(
+              `Model "${model.display_name}" deleted successfully`,
+              "success"
+            );
+            await this.loadModels();
+          } catch (error) {
+            console.error("Error deleting model:", error);
+            showToast("Failed to delete model", "error");
+          }
+        }
+      });
+    }
   }
 
   async loadModels() {
     try {
-      const response = await api.listModels(true); // Only available models
+      const response = await api.listModels(false); // Load ALL models, not just available ones
       this.models = response.models || [];
       this.populateModelDropdown();
     } catch (error) {
@@ -506,12 +565,23 @@ class AgentConfig {
       return;
     }
 
-    // Add models from API
+    // Add models from API, showing availability status
     this.models.forEach((model) => {
       const option = document.createElement("option");
       option.value = model.model_name;
-      option.textContent = model.display_name;
+      // Show availability indicator in the display name
+      const availabilityIndicator = model.is_available ? "✓" : "⚠";
+      option.textContent = `${availabilityIndicator} ${model.display_name}`;
       option.dataset.modelId = model.id;
+      option.dataset.available = model.is_available;
+
+      // Add a hint in the title for unavailable models
+      if (!model.is_available) {
+        option.title = `API key not configured: ${
+          model.api_key_name || "unknown"
+        }`;
+      }
+
       this.modelSelect.appendChild(option);
     });
 

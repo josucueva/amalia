@@ -154,8 +154,9 @@ body {
 
 .chat-input {
   flex: 1;
-  padding: 0 var(--spacing-md);
-  height: 48px;
+  padding: 12px var(--spacing-md);
+  min-height: 48px;
+  max-height: 200px;
   border: var(--border-width) solid var(--border-color);
   font-family: var(--font-family);
   font-size: var(--font-size-base);
@@ -163,6 +164,15 @@ body {
   background-color: var(--bg-primary);
   transition: border-color var(--transition-fast);
   outline: none;
+  resize: none;
+  overflow-y: auto;
+  line-height: 1.5;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+.chat-input::-webkit-scrollbar {
+  display: none; /* Chrome/Safari/Opera */
 }
 
 .chat-input:focus {
@@ -1441,4 +1451,95 @@ body {
 
 .text-muted {
   color: var(--text-secondary);
+}
+
+/* File Attachment Modal */
+.file-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.file-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md);
+  background: var(--bg-secondary);
+  border: var(--border-width) solid var(--border-color);
+  transition: background-color var(--transition-base);
+}
+
+.file-item:hover {
+  background: var(--bg-hover);
+}
+
+.file-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  flex: 1;
+}
+
+.file-info i {
+  color: var(--color-primary);
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
+
+.file-details {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.file-item .file-name {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+}
+
+.file-meta {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+}
+
+.current-file-info {
+  margin-bottom: var(--spacing-lg);
+}
+
+.current-file-info h3 {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  margin-bottom: var(--spacing-sm);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.current-file-info .file-path-display {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  background: var(--bg-secondary);
+  border: var(--border-width) solid var(--border-color);
+  margin-bottom: var(--spacing-md);
+  font-family: "Courier New", monospace;
+  font-size: var(--font-size-xs);
+  color: var(--text-primary);
+}
+
+.current-file-info .file-path-display i {
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.divider {
+  height: var(--border-width);
+  background: var(--border-color);
+  margin: var(--spacing-lg) 0;
 }

@@ -87,14 +87,14 @@
               >
                 <span>⚙</span>
               </button>
-              <input
-                type="text"
+              <textarea
                 id="chat-input"
                 class="chat-input"
                 placeholder="Describe your requirements..."
                 autocomplete="off"
+                rows="1"
                 required
-              />
+              ></textarea>
               <button
                 type="button"
                 class="chat-action-btn"
@@ -228,6 +228,22 @@
                       title="Add new model"
                     >
                       <i data-lucide="plus"></i>
+                    </button>
+                    <button
+                      type="button"
+                      class="add-model-btn"
+                      id="edit-model-btn"
+                      title="Edit selected model"
+                    >
+                      <i data-lucide="edit"></i>
+                    </button>
+                    <button
+                      type="button"
+                      class="add-model-btn delete"
+                      id="delete-model-btn"
+                      title="Delete selected model"
+                    >
+                      <i data-lucide="trash-2"></i>
                     </button>
                   </div>
                 </div>
@@ -415,14 +431,34 @@
 
                 <div class="form-group">
                   <label for="model-api-key-name"
-                    >API Key Environment Variable</label
+                    >API Key Environment Variable Name</label
                   >
                   <input
                     type="text"
                     id="model-api-key-name"
                     name="api_key_name"
-                    placeholder="e.g., GROQ_API_KEY"
+                    placeholder="e.g., GOOGLE_API_KEY, OPENAI_API_KEY"
                   />
+                  <small class="form-help"
+                    >Optional: Custom environment variable name. If empty and
+                    you provide an API key below, a name will be
+                    auto-generated.</small
+                  >
+                </div>
+
+                <div class="form-group">
+                  <label for="model-api-key-value">API Key Value</label>
+                  <input
+                    type="password"
+                    id="model-api-key-value"
+                    name="api_key_value"
+                    placeholder="Enter your API key"
+                  />
+                  <small class="form-help"
+                    >Your API key will be securely stored in the .env file and
+                    never exposed in the UI. Leave empty if no API key is
+                    required.</small
+                  >
                 </div>
 
                 <div class="form-group">

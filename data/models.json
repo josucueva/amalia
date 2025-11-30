@@ -31,5 +31,16 @@
     "supports_function_calling": true,
     "max_tokens": 8192,
     "description": "Advanced Gemini 2.5 model with enhanced capabilities"
+  },
+  "model-72a0a30ab2df": {
+    "id": "model-72a0a30ab2df",
+    "display_name": "Gemini 2.5 Flash Lite",
+    "model_name": "gemini/gemini-2.5-flash-lite",
+    "provider": "gemini",
+    "api_key_name": "GEMINI_API_KEY",
+    "is_available": true,
+    "supports_function_calling": true,
+    "max_tokens": 20000,
+    "description": null
   }
 }

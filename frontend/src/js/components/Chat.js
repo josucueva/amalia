@@ -12,6 +12,10 @@ class Chat {
     this.chatInput = document.getElementById("chat-input");
     this.sendBtn = document.getElementById("send-btn");
 
+    // Message history for arrow key navigation
+    this.messageHistory = [];
+    this.historyIndex = -1;
+
     this.init();
   }
 
@@ -20,18 +24,95 @@ class Chat {
       this.chatForm.addEventListener("submit", (e) => this.handleSubmit(e));
     }
 
+    // Handle keyboard shortcuts in chat input
+    if (this.chatInput) {
+      this.chatInput.addEventListener("keydown", (e) => this.handleKeyDown(e));
+
+      // Auto-resize textarea as user types
+      this.chatInput.addEventListener("input", () => {
+        this.autoResizeTextarea();
+      });
+
+      // Initialize textarea height
+      this.autoResizeTextarea();
+    }
+
     // Handle example queries
     const exampleQueries = document.querySelectorAll(".example-query");
     exampleQueries.forEach((btn) => {
       btn.addEventListener("click", () => {
         if (this.chatInput) {
           this.chatInput.value = btn.textContent.replaceAll('"', "");
-          if (this.chatForm) {
-            this.chatForm.dispatchEvent(new Event("submit"));
-          }
+          this.handleSubmit(new Event("submit"));
         }
       });
     });
+  }
+
+  autoResizeTextarea() {
+    this.chatInput.style.height = "auto";
+    this.chatInput.style.height = this.chatInput.scrollHeight + "px";
+  }
+
+  handleKeyDown(e) {
+    // Shift + Enter: Add new line (default textarea behavior)
+    if (e.key === "Enter" && e.shiftKey) {
+      // Allow default behavior (new line)
+      return;
+    }
+
+    // Enter without Shift: Submit form
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      this.handleSubmit(e);
+      return;
+    }
+
+    // Arrow Up: Previous message in history
+    if (e.key === "ArrowUp") {
+      e.preventDefault();
+      if (this.messageHistory.length === 0) return;
+
+      if (this.historyIndex === -1) {
+        // Save current input before navigating history
+        this.currentDraft = this.chatInput.value;
+        this.historyIndex = this.messageHistory.length - 1;
+      } else if (this.historyIndex > 0) {
+        this.historyIndex--;
+      }
+
+      this.chatInput.value = this.messageHistory[this.historyIndex];
+      this.autoResizeTextarea();
+      // Move cursor to end
+      this.chatInput.setSelectionRange(
+        this.chatInput.value.length,
+        this.chatInput.value.length
+      );
+      return;
+    }
+
+    // Arrow Down: Next message in history
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      if (this.historyIndex === -1) return;
+
+      if (this.historyIndex < this.messageHistory.length - 1) {
+        this.historyIndex++;
+        this.chatInput.value = this.messageHistory[this.historyIndex];
+      } else {
+        // Restore draft or clear
+        this.historyIndex = -1;
+        this.chatInput.value = this.currentDraft || "";
+      }
+
+      this.autoResizeTextarea();
+      // Move cursor to end
+      this.chatInput.setSelectionRange(
+        this.chatInput.value.length,
+        this.chatInput.value.length
+      );
+      return;
+    }
   }
 
   async handleSubmit(e) {
@@ -40,8 +121,14 @@ class Chat {
     const message = this.chatInput.value.trim();
     if (!message) return;
 
-    // Clear input
+    // Add to message history
+    this.messageHistory.push(message);
+    this.historyIndex = -1;
+    this.currentDraft = "";
+
+    // Clear input and reset height
     this.chatInput.value = "";
+    this.autoResizeTextarea();
 
     // Add user message to chat
     this.addMessage({

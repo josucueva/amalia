@@ -291,12 +291,32 @@ class AgentPipelineService:
                 end = response.find("```", start)
                 if end > start:
                     json_str = response[start:end].strip()
-                    return json.loads(json_str)
+                    parsed = json.loads(json_str)
+                    logger.debug("Extracted JSON from code block", keys=list(parsed.keys()))
+                    return parsed
+            elif "```" in response:
+                # Try generic code block
+                start = response.find("```") + 3
+                end = response.find("```", start)
+                if end > start:
+                    json_str = response[start:end].strip()
+                    # Remove language identifier if present
+                    if json_str.startswith(("json\n", "JSON\n")):
+                        json_str = json_str[4:].strip()
+                    parsed = json.loads(json_str)
+                    logger.debug("Extracted JSON from generic code block", keys=list(parsed.keys()))
+                    return parsed
             elif response.strip().startswith("{"):
                 # Try parsing whole response as JSON
-                return json.loads(response.strip())
+                parsed = json.loads(response.strip())
+                logger.debug("Parsed entire response as JSON", keys=list(parsed.keys()))
+                return parsed
         except (json.JSONDecodeError, AttributeError) as e:
-            logger.warning("Failed to extract JSON from response", error=str(e))
+            logger.warning(
+                "Failed to extract JSON from response",
+                error=str(e),
+                response_preview=response[:200] if response else None,
+            )
 
         return None
 
@@ -367,7 +387,11 @@ class AgentPipelineService:
         plan_data = self._extract_json_from_response(planner_response)
 
         if not plan_data or "plan" not in plan_data:
-            logger.error("Planner failed to create valid plan")
+            logger.error(
+                "Planner failed to create valid plan",
+                plan_data=plan_data,
+                response_preview=planner_response[:500] if planner_response else None,
+            )
             return "Failed to create execution plan.", None
 
         plan = plan_data["plan"]

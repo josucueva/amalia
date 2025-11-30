@@ -548,10 +548,22 @@ class App {
    */
   showNodeDataViewer(instanceId, agentInstance) {
     const result = this.executionResults.get(instanceId);
+    const hasExecutionData = !!result;
 
-    if (!result) {
-      showToast("No execution data available for this agent", "info");
-      return;
+    // Allow viewing even without execution data (will show inputs/connections)
+    if (!hasExecutionData && !agentInstance.filePath) {
+      // Check if there are any input connections
+      const connections = this.connectionManager.getConnectionsData();
+      const inputConnections = connections.filter(
+        (conn) => conn.to.instanceId === instanceId
+      );
+      if (inputConnections.length === 0) {
+        showToast(
+          "No data available - agent not executed and no inputs connected",
+          "info"
+        );
+        return;
+      }
     }
 
     // Get input data from connected nodes
@@ -593,12 +605,21 @@ class App {
             <div class="data-grid">
               <div class="data-field">
                 <label>Instance ID:</label>
-                <span class="data-value monospace">${result.instanceId}</span>
+                <span class="data-value monospace">${
+                  hasExecutionData ? result.instanceId : instanceId
+                }</span>
               </div>
               <div class="data-field">
                 <label>Agent Type:</label>
-                <span class="data-value">${result.agentType}</span>
+                <span class="data-value">${
+                  hasExecutionData
+                    ? result.agentType
+                    : agentInstance.config?.name || agentInstance.id
+                }</span>
               </div>
+              ${
+                hasExecutionData
+                  ? `
               <div class="data-field">
                 <label>Timestamp:</label>
                 <span class="data-value">${new Date(
@@ -617,6 +638,14 @@ class App {
                   ${result.error ? "Error" : "Success"}
                 </span>
               </div>
+              `
+                  : `
+              <div class="data-field">
+                <label>Status:</label>
+                <span class="data-value status-pending">Not Executed</span>
+              </div>
+              `
+              }
             </div>
           </div>
 
@@ -686,7 +715,9 @@ The file path has been passed to the agent's execution context.
           <div class="data-section">
             <h3>Output Data</h3>
             ${
-              result.error
+              !hasExecutionData
+                ? '<p class="no-data">Agent has not been executed yet</p>'
+                : result.error
                 ? `
               <div class="error-display">
                 <span>ERROR: ${result.error}</span>
@@ -701,10 +732,11 @@ The file path has been passed to the agent's execution context.
           </div>
 
           <!-- Actions Section -->
+          ${
+            hasExecutionData
+              ? `
           <div class="data-section data-actions">
-            <button class="btn btn-secondary" onclick="navigator.clipboard.writeText(${JSON.stringify(
-              JSON.stringify(result.output)
-            )}).then(() => showToast('Output copied to clipboard', 'success'))">
+            <button class="btn btn-secondary" id="copy-output-btn">
               COPY OUTPUT
             </button>
             <button class="btn btn-secondary" onclick="${this.getDownloadDataHandler(
@@ -713,6 +745,9 @@ The file path has been passed to the agent's execution context.
               DOWNLOAD JSON
             </button>
           </div>
+          `
+              : ""
+          }
         </div>
         <div class="modal-footer">
           <button class="btn btn-primary" onclick="document.getElementById('node-data-viewer-modal').remove()">
@@ -723,6 +758,17 @@ The file path has been passed to the agent's execution context.
     `;
 
     document.body.appendChild(modal);
+
+    // Add copy output button handler
+    const copyBtn = modal.querySelector("#copy-output-btn");
+    if (copyBtn && hasExecutionData && !result.error) {
+      copyBtn.addEventListener("click", () => {
+        navigator.clipboard
+          .writeText(JSON.stringify(result.output, null, 2))
+          .then(() => showToast("Output copied to clipboard", "success"))
+          .catch((err) => showToast("Failed to copy output", "error"));
+      });
+    }
 
     // Initialize Lucide icons
     if (globalThis.lucide) {
@@ -791,6 +837,216 @@ The file path has been passed to the agent's execution context.
       URL.revokeObjectURL(url);
       showToast('Data downloaded', 'success');
     })()`;
+  }
+
+  /**
+   * Show file attachment modal for data_loader nodes
+   * @param {HTMLElement} node - The node element
+   * @param {Object} agentInstance - The agent instance data
+   */
+  async showFileAttachmentModal(node, agentInstance) {
+    try {
+      // Fetch available files
+      const response = await api.listFiles();
+      const files = response.files || [];
+
+      // Create modal
+      const modal = document.createElement("div");
+      modal.className = "modal";
+      modal.id = "file-attachment-modal";
+      modal.style.display = "flex";
+
+      modal.innerHTML = `
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2>Attach File to Data Loader</h2>
+            <button class="modal-close" onclick="document.getElementById('file-attachment-modal').remove()">
+              <i data-lucide="x"></i>
+            </button>
+          </div>
+          <div class="modal-body">
+            ${
+              agentInstance.filePath
+                ? `
+              <div class="current-file-info">
+                <h3>Current File</h3>
+                <div class="file-path-display">
+                  <i data-lucide="file-text"></i>
+                  <span>${agentInstance.filePath}</span>
+                </div>
+                <button class="btn btn-secondary" id="remove-file-attachment">
+                  <i data-lucide="x"></i> Remove Attachment
+                </button>
+              </div>
+              <div class="divider"></div>
+            `
+                : ""
+            }
+            <h3>Available Files</h3>
+            ${
+              files.length === 0
+                ? `
+              <p class="no-data">No files uploaded yet. Please upload a CSV file first.</p>
+            `
+                : `
+              <div class="file-list">
+                ${files
+                  .map(
+                    (file) => `
+                  <div class="file-item" data-filename="${file.filename}">
+                    <div class="file-info">
+                      <i data-lucide="file-text"></i>
+                      <div class="file-details">
+                        <span class="file-name">${file.filename}</span>
+                        <span class="file-meta">${file.size_mb} MB • ${new Date(
+                      file.created_at * 1000
+                    ).toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                    <button class="btn btn-primary btn-sm attach-file-btn" data-filename="${
+                      file.filename
+                    }">
+                      ATTACH
+                    </button>
+                  </div>
+                `
+                  )
+                  .join("")}
+              </div>
+            `
+            }
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="document.getElementById('file-attachment-modal').remove()">
+              Cancel
+            </button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(modal);
+
+      // Initialize Lucide icons
+      if (globalThis.lucide) {
+        globalThis.lucide.createIcons();
+      }
+
+      // Add event listeners for attach buttons
+      modal.querySelectorAll(".attach-file-btn").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const filename = btn.dataset.filename;
+          this.attachFileToNode(node, agentInstance, filename);
+          modal.remove();
+        });
+      });
+
+      // Add event listener for remove button
+      const removeBtn = modal.querySelector("#remove-file-attachment");
+      if (removeBtn) {
+        removeBtn.addEventListener("click", () => {
+          this.removeFileFromNode(node, agentInstance);
+          modal.remove();
+        });
+      }
+
+      // Close on overlay click
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) {
+          modal.remove();
+        }
+      });
+
+      // Close on Escape key
+      const escapeHandler = (e) => {
+        if (e.key === "Escape") {
+          modal.remove();
+          document.removeEventListener("keydown", escapeHandler);
+        }
+      };
+      document.addEventListener("keydown", escapeHandler);
+    } catch (error) {
+      console.error("Error loading files:", error);
+      showToast("Failed to load files", "error");
+    }
+  }
+
+  /**
+   * Attach a file to a data_loader node
+   * @param {HTMLElement} node - The node element
+   * @param {Object} agentInstance - The agent instance data
+   * @param {string} filename - The filename to attach
+   */
+  attachFileToNode(node, agentInstance, filename) {
+    // Build the full file path
+    const filePath = `/app/data/uploads/${filename}`;
+
+    // Update agent instance data
+    const updatedInstance = {
+      ...agentInstance,
+      filePath: filePath,
+    };
+
+    // Update node dataset
+    node.dataset.agentData = JSON.stringify(updatedInstance);
+
+    // Add or update file indicator
+    let fileIndicator = node.querySelector(".node-file-indicator");
+    if (!fileIndicator) {
+      fileIndicator = document.createElement("div");
+      fileIndicator.className = "node-file-indicator";
+      node.appendChild(fileIndicator);
+    }
+
+    fileIndicator.setAttribute("title", `File attached: ${filename}`);
+    fileIndicator.innerHTML = '<i data-lucide="file-text"></i>';
+
+    // Re-initialize Lucide icons
+    if (globalThis.lucide) {
+      globalThis.lucide.createIcons();
+    }
+
+    // Update data badges
+    this.updateNodeDataBadges(node.dataset.instanceId, {
+      hasInputData: true,
+      hasOutputData: false,
+    });
+
+    showToast(`File "${filename}" attached successfully`, "success");
+  }
+
+  /**
+   * Remove file attachment from a node
+   * @param {HTMLElement} node - The node element
+   * @param {Object} agentInstance - The agent instance data
+   */
+  removeFileFromNode(node, agentInstance) {
+    // Update agent instance data
+    const updatedInstance = {
+      ...agentInstance,
+      filePath: null,
+    };
+
+    // Update node dataset
+    node.dataset.agentData = JSON.stringify(updatedInstance);
+
+    // Remove file indicator
+    const fileIndicator = node.querySelector(".node-file-indicator");
+    if (fileIndicator) {
+      fileIndicator.remove();
+    }
+
+    // Update data badges
+    const hasInputConnections = this.connectionManager
+      .getConnectionsData()
+      .some((conn) => conn.to.instanceId === node.dataset.instanceId);
+
+    this.updateNodeDataBadges(node.dataset.instanceId, {
+      hasInputData: hasInputConnections,
+      hasOutputData: this.executionResults.has(node.dataset.instanceId),
+    });
+
+    showToast("File attachment removed", "success");
   }
 
   showExecutionLogs(instanceId) {
@@ -1377,12 +1633,16 @@ The file path has been passed to the agent's execution context.
       // Check if node has execution results
       const hasExecutionData = this.executionResults.has(instanceId);
 
+      // Check if this is a data_loader agent - check by name since ID is generated
+      const isDataLoader = agentInstance.config?.name === "data_loader";
+
       // Show normal controls
       menu.innerHTML = `
         <button class="agent-node-menu-btn" data-action="execute-prompt" title="Execute with custom prompt">EXECUTE</button>
+        <button class="agent-node-menu-btn" data-action="view-data">VIEW DATA</button>
         ${
-          hasExecutionData
-            ? '<button class="agent-node-menu-btn" data-action="view-data">VIEW DATA</button>'
+          isDataLoader
+            ? '<button class="agent-node-menu-btn" data-action="attach-file">ATTACH FILE</button>'
             : ""
         }
         <button class="agent-node-menu-btn" data-action="edit">EDIT</button>
@@ -1449,6 +1709,15 @@ The file path has been passed to the agent's execution context.
         viewDataBtn.addEventListener("click", (e) => {
           e.stopPropagation();
           this.showNodeDataViewer(instanceId, agentInstance);
+          this.hideNodeActionMenu();
+        });
+      }
+
+      const attachFileBtn = menu.querySelector('[data-action="attach-file"]');
+      if (attachFileBtn) {
+        attachFileBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          this.showFileAttachmentModal(node, agentInstance);
           this.hideNodeActionMenu();
         });
       }

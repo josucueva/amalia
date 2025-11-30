@@ -58,6 +58,9 @@ class LLMModelCreateRequest(BaseModel):
     api_key_name: Optional[str] = Field(
         None, description="Environment variable name for API key"
     )
+    api_key_value: Optional[str] = Field(
+        None, description="Actual API key value to store in environment"
+    )
     supports_function_calling: bool = Field(
         True, description="Whether the model supports function calling"
     )

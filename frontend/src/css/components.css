@@ -604,3 +604,14 @@
 .add-model-btn:active {
   transform: translateY(1px);
 }
+
+.add-model-btn.delete {
+  color: var(--error-color);
+  border-color: var(--error-color);
+}
+
+.add-model-btn.delete:hover {
+  background: var(--error-color);
+  color: white;
+  border-color: var(--error-color);
+}
