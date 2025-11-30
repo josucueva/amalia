@@ -23,6 +23,17 @@ from app.models.mcp_server import (
     MCPServerCreateRequest,
     MCPServerListResponse
 )
+from app.models.session import (
+    Session,
+    SessionMessage,
+    PipelineSnapshot,
+    SessionStatus,
+    SessionCreateRequest,
+    SessionUpdateRequest,
+    SessionListResponse,
+    AddMessageRequest,
+    AddPipelineRequest,
+)
 
 __all__ = [
     "Agent",
@@ -41,4 +52,13 @@ __all__ = [
     "MCPServer",
     "MCPServerCreateRequest",
     "MCPServerListResponse",
+    "Session",
+    "SessionMessage",
+    "PipelineSnapshot",
+    "SessionStatus",
+    "SessionCreateRequest",
+    "SessionUpdateRequest",
+    "SessionListResponse",
+    "AddMessageRequest",
+    "AddPipelineRequest",
 ]

@@ -39,18 +39,32 @@ async def chat(
     try:
         logger.info("Processing chat request", message_length=len(request_data.message))
 
+        # Get session manager
+        from app.services.session_manager import SessionManager
+        session_manager = getattr(request.app.state, "session_manager", None)
+        if not session_manager:
+            session_manager = SessionManager()
+            request.app.state.session_manager = session_manager
+
+        # Determine session ID (prefer session_id, fallback to conversation_id for backward compatibility)
+        session_id = request_data.session_id or request_data.conversation_id
+        
+        # If no session exists, create one
+        if not session_id or not session_manager.get_session(session_id):
+            session = session_manager.create_session()
+            session_id = session.id
+            logger.info("Created new session", session_id=session_id)
+
         # Generate IDs
-        conversation_id = (
-            request_data.conversation_id or f"conv_{uuid.uuid4().hex[:12]}"
-        )
+        conversation_id = session_id  # Keep for backward compatibility
         message_id = f"msg_{uuid.uuid4().hex[:12]}"
         response_id = f"msg_{uuid.uuid4().hex[:12]}"
 
         # Get LLM service
         llm_service = get_llm_service(settings)
 
-        # Get or create conversation history
-        history = conversation_history.get_history(conversation_id, max_messages=20)
+        # Get conversation history from session
+        history = session_manager.get_session_history(session_id)
 
         # Prepare user message with file context if attached
         user_message = request_data.message
@@ -77,9 +91,12 @@ async def chat(
         else:
             user_message_with_context = user_message
 
-        # Add user message to history (without file context for display)
-        conversation_history.add_message(
-            conversation_id=conversation_id, role="user", content=request_data.message
+        # Add user message to session
+        session_manager.add_message(
+            session_id=session_id,
+            role="user",
+            content=request_data.message,
+            metadata={"attached_file": request_data.attached_file} if request_data.attached_file else None
         )
 
         # Get agent registry from app state
@@ -106,10 +123,25 @@ async def chat(
                 detail=f"Error processing pipeline: {str(pipeline_error)}",
             )
 
-        # Add assistant response to history
-        conversation_history.add_message(
-            conversation_id=conversation_id, role="assistant", content=assistant_content
+        # Add assistant response to session
+        session_manager.add_message(
+            session_id=session_id,
+            role="assistant",
+            content=assistant_content,
+            metadata={
+                "orchestration": orchestration_data,
+                "agents_used": ["interaction_agent"] + (["planner_agent", "orchestrator_agent"] if orchestration_data else [])
+            }
         )
+
+        # If pipeline was created, save it to session
+        if orchestration_data and "orchestration" in orchestration_data:
+            orch = orchestration_data["orchestration"]
+            session_manager.add_pipeline(
+                session_id=session_id,
+                nodes=orch.get("nodes", []),
+                connections=orch.get("connections", [])
+            )
 
         # Determine which agents were involved
         agents_involved = ["interaction_agent"]
@@ -125,6 +157,7 @@ async def chat(
             status=MessageStatus.COMPLETED,
             metadata={
                 "conversation_id": conversation_id,
+                "session_id": session_id,
                 "user_message_id": message_id,
                 "model": settings.default_model,
                 "orchestration": orchestration_data,  # Include orchestration if present

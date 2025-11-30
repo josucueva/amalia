@@ -9,6 +9,8 @@ class State {
       agents: [],
       messages: [],
       isLoading: false,
+      currentSession: null, // Current active session
+      sessions: [], // List of all sessions
     };
     this.listeners = [];
   }

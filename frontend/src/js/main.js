@@ -11,6 +11,7 @@ import api from "./api.js";
 import Chat from "./components/Chat.js";
 import FileUpload from "./components/FileUpload.js";
 import AgentConfig from "./components/AgentConfig.js";
+import SessionSidebar from "./components/SessionSidebar.js";
 import ConnectionManager from "./managers/ConnectionManager.js";
 import { showToast } from "./utils/helpers.js";
 import state from "./utils/state.js";
@@ -23,6 +24,7 @@ class App {
   chat = null;
   fileUpload = null;
   agentConfig = null;
+  sessionSidebar = null;
   connectionManager = null;
   uploadedFile = null;
 
@@ -68,6 +70,11 @@ class App {
     this.chat = new Chat();
     this.fileUpload = new FileUpload();
     this.agentConfig = new AgentConfig();
+    this.sessionSidebar = new SessionSidebar();
+    await this.sessionSidebar.init();
+
+    // Make chat globally accessible for session sidebar
+    globalThis.chat = this.chat;
 
     // Setup canvas mode toggle
     const canvasBtn = document.getElementById("canvas-btn");

@@ -241,6 +241,51 @@ class ApiClient {
     return this.delete(`${API_ENDPOINTS.mcpServers}/${serverId}`);
   }
 
+  // Sessions API
+  async createSession(title = null) {
+    return this.post(API_ENDPOINTS.sessions, { title });
+  }
+
+  async listSessions(status = null, limit = null) {
+    let url = API_ENDPOINTS.sessions;
+    const params = [];
+    if (status) params.push(`status=${status}`);
+    if (limit) params.push(`limit=${limit}`);
+    if (params.length > 0) url += `?${params.join("&")}`;
+    return this.get(url);
+  }
+
+  async getSession(sessionId) {
+    return this.get(`${API_ENDPOINTS.sessions}/${sessionId}`);
+  }
+
+  async updateSession(sessionId, data) {
+    return this.put(`${API_ENDPOINTS.sessions}/${sessionId}`, data);
+  }
+
+  async deleteSession(sessionId) {
+    return this.delete(`${API_ENDPOINTS.sessions}/${sessionId}`);
+  }
+
+  async addMessageToSession(sessionId, role, content, metadata = null) {
+    return this.post(`${API_ENDPOINTS.sessions}/${sessionId}/messages`, {
+      role,
+      content,
+      metadata,
+    });
+  }
+
+  async addPipelineToSession(sessionId, nodes, connections) {
+    return this.post(`${API_ENDPOINTS.sessions}/${sessionId}/pipelines`, {
+      nodes,
+      connections,
+    });
+  }
+
+  async clearSessionMessages(sessionId) {
+    return this.delete(`${API_ENDPOINTS.sessions}/${sessionId}/messages`);
+  }
+
   // Health check
   async healthCheck() {
     return this.get(API_ENDPOINTS.health);

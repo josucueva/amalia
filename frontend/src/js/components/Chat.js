@@ -141,16 +141,30 @@ class Chat {
     this.showTypingIndicator();
 
     try {
+      // Get or create current session
+      let currentSession = state.getState().currentSession;
+      if (!currentSession) {
+        const sessionResponse = await api.createSession();
+        currentSession = sessionResponse;
+        state.setState({ currentSession });
+        console.log("[Session] Created new session:", currentSession.id);
+
+        // Reload session sidebar to show the new session
+        if (globalThis.app?.sessionSidebar) {
+          await globalThis.app.sessionSidebar.loadSessions();
+        }
+      }
+
       // Get current file from state if one was uploaded
       const currentFile = state.getState().currentFile;
 
       // DEBUG: Log current file state
       console.log("[DEBUG] Current file from state:", currentFile);
 
-      // Send message to backend
+      // Send message to backend with session_id
       const requestData = {
         message,
-        conversation_id: state.getState().conversationId,
+        session_id: currentSession.id,
         stream: false,
       };
 
@@ -172,8 +186,13 @@ class Chat {
 
       const response = await api.sendMessage(requestData);
 
-      // Update conversation ID
-      state.setState({ conversationId: response.conversation_id });
+      // Update session in state
+      if (response.message.metadata?.session_id) {
+        const updatedSession = await api.getSession(
+          response.message.metadata.session_id
+        );
+        state.setState({ currentSession: updatedSession });
+      }
 
       // Remove typing indicator
       this.removeTypingIndicator();

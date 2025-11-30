@@ -12,6 +12,7 @@ export const API_ENDPOINTS = {
   canvas: `${API_BASE_URL}/api/canvas`,
   models: `${API_BASE_URL}/api/models`,
   mcpServers: `${API_BASE_URL}/api/mcp-servers`,
+  sessions: `${API_BASE_URL}/api/sessions`,
 };
 
 export default {

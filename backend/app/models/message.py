@@ -58,7 +58,10 @@ class ChatRequest(BaseModel):
 
     message: str = Field(..., description="User message", min_length=1)
     conversation_id: Optional[str] = Field(
-        default=None, description="Conversation ID for context"
+        default=None, description="Conversation ID for context (deprecated, use session_id)"
+    )
+    session_id: Optional[str] = Field(
+        default=None, description="Session ID for persistent chat history"
     )
     stream: bool = Field(default=False, description="Enable streaming response")
     attached_file: Optional[Dict[str, Any]] = Field(

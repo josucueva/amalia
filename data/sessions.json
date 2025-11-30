@@ -1,0 +1,57 @@
+{
+  "session_b161632f3ecb42f9": {
+    "id": "session_b161632f3ecb42f9",
+    "title": "Session 2025-11-30 03:42",
+    "status": "active",
+    "created_at": "2025-11-30T03:42:45.665381",
+    "updated_at": "2025-11-30T03:43:00.009021",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hi",
+        "timestamp": "2025-11-30T03:42:55.461061",
+        "metadata": null
+      },
+      {
+        "role": "assistant",
+        "content": "Hello. How can I assist you today?",
+        "timestamp": "2025-11-30T03:42:56.118363",
+        "metadata": {
+          "orchestration": null,
+          "agents_used": [
+            "interaction_agent"
+          ]
+        }
+      },
+      {
+        "role": "user",
+        "content": "Idk",
+        "timestamp": "2025-11-30T03:42:59.446356",
+        "metadata": null
+      },
+      {
+        "role": "assistant",
+        "content": "That's okay. Do you have a specific task or question in mind, or would you like to explore some options? I can help with file operations, ML/data science tasks, or answer general questions.",
+        "timestamp": "2025-11-30T03:43:00.009000",
+        "metadata": {
+          "orchestration": null,
+          "agents_used": [
+            "interaction_agent"
+          ]
+        }
+      }
+    ],
+    "pipelines": [],
+    "metadata": {}
+  },
+  "session_b6e179716c1747bd": {
+    "id": "session_b6e179716c1747bd",
+    "title": "Session 2025-11-30 03:51",
+    "status": "active",
+    "created_at": "2025-11-30T03:51:25.507867",
+    "updated_at": "2025-11-30T03:51:25.507878",
+    "messages": [],
+    "pipelines": [],
+    "metadata": {}
+  }
+}
