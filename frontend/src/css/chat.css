@@ -179,6 +179,7 @@
   border: var(--border-width) solid var(--border-color);
   color: var(--text-primary);
   font-size: var(--font-size-sm);
+  font-family: var(--font-family);
   cursor: pointer;
   transition: all 0.2s ease;
   text-align: left;

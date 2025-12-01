@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 from datetime import datetime
 import structlog
+import pytz
 
 from app.models.session import (
     Session,
@@ -17,6 +18,8 @@ from app.models.session import (
 )
 
 logger = structlog.get_logger()
+TIMEZONE = 'America/Guayaquil'
+local_tz = pytz.timezone(TIMEZONE)
 
 
 class SessionManager:
@@ -77,8 +80,9 @@ class SessionManager:
         Returns:
             Created session
         """
+        now_local = datetime.now(local_tz)
         session_id = f"session_{uuid.uuid4().hex[:16]}"
-        session_title = title or f"Session {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+        session_title = title or f"Session {now_local.strftime('%Y-%m-%d %H:%M')}"
 
         session = Session(
             id=session_id,

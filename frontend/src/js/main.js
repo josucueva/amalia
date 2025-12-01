@@ -54,6 +54,16 @@ class App {
     dragThreshold: 5,
   };
 
+  // Canvas pan and zoom state
+  canvasPan = {
+    x: 0,
+    y: 0,
+    scale: 1,
+    isPanning: false,
+    startX: 0,
+    startY: 0,
+  };
+
   async init() {
     console.log("🚀 Initializing AMALIA...");
 
@@ -66,6 +76,9 @@ class App {
       showToast("Unable to connect to backend server", "error");
     }
 
+    // Store app globally before component init
+    globalThis.app = this;
+
     // Initialize components
     this.chat = new Chat();
     this.fileUpload = new FileUpload();
@@ -76,14 +89,8 @@ class App {
     // Make chat globally accessible for session sidebar
     globalThis.chat = this.chat;
 
-    // Show welcome message if chat is empty on first load
-    if (
-      this.chat &&
-      this.chat.messagesContainer &&
-      this.chat.messagesContainer.children.length === 0
-    ) {
-      this.chat.showWelcomeMessage();
-    }
+    // Restore last active session or show welcome
+    await this.restoreSession();
 
     // Setup canvas mode toggle
     const canvasBtn = document.getElementById("canvas-btn");
@@ -194,6 +201,43 @@ class App {
     this.setupKeyboardShortcuts();
 
     console.log("✓ Application initialized successfully");
+  }
+
+  /**
+   * Restore the most recent active session on app load
+   */
+  async restoreSession() {
+    try {
+      const sessions = state.getState().sessions;
+      if (sessions && sessions.length > 0) {
+        // Get the most recent session (first in list)
+        const mostRecentSession = sessions[0];
+        const fullSession = await api.getSession(mostRecentSession.id);
+        state.setState({ currentSession: fullSession });
+
+        // Restore messages to chat
+        if (fullSession.messages && fullSession.messages.length > 0) {
+          fullSession.messages.forEach((msg) => {
+            this.chat.addMessage({
+              role: msg.role,
+              content: msg.content,
+              timestamp: msg.timestamp,
+            });
+          });
+        } else {
+          this.chat.showWelcomeMessage();
+        }
+
+        console.log("✓ Restored session:", fullSession.id);
+      } else {
+        // No sessions, show welcome
+        this.chat.showWelcomeMessage();
+      }
+    } catch (error) {
+      console.error("Error restoring session:", error);
+      // Show welcome message on error
+      this.chat.showWelcomeMessage();
+    }
   }
 
   async handleFileUpload(file) {
@@ -1177,6 +1221,7 @@ The file path has been passed to the agent's execution context.
     this.loadCanvasAgents();
     this.setupCanvasDrop();
     this.loadPendingPipeline();
+    this.setupCanvasPanZoom();
   }
 
   ensureConnectionManager() {
@@ -1209,6 +1254,212 @@ The file path has been passed to the agent's execution context.
     } catch (error) {
       console.error("Error loading pending pipeline:", error);
     }
+  }
+
+  /**
+   * Setup canvas pan and zoom functionality
+   */
+  setupCanvasPanZoom() {
+    const canvasContent = document.getElementById("canvas-content");
+    if (!canvasContent) return;
+
+    // Track spacebar state for panning
+    let isSpacePressed = false;
+
+    document.addEventListener("keydown", (e) => {
+      if (e.code === "Space" && !e.repeat && this.canvasMode) {
+        isSpacePressed = true;
+        // Only add panning cursor if not already panning
+        if (!this.canvasPan.isPanning) {
+          canvasContent.style.cursor = "grab";
+        }
+      }
+    });
+
+    document.addEventListener("keyup", (e) => {
+      if (e.code === "Space") {
+        isSpacePressed = false;
+        if (!this.canvasPan.isPanning) {
+          canvasContent.style.cursor = "";
+        }
+      }
+    });
+
+    // Mouse wheel for zoom (with Ctrl) or pan (without Ctrl)
+    canvasContent.addEventListener(
+      "wheel",
+      (e) => {
+        e.preventDefault();
+
+        // Ctrl/Cmd + wheel = zoom, otherwise = pan
+        if (e.ctrlKey || e.metaKey) {
+          // Zoom functionality
+          const delta = e.deltaY > 0 ? 0.9 : 1.1;
+          const newScale = Math.max(
+            0.1,
+            Math.min(3, this.canvasPan.scale * delta)
+          );
+
+          // Zoom towards mouse position
+          const rect = canvasContent.getBoundingClientRect();
+          const mouseX = e.clientX - rect.left;
+          const mouseY = e.clientY - rect.top;
+
+          const dx = mouseX - this.canvasPan.x;
+          const dy = mouseY - this.canvasPan.y;
+
+          this.canvasPan.x = mouseX - dx * (newScale / this.canvasPan.scale);
+          this.canvasPan.y = mouseY - dy * (newScale / this.canvasPan.scale);
+          this.canvasPan.scale = newScale;
+
+          this.updateCanvasTransform();
+        } else {
+          // Pan functionality - supports both vertical and horizontal scrolling
+          const panSpeed = 1; // Adjust for sensitivity
+
+          // deltaX for horizontal scroll (trackpad/shift+wheel)
+          // deltaY for vertical scroll (normal wheel)
+          this.canvasPan.x -= e.deltaX * panSpeed;
+          this.canvasPan.y -= e.deltaY * panSpeed;
+
+          this.updateCanvasTransform();
+        }
+      },
+      { passive: false }
+    );
+
+    // Spacebar + drag for panning (or middle mouse button)
+    canvasContent.addEventListener("mousedown", (e) => {
+      // Only pan if clicking directly on canvas (not on nodes)
+      const isCanvasBackground =
+        e.target === canvasContent ||
+        e.target.classList.contains("canvas-welcome");
+
+      // Middle mouse button or spacebar + left click on canvas background
+      if (
+        isCanvasBackground &&
+        (e.button === 1 || (e.button === 0 && isSpacePressed))
+      ) {
+        e.preventDefault();
+        this.canvasPan.isPanning = true;
+        this.canvasPan.startX = e.clientX - this.canvasPan.x;
+        this.canvasPan.startY = e.clientY - this.canvasPan.y;
+        canvasContent.classList.add("panning");
+        canvasContent.style.cursor = "grabbing";
+      }
+    });
+
+    document.addEventListener("mousemove", (e) => {
+      if (this.canvasPan.isPanning) {
+        e.preventDefault();
+        this.canvasPan.x = e.clientX - this.canvasPan.startX;
+        this.canvasPan.y = e.clientY - this.canvasPan.startY;
+        this.updateCanvasTransform();
+      }
+    });
+
+    document.addEventListener("mouseup", () => {
+      if (this.canvasPan.isPanning) {
+        this.canvasPan.isPanning = false;
+        canvasContent.classList.remove("panning");
+        // Restore cursor based on spacebar state
+        canvasContent.style.cursor = isSpacePressed ? "grab" : "";
+      }
+    });
+
+    // Keyboard shortcuts for zoom
+    document.addEventListener("keydown", (e) => {
+      if (!this.canvasMode) return;
+
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === "0") {
+          e.preventDefault();
+          this.resetCanvasView();
+        } else if (e.key === "=" || e.key === "+") {
+          e.preventDefault();
+          const oldScale = this.canvasPan.scale;
+          const newScale = Math.min(3, oldScale * 1.2);
+
+          // Zoom toward canvas center
+          const rect = canvasContent.getBoundingClientRect();
+          const centerX = rect.width / 2;
+          const centerY = rect.height / 2;
+
+          const dx = centerX - this.canvasPan.x;
+          const dy = centerY - this.canvasPan.y;
+
+          this.canvasPan.x = centerX - dx * (newScale / oldScale);
+          this.canvasPan.y = centerY - dy * (newScale / oldScale);
+          this.canvasPan.scale = newScale;
+
+          this.updateCanvasTransform();
+        } else if (e.key === "-" || e.key === "_") {
+          e.preventDefault();
+          const oldScale = this.canvasPan.scale;
+          const newScale = Math.max(0.1, oldScale * 0.8);
+
+          // Zoom toward canvas center
+          const rect = canvasContent.getBoundingClientRect();
+          const centerX = rect.width / 2;
+          const centerY = rect.height / 2;
+
+          const dx = centerX - this.canvasPan.x;
+          const dy = centerY - this.canvasPan.y;
+
+          this.canvasPan.x = centerX - dx * (newScale / oldScale);
+          this.canvasPan.y = centerY - dy * (newScale / oldScale);
+          this.canvasPan.scale = newScale;
+
+          this.updateCanvasTransform();
+        }
+      }
+    });
+  }
+
+  /**
+   * Update canvas transform based on pan and zoom state
+   */
+  updateCanvasTransform() {
+    const canvasContent = document.getElementById("canvas-content");
+    if (!canvasContent) return;
+
+    const nodes = canvasContent.querySelectorAll(".agent-node");
+    const welcome = canvasContent.querySelector(".canvas-welcome");
+
+    // Apply transform to all nodes
+    nodes.forEach((node) => {
+      const originalX = parseFloat(node.dataset.originalX || node.style.left);
+      const originalY = parseFloat(node.dataset.originalY || node.style.top);
+
+      if (!node.dataset.originalX) {
+        node.dataset.originalX = originalX;
+        node.dataset.originalY = originalY;
+      }
+
+      const newX = this.canvasPan.x + originalX * this.canvasPan.scale;
+      const newY = this.canvasPan.y + originalY * this.canvasPan.scale;
+
+      node.style.transform = `translate(${newX - originalX}px, ${
+        newY - originalY
+      }px) scale(${this.canvasPan.scale})`;
+      node.style.transformOrigin = "0 0";
+    });
+
+    // Apply transform to welcome message
+    if (welcome) {
+      welcome.style.transform = `translate(-50%, -50%) scale(${this.canvasPan.scale})`;
+    }
+  }
+
+  /**
+   * Reset canvas view to default
+   */
+  resetCanvasView() {
+    this.canvasPan.x = 0;
+    this.canvasPan.y = 0;
+    this.canvasPan.scale = 1;
+    this.updateCanvasTransform();
+    showToast("Canvas view reset", "info");
   }
 
   async loadCanvasAgents() {
@@ -1272,6 +1523,9 @@ The file path has been passed to the agent's execution context.
     node.dataset.agentData = JSON.stringify(agentInstance);
     node.style.left = `${snappedX}px`;
     node.style.top = `${snappedY}px`;
+    // Store original position for pan/zoom transform
+    node.dataset.originalX = snappedX;
+    node.dataset.originalY = snappedY;
 
     // Count MCP tools
     const mcpServers = agent.config.mcp_servers || {};
@@ -1527,6 +1781,9 @@ The file path has been passed to the agent's execution context.
         // Apply new position
         element.style.left = newX + "px";
         element.style.top = newY + "px";
+        // Update original position for pan/zoom transform
+        element.dataset.originalX = newX;
+        element.dataset.originalY = newY;
 
         // Update connections in real-time
         if (this.connectionManager) {
@@ -1589,8 +1846,12 @@ The file path has been passed to the agent's execution context.
 
       // Get drop position relative to canvas
       const rect = canvasContent.getBoundingClientRect();
-      let x = e.clientX - rect.left;
-      let y = e.clientY - rect.top;
+      let screenX = e.clientX - rect.left;
+      let screenY = e.clientY - rect.top;
+
+      // Convert screen coordinates to canvas coordinates (accounting for pan/zoom)
+      let x = (screenX - this.canvasPan.x) / this.canvasPan.scale;
+      let y = (screenY - this.canvasPan.y) / this.canvasPan.scale;
 
       // Offset to center the node on cursor (approximate node size)
       const nodeHalfWidth = 50; // Half of typical node width
@@ -1606,6 +1867,9 @@ The file path has been passed to the agent's execution context.
       if (globalThis.lucide) {
         globalThis.lucide.createIcons();
       }
+
+      // Apply current pan/zoom transform to the new node
+      this.updateCanvasTransform();
     };
 
     // Add listeners
@@ -2135,7 +2399,7 @@ The file path has been passed to the agent's execution context.
     welcomeDiv.className = "canvas-welcome";
     welcomeDiv.innerHTML = `
       <div class="canvas-welcome-content">
-        <h2>Canvas Mode</h2>
+        <h2>Agent Canvas</h2>
         <p>Start chatting to build your first pipeline</p>
         <div class="canvas-welcome-hint">
           <span>💡</span>
@@ -2283,6 +2547,5 @@ The file path has been passed to the agent's execution context.
 // Initialize app when DOM is ready
 document.addEventListener("DOMContentLoaded", () => {
   const app = new App();
-  globalThis.app = app; // Store globally for cross-component access
   app.init();
 });

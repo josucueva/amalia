@@ -94,17 +94,11 @@ class SessionSidebar {
            data-session-id="${session.id}">
         <div class="session-item-content">
           <div class="session-title">${this.escapeHtml(session.title)}</div>
-          <div class="session-meta">
-            ${
-              session.pipelines?.length
-                ? `${session.pipelines.length} pipeline${
-                    session.pipelines.length !== 1 ? "s" : ""
-                  }`
-                : "No pipelines"
-            }
-          </div>
         </div>
         <div class="session-actions">
+          <button class="session-action-btn edit-btn" data-session-id="${
+            session.id
+          }" title="Edit">[ EDIT ]</button>
           <button class="session-action-btn delete-btn" data-session-id="${
             session.id
           }" title="Delete">[ DELETE ]</button>
@@ -123,6 +117,15 @@ class SessionSidebar {
       if (contentDiv) {
         contentDiv.addEventListener("click", () => {
           this.switchSession(sessionId);
+        });
+      }
+
+      // Edit button
+      const editBtn = item.querySelector(".edit-btn");
+      if (editBtn) {
+        editBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          this.editSession(sessionId);
         });
       }
 
@@ -166,6 +169,14 @@ class SessionSidebar {
 
   async switchSession(sessionId) {
     try {
+      const currentSession = state.getState().currentSession;
+
+      // Don't switch if already on this session
+      if (currentSession?.id === sessionId) {
+        console.log("Already on session:", sessionId);
+        return;
+      }
+
       const session = await api.getSession(sessionId);
       state.setState({ currentSession: session });
 
@@ -209,10 +220,42 @@ class SessionSidebar {
         }
       }
 
+      // Update active session indicator
+      this.updateActiveSession(sessionId);
+
+      console.log("✓ Switched to session:", sessionId);
       showToast(`Switched to: ${session.title}`, "success");
     } catch (error) {
       console.error("Error switching session:", error);
       showToast("Failed to switch session", "error");
+    }
+  }
+
+  async editSession(sessionId) {
+    try {
+      const sessions = state.getState().sessions;
+      const session = sessions.find((s) => s.id === sessionId);
+      if (!session) return;
+
+      const newTitle = prompt("Enter new session title:", session.title);
+      if (!newTitle || newTitle.trim() === "") return;
+      if (newTitle.trim() === session.title) return;
+
+      await api.updateSession(sessionId, { title: newTitle.trim() });
+
+      // Update current session if editing the active one
+      if (state.getState().currentSession?.id === sessionId) {
+        const updatedSession = await api.getSession(sessionId);
+        state.setState({ currentSession: updatedSession });
+      }
+
+      // Reload sessions list
+      await this.loadSessions();
+
+      showToast("Session renamed", "success");
+    } catch (error) {
+      console.error("Error editing session:", error);
+      showToast("Failed to rename session", "error");
     }
   }
 

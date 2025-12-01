@@ -4,6 +4,7 @@
 import api from "../api.js";
 import state from "../utils/state.js";
 import { formatTimestamp, sanitizeHTML, showToast } from "../utils/helpers.js";
+import { ChatTemplates } from "../templates/chatTemplates.js";
 
 class Chat {
   constructor() {
@@ -37,16 +38,8 @@ class Chat {
       this.autoResizeTextarea();
     }
 
-    // Handle example queries
-    const exampleQueries = document.querySelectorAll(".example-query");
-    exampleQueries.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        if (this.chatInput) {
-          this.chatInput.value = btn.textContent.replaceAll('"', "");
-          this.handleSubmit(new Event("submit"));
-        }
-      });
-    });
+    // Handle example queries in any existing welcome message
+    this.attachExampleQueryListeners(document);
   }
 
   autoResizeTextarea() {
@@ -233,6 +226,27 @@ class Chat {
       timestamp: new Date().toISOString(),
     });
 
+    // Save pipeline to current session
+    const currentSession = state.getState().currentSession;
+    if (currentSession) {
+      try {
+        await api.addPipelineToSession(
+          currentSession.id,
+          orchestrationData.nodes,
+          orchestrationData.connections
+        );
+
+        // Update session in state with new pipeline
+        const updatedSession = await api.getSession(currentSession.id);
+        state.setState({ currentSession: updatedSession });
+
+        console.log("✓ Pipeline saved to session:", currentSession.id);
+      } catch (error) {
+        console.error("Error saving pipeline to session:", error);
+        showToast("Failed to save pipeline to session", "error");
+      }
+    }
+
     // Trigger canvas update if in canvas mode
     if (globalThis.app?.canvasMode) {
       globalThis.app.createPipelineFromData(
@@ -264,18 +278,13 @@ class Chat {
     const icon = this.getMessageIcon(message.role);
     const role = message.role.charAt(0).toUpperCase() + message.role.slice(1);
 
-    messageEl.innerHTML = `
-            <div class="message-content">
-                <div class="message-header">
-                    <span class="message-icon">${icon}</span>
-                    <span>${message.agent_id || role}</span>
-                </div>
-                <div class="message-text">${sanitizeHTML(message.content)}</div>
-                <div class="message-timestamp">${formatTimestamp(
-                  message.timestamp
-                )}</div>
-            </div>
-        `;
+    messageEl.innerHTML = ChatTemplates.message(
+      icon,
+      role,
+      message.agent_id,
+      sanitizeHTML(message.content),
+      formatTimestamp(message.timestamp)
+    );
 
     this.messagesContainer.appendChild(messageEl);
     this.scrollToBottom();
@@ -295,15 +304,7 @@ class Chat {
     const indicator = document.createElement("div");
     indicator.className = "message assistant typing";
     indicator.id = "typing-indicator";
-    indicator.innerHTML = `
-            <div class="message-content">
-                <div class="typing-indicator">
-                    <span class="typing-dot"></span>
-                    <span class="typing-dot"></span>
-                    <span class="typing-dot"></span>
-                </div>
-            </div>
-        `;
+    indicator.innerHTML = ChatTemplates.typingIndicator();
 
     this.messagesContainer.appendChild(indicator);
     this.scrollToBottom();
@@ -334,25 +335,23 @@ class Chat {
 
     const welcomeDiv = document.createElement("div");
     welcomeDiv.className = "welcome-message";
-    welcomeDiv.innerHTML = `
-      <div class="welcome-content">
-        <h2 style="font-family: var(--font-family-display); font-size: var(--font-size-2xl); font-weight: var(--font-weight-bold); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: var(--spacing-md); color: var(--text-primary);">Welcome to Amalia</h2>
-        <p style="font-size: var(--font-size-lg); color: var(--text-secondary); margin-bottom: var(--spacing-2xl);">Start a conversation to create your first session</p>
-        <div class="welcome-suggestions" style="display: flex; flex-direction: column; gap: var(--spacing-sm); margin-top: var(--spacing-xl);">
-          <button class="example-query" style="padding: var(--spacing-md) var(--spacing-lg); background: rgba(255,255,255,0.02); border: var(--border-width) solid var(--border-color); color: var(--text-primary); font-size: var(--font-size-sm); cursor: pointer; transition: all 0.2s ease; text-align: left; font-family: var(--font-family);">"Load and analyze my dataset"</button>
-          <button class="example-query" style="padding: var(--spacing-md) var(--spacing-lg); background: rgba(255,255,255,0.02); border: var(--border-width) solid var(--border-color); color: var(--text-primary); font-size: var(--font-size-sm); cursor: pointer; transition: all 0.2s ease; text-align: left; font-family: var(--font-family);">"Build a classification model"</button>
-          <button class="example-query" style="padding: var(--spacing-md) var(--spacing-lg); background: rgba(255,255,255,0.02); border: var(--border-width) solid var(--border-color); color: var(--text-primary); font-size: var(--font-size-sm); cursor: pointer; transition: all 0.2s ease; text-align: left; font-family: var(--font-family);">"Visualize data distribution"</button>
-        </div>
-      </div>
-    `;
+    welcomeDiv.innerHTML = ChatTemplates.welcomeMessage();
 
     this.messagesContainer.appendChild(welcomeDiv);
 
     // Re-attach event listeners to example queries
-    welcomeDiv.querySelectorAll(".example-query").forEach((btn) => {
+    this.attachExampleQueryListeners(welcomeDiv);
+  }
+
+  /**
+   * Attach event listeners to example query buttons
+   * @param {HTMLElement} container - Container element with example queries
+   */
+  attachExampleQueryListeners(container) {
+    container.querySelectorAll(".example-query").forEach((btn) => {
       btn.addEventListener("click", () => {
         if (this.chatInput) {
-          this.chatInput.value = btn.textContent.replaceAll('"', "");
+          this.chatInput.value = btn.textContent.trim();
           this.handleSubmit(new Event("submit"));
         }
       });

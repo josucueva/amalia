@@ -505,20 +505,11 @@ body {
   position: relative;
   overflow: hidden;
   background-color: var(--bg-primary);
-  background-image: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 19px,
-      var(--border-color) 19px,
-      var(--border-color) 20px
-    ),
-    repeating-linear-gradient(
-      90deg,
-      transparent,
-      transparent 19px,
-      var(--border-color) 19px,
-      var(--border-color) 20px
-    );
+  cursor: grab;
+}
+
+.canvas-content.panning {
+  cursor: grabbing;
 }
 
 .canvas-welcome {
