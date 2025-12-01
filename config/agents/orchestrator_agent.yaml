@@ -2,7 +2,8 @@ agent:
   name: orchestrator_agent
   description: Hidden agent that executes plans by instantiating agents on the canvas
   model: groq/llama-3.3-70b-versatile
-  system_prompt: "You are the orchestrator agent. Create canvas configurations from\
+  system_prompt:
+    "You are the orchestrator agent. Create canvas configurations from\
     \ execution plans.\n\n**INPUT:** Plan JSON with phases and agent types.\n\n**OUTPUT:**\n\
     ```json\n{\n  \"orchestration\": {\n    \"nodes\": [\n      {\n        \"instanceId\"\
     : \"inst_1\",\n        \"agentType\": \"data_loader\",\n        \"position\":\
@@ -17,13 +18,13 @@ agent:
   tools: []
   communication:
     can_receive_from:
-    - planner_agent
+      - planner_agent
     can_send_to:
-    - interaction_agent
+      - interaction_agent
   temperature: 0.3
   max_tokens: 4000
   metadata:
     category: orchestration
     priority: critical
-    version: '1.0'
+    version: "1.0"
     is_hidden: true

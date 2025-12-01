@@ -64,6 +64,9 @@ class App {
     startY: 0,
   };
 
+  // Connection state
+  connectionsEnabled = true;
+
   async init() {
     console.log("🚀 Initializing AMALIA...");
 
@@ -324,6 +327,14 @@ class App {
           showToast(`Hidden agents ${status}`, "info");
         }
       }
+
+      // Ctrl+Shift+C: Toggle connections on/off (only in canvas mode)
+      if (e.ctrlKey && e.shiftKey && e.key === "C") {
+        if (this.canvasMode) {
+          e.preventDefault();
+          this.toggleConnections();
+        }
+      }
     });
   }
 
@@ -335,7 +346,16 @@ class App {
 
     // Get all nodes and connections
     const nodes = Array.from(document.querySelectorAll(".agent-node"));
-    const connections = this.connectionManager.getConnectionsData();
+    const allConnections = this.connectionManager.getConnectionsData();
+
+    // Filter to only include enabled connections
+    const connections = allConnections.filter((conn) => conn.enabled !== false);
+
+    // Show info about disabled connections
+    const disabledCount = allConnections.length - connections.length;
+    if (disabledCount > 0) {
+      console.log(`ℹ️ Skipping ${disabledCount} disabled connection(s)`);
+    }
 
     // Validation
     if (nodes.length === 0) {
@@ -484,9 +504,13 @@ class App {
     const agentData = JSON.parse(node.dataset.agentData || "{}");
     const instanceConfig = agentData.config || null;
 
-    // Get input from connected nodes
-    const connections = this.connectionManager.getConnectionsData();
-    const inputs = connections
+    // Get input from connected nodes (only enabled connections)
+    const allConnections = this.connectionManager.getConnectionsData();
+    const enabledConnections = allConnections.filter(
+      (conn) => conn.enabled !== false
+    );
+
+    const inputs = enabledConnections
       .filter((conn) => conn.to.instanceId === instanceId)
       .map((conn) => this.executionResults.get(conn.from.instanceId))
       .filter((result) => result !== undefined);
@@ -1293,8 +1317,8 @@ The file path has been passed to the agent's execution context.
 
         // Ctrl/Cmd + wheel = zoom, otherwise = pan
         if (e.ctrlKey || e.metaKey) {
-          // Zoom functionality
-          const delta = e.deltaY > 0 ? 0.9 : 1.1;
+          // Zoom functionality (reduced sensitivity for smoother control)
+          const delta = e.deltaY > 0 ? 0.95 : 1.05;
           const newScale = Math.max(
             0.1,
             Math.min(3, this.canvasPan.scale * delta)
@@ -1449,6 +1473,11 @@ The file path has been passed to the agent's execution context.
     if (welcome) {
       welcome.style.transform = `translate(-50%, -50%) scale(${this.canvasPan.scale})`;
     }
+
+    // Update all connection positions to match zoom/pan
+    if (this.connectionManager) {
+      this.updateAllConnections();
+    }
   }
 
   /**
@@ -1460,6 +1489,32 @@ The file path has been passed to the agent's execution context.
     this.canvasPan.scale = 1;
     this.updateCanvasTransform();
     showToast("Canvas view reset", "info");
+  }
+
+  /**
+   * Update all connection positions (called after zoom/pan)
+   */
+  updateAllConnections() {
+    if (!this.connectionManager) return;
+
+    const connections = this.connectionManager.getConnectionsData();
+    connections.forEach((conn) => {
+      this.connectionManager.updateConnectionPositions(conn.from.instanceId);
+    });
+  }
+
+  /**
+   * Toggle connections on/off for testing
+   */
+  toggleConnections() {
+    this.connectionsEnabled = !this.connectionsEnabled;
+
+    if (this.connectionManager) {
+      this.connectionManager.setEnabled(this.connectionsEnabled);
+    }
+
+    const status = this.connectionsEnabled ? "enabled" : "disabled";
+    showToast(`Connections ${status}`, "info");
   }
 
   async loadCanvasAgents() {

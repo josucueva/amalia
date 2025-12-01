@@ -10,6 +10,7 @@ class ConnectionManager {
     this.activeConnection = null;
     this.mouseMoveHandler = null;
     this.escapeHandler = null;
+    this.enabled = true; // Control whether connections are active
   }
 
   /**
@@ -27,7 +28,7 @@ class ConnectionManager {
     svg.style.left = "0";
     svg.style.width = "100%";
     svg.style.height = "100%";
-    svg.style.pointerEvents = "none";
+    svg.style.pointerEvents = "auto"; // Enable pointer events for clicking
     svg.style.zIndex = "1";
 
     canvasElement.appendChild(svg);
@@ -276,10 +277,15 @@ class ConnectionManager {
         agentId: targetNode.dataset.agentId,
       },
       element: null,
+      enabled: true, // Individual connection enabled state
     };
 
     // Create visual connection
-    connection.element = this.drawConnection(sourceNode, targetNode);
+    connection.element = this.drawConnection(
+      sourceNode,
+      targetNode,
+      connectionId
+    );
     this.connections.set(connectionId, connection);
 
     console.log("✓ Connection created:", {
@@ -294,7 +300,7 @@ class ConnectionManager {
   /**
    * Draw a connection line between two nodes
    */
-  drawConnection(sourceNode, targetNode) {
+  drawConnection(sourceNode, targetNode, connectionId = null) {
     const canvasRect = this.svgOverlay.parentElement.getBoundingClientRect();
     const sourcePort = sourceNode.querySelector('[data-port="output"]');
     const targetPort = targetNode.querySelector('[data-port="input"]');
@@ -307,7 +313,14 @@ class ConnectionManager {
     const endX = targetRect.left + targetRect.width / 2 - canvasRect.left;
     const endY = targetRect.top + targetRect.height / 2 - canvasRect.top;
 
-    const path = this.createConnectionPath(startX, startY, endX, endY, false);
+    const path = this.createConnectionPath(
+      startX,
+      startY,
+      endX,
+      endY,
+      false,
+      connectionId
+    );
     this.svgOverlay.appendChild(path);
 
     return path;
@@ -316,7 +329,14 @@ class ConnectionManager {
   /**
    * Create an SVG path element for a connection
    */
-  createConnectionPath(x1, y1, x2, y2, isTemporary = false) {
+  createConnectionPath(
+    x1,
+    y1,
+    x2,
+    y2,
+    isTemporary = false,
+    connectionId = null
+  ) {
     const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
     const d = this.calculateBezierPath(x1, y1, x2, y2);
 
@@ -325,18 +345,84 @@ class ConnectionManager {
     path.setAttribute("stroke", isTemporary ? "#888888" : "#1a1a1a");
     path.setAttribute("stroke-width", "2");
     path.setAttribute("stroke-dasharray", isTemporary ? "5,5" : "none");
-    path.setAttribute("opacity", isTemporary ? "0.5" : "1");
-    path.style.pointerEvents = "none";
+    path.setAttribute(
+      "opacity",
+      this.enabled ? (isTemporary ? "0.5" : "1") : "0.3"
+    );
+    path.style.pointerEvents = isTemporary ? "none" : "stroke";
+    path.style.cursor = isTemporary ? "default" : "pointer";
+    path.style.strokeWidth = "12"; // Wider invisible stroke for easier clicking
+    path.style.stroke = "transparent";
 
-    return path;
+    // Create visible path on top
+    const visiblePath = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "path"
+    );
+    visiblePath.setAttribute("d", d);
+    visiblePath.setAttribute("fill", "none");
+    visiblePath.setAttribute("stroke", isTemporary ? "#888888" : "#1a1a1a");
+    visiblePath.setAttribute("stroke-width", "2");
+    visiblePath.setAttribute(
+      "stroke-dasharray",
+      isTemporary ? "5,5" : this.enabled ? "none" : "5,5"
+    );
+    visiblePath.setAttribute(
+      "opacity",
+      this.enabled ? (isTemporary ? "0.5" : "1") : "0.3"
+    );
+    visiblePath.style.pointerEvents = "none";
+
+    // Group both paths
+    const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    group.appendChild(path);
+    group.appendChild(visiblePath);
+
+    if (!isTemporary && connectionId) {
+      group.dataset.connectionId = connectionId;
+
+      // Add click handler for deletion
+      path.addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.showConnectionMenu(connectionId, e);
+      });
+
+      // Add hover effect
+      path.addEventListener("mouseenter", () => {
+        const connection = this.connections.get(connectionId);
+        const isEnabled = connection && connection.enabled !== false;
+        visiblePath.setAttribute("stroke", isEnabled ? "#d3d3ff" : "#9ca3af");
+        visiblePath.setAttribute("stroke-width", "3");
+      });
+
+      path.addEventListener("mouseleave", () => {
+        const connection = this.connections.get(connectionId);
+        const isEnabled = connection && connection.enabled !== false;
+        // Check if this connection is currently highlighted (selected)
+        const currentStroke = visiblePath.getAttribute("stroke");
+        const currentWidth = visiblePath.getAttribute("stroke-width");
+        // Only restore if not highlighted (selected connections stay highlighted)
+        if (currentWidth === "3" && currentStroke === "#d3d3ff") {
+          // Don't restore - connection is selected
+          return;
+        }
+        visiblePath.setAttribute("stroke", isEnabled ? "#1a1a1a" : "#9ca3af");
+        visiblePath.setAttribute("stroke-width", "2");
+      });
+    }
+
+    return group;
   }
 
   /**
    * Update an existing path element
    */
-  updateConnectionPath(path, x1, y1, x2, y2) {
+  updateConnectionPath(group, x1, y1, x2, y2) {
     const d = this.calculateBezierPath(x1, y1, x2, y2);
-    path.setAttribute("d", d);
+    const paths = group.querySelectorAll("path");
+    paths.forEach((path) => {
+      path.setAttribute("d", d);
+    });
   }
 
   /**
@@ -352,6 +438,87 @@ class ConnectionManager {
     const cy2 = y2;
 
     return `M ${x1} ${y1} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x2} ${y2}`;
+  }
+
+  /**
+   * Show context menu for a connection
+   */
+  showConnectionMenu(connectionId, event) {
+    // Remove any existing menu
+    const existingMenu = document.getElementById("connection-menu");
+    if (existingMenu) existingMenu.remove();
+
+    const connection = this.connections.get(connectionId);
+    if (!connection) return;
+
+    // Highlight the selected connection
+    this.highlightConnection(connectionId, true);
+
+    const menu = document.createElement("div");
+    menu.id = "connection-menu";
+    menu.className = "agent-node-menu";
+    menu.style.position = "fixed";
+    menu.style.left = event.clientX + "px";
+    menu.style.top = event.clientY + "px";
+    menu.style.zIndex = "10000";
+
+    const toggleText = connection.enabled ? "DISABLE" : "ENABLE";
+
+    menu.innerHTML = `
+      <button class="agent-node-menu-btn toggle-connection">${toggleText}</button>
+      <button class="agent-node-menu-btn delete">DELETE</button>
+    `;
+
+    document.body.appendChild(menu);
+
+    // Toggle button handler
+    const toggleBtn = menu.querySelector(".toggle-connection");
+    toggleBtn.addEventListener("click", () => {
+      this.toggleConnectionEnabled(connectionId);
+      this.highlightConnection(connectionId, false);
+      menu.remove();
+    });
+
+    // Delete button handler
+    const deleteBtn = menu.querySelector(".delete");
+    deleteBtn.addEventListener("click", () => {
+      this.removeConnection(connectionId);
+      menu.remove();
+    });
+
+    // Close menu on outside click
+    const closeMenu = (e) => {
+      if (!menu.contains(e.target)) {
+        this.highlightConnection(connectionId, false);
+        menu.remove();
+        document.removeEventListener("click", closeMenu);
+      }
+    };
+    setTimeout(() => document.addEventListener("click", closeMenu), 0);
+  }
+
+  /**
+   * Highlight or unhighlight a connection
+   */
+  highlightConnection(connectionId, highlight) {
+    const connection = this.connections.get(connectionId);
+    if (!connection || !connection.element) return;
+
+    const visiblePath = connection.element.querySelector("path:last-child");
+    if (!visiblePath) return;
+
+    if (highlight) {
+      // Use CSS variable highlight color
+      visiblePath.setAttribute("stroke", "#d3d3ff");
+      visiblePath.setAttribute("stroke-width", "3");
+      visiblePath.setAttribute("opacity", "1");
+    } else {
+      // Restore normal state
+      const isEnabled = connection.enabled !== false;
+      visiblePath.setAttribute("stroke", isEnabled ? "#1a1a1a" : "#9ca3af");
+      visiblePath.setAttribute("stroke-width", "2");
+      this.updateConnectionVisualState(connection);
+    }
   }
 
   /**
@@ -375,7 +542,11 @@ class ConnectionManager {
         // Remove old path
         connection.element.remove();
         // Draw new path
-        connection.element = this.drawConnection(sourceNode, targetNode);
+        connection.element = this.drawConnection(
+          sourceNode,
+          targetNode,
+          connection.id
+        );
       }
     });
   }
@@ -427,6 +598,7 @@ class ConnectionManager {
       id: conn.id,
       from: conn.from,
       to: conn.to,
+      enabled: conn.enabled !== undefined ? conn.enabled : true,
     }));
   }
 
@@ -451,6 +623,68 @@ class ConnectionManager {
     });
     this.connections.clear();
     console.log("✓ All connections cleared");
+  }
+
+  /**
+   * Enable or disable connections (global)
+   */
+  setEnabled(enabled) {
+    this.enabled = enabled;
+
+    // Update visual state of all connections
+    this.connections.forEach((connection) => {
+      if (connection.element) {
+        this.updateConnectionVisualState(connection);
+      }
+    });
+
+    console.log(`✓ Connections ${enabled ? "enabled" : "disabled"}`);
+  }
+
+  /**
+   * Toggle individual connection enabled state
+   */
+  toggleConnectionEnabled(connectionId) {
+    const connection = this.connections.get(connectionId);
+    if (!connection) return;
+
+    connection.enabled = !connection.enabled;
+    this.updateConnectionVisualState(connection);
+
+    const status = connection.enabled ? "enabled" : "disabled";
+    console.log(`✓ Connection ${connectionId} ${status}`);
+
+    // Show toast notification if available
+    if (typeof showToast === "function") {
+      showToast(`Connection ${status}`, "info");
+    }
+  }
+
+  /**
+   * Update visual state of a connection based on global and individual enabled states
+   */
+  updateConnectionVisualState(connection) {
+    if (!connection.element) return;
+
+    const visiblePath = connection.element.querySelector("path:last-child");
+    if (!visiblePath) return;
+
+    // Connection is visually enabled only if both global and individual states are enabled
+    const isVisuallyEnabled = this.enabled && connection.enabled;
+
+    // Apply visual state
+    visiblePath.setAttribute("opacity", isVisuallyEnabled ? "1" : "0.3");
+    visiblePath.setAttribute(
+      "stroke-dasharray",
+      isVisuallyEnabled ? "none" : "5,5"
+    );
+
+    // Change color if individually disabled (even if globally enabled)
+    if (this.enabled && !connection.enabled) {
+      visiblePath.setAttribute("stroke", "#9ca3af"); // Gray for disabled
+    } else {
+      visiblePath.setAttribute("stroke", "#1a1a1a"); // Black for normal
+    }
   }
 
   /**
@@ -527,7 +761,17 @@ class ConnectionManager {
             );
 
             if (fromNode && toNode) {
-              this.createConnection(newFromId, "output", newToId, "input");
+              const connection = this.createConnection(
+                newFromId,
+                "output",
+                newToId,
+                "input"
+              );
+              // Restore individual enabled state
+              if (connection && connData.enabled !== undefined) {
+                connection.enabled = connData.enabled;
+                this.updateConnectionVisualState(connection);
+              }
             }
           }
         });
