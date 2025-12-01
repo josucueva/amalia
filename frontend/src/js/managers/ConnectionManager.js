@@ -65,12 +65,20 @@ class ConnectionManager {
    */
   startConnection(sourceNode, portType, port) {
     const sourceInstanceId = sourceNode.dataset.instanceId;
-    const canvasRect = this.svgOverlay.parentElement.getBoundingClientRect();
-    const portRect = port.getBoundingClientRect();
 
-    // Calculate port center relative to canvas
-    const startX = portRect.left + portRect.width / 2 - canvasRect.left;
-    const startY = portRect.top + portRect.height / 2 - canvasRect.top;
+    // Get node position in original canvas coordinates
+    const nodeX = Number.parseFloat(
+      sourceNode.dataset.originalX || sourceNode.style.left || 0
+    );
+    const nodeY = Number.parseFloat(
+      sourceNode.dataset.originalY || sourceNode.style.top || 0
+    );
+    const nodeWidth = sourceNode.offsetWidth;
+    const nodeHeight = sourceNode.offsetHeight;
+
+    // Calculate port center in canvas coordinates
+    const startX = portType === "output" ? nodeX + nodeWidth : nodeX;
+    const startY = nodeY + nodeHeight / 2;
 
     this.activeConnection = {
       sourceNode,
@@ -88,7 +96,7 @@ class ConnectionManager {
       portType === "output" ? "translateY(-50%) scale(1.5)" : "scale(1.5)";
 
     // Add mousemove listener to draw temporary line
-    this.mouseMoveHandler = (e) => this.updateTempLine(e, canvasRect);
+    this.mouseMoveHandler = (e) => this.updateTempLine(e);
     document.addEventListener("mousemove", this.mouseMoveHandler);
 
     // Add escape key to cancel
@@ -110,11 +118,40 @@ class ConnectionManager {
   /**
    * Update temporary connection line as mouse moves
    */
-  updateTempLine(event, canvasRect) {
+  updateTempLine(event) {
     if (!this.activeConnection) return;
 
-    const currentX = event.clientX - canvasRect.left;
-    const currentY = event.clientY - canvasRect.top;
+    // Get canvas element and its bounding rect
+    const canvasContent = this.svgOverlay.parentElement;
+    const canvasRect = canvasContent.getBoundingClientRect();
+
+    // Get current pan/zoom state from the SVG overlay transform
+    // The transform is set by main.js in format: translate(x, y) scale(s)
+    const transform = this.svgOverlay.style.transform || "";
+    let panX = 0,
+      panY = 0,
+      scale = 1;
+
+    // Parse translate values
+    const translateMatch = transform.match(
+      /translate\(([^,]+)px,\s*([^)]+)px\)/
+    );
+    if (translateMatch) {
+      panX = Number.parseFloat(translateMatch[1]) || 0;
+      panY = Number.parseFloat(translateMatch[2]) || 0;
+    }
+
+    // Parse scale value
+    const scaleMatch = transform.match(/scale\(([^)]+)\)/);
+    if (scaleMatch) {
+      scale = Number.parseFloat(scaleMatch[1]) || 1;
+    }
+
+    // Convert screen coordinates to canvas coordinates
+    const screenX = event.clientX - canvasRect.left;
+    const screenY = event.clientY - canvasRect.top;
+    const currentX = (screenX - panX) / scale;
+    const currentY = (screenY - panY) / scale;
 
     // Remove old temp line if exists
     if (this.activeConnection.tempLine) {
@@ -302,17 +339,29 @@ class ConnectionManager {
    * Draw a connection line between two nodes
    */
   drawConnection(sourceNode, targetNode, connectionId = null) {
-    const canvasRect = this.svgOverlay.parentElement.getBoundingClientRect();
-    const sourcePort = sourceNode.querySelector('[data-port="output"]');
-    const targetPort = targetNode.querySelector('[data-port="input"]');
+    // Get node positions in original canvas coordinates (not transformed)
+    const sourceX = Number.parseFloat(
+      sourceNode.dataset.originalX || sourceNode.style.left || 0
+    );
+    const sourceY = Number.parseFloat(
+      sourceNode.dataset.originalY || sourceNode.style.top || 0
+    );
+    const targetX = Number.parseFloat(
+      targetNode.dataset.originalX || targetNode.style.left || 0
+    );
+    const targetY = Number.parseFloat(
+      targetNode.dataset.originalY || targetNode.style.top || 0
+    );
 
-    const sourceRect = sourcePort.getBoundingClientRect();
-    const targetRect = targetPort.getBoundingClientRect();
+    // Get port offsets within the node (approximate - ports are at edges)
+    const nodeWidth = sourceNode.offsetWidth;
+    const nodeHeight = sourceNode.offsetHeight;
 
-    const startX = sourceRect.left + sourceRect.width / 2 - canvasRect.left;
-    const startY = sourceRect.top + sourceRect.height / 2 - canvasRect.top;
-    const endX = targetRect.left + targetRect.width / 2 - canvasRect.left;
-    const endY = targetRect.top + targetRect.height / 2 - canvasRect.top;
+    // Output port is on the right edge, input port is on the left edge
+    const startX = sourceX + nodeWidth; // Right edge
+    const startY = sourceY + nodeHeight / 2; // Middle height
+    const endX = targetX; // Left edge
+    const endY = targetY + nodeHeight / 2; // Middle height
 
     const path = this.createConnectionPath(
       startX,
