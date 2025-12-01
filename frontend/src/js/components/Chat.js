@@ -226,24 +226,21 @@ class Chat {
       timestamp: new Date().toISOString(),
     });
 
-    // Save pipeline to current session
+    // Pipeline is already saved to session by backend (chat.py)
+    // Just refresh the session to get the updated pipeline
     const currentSession = state.getState().currentSession;
     if (currentSession) {
       try {
-        await api.addPipelineToSession(
-          currentSession.id,
-          orchestrationData.nodes,
-          orchestrationData.connections
-        );
-
-        // Update session in state with new pipeline
+        // Refresh session to get the pipeline that backend saved
         const updatedSession = await api.getSession(currentSession.id);
         state.setState({ currentSession: updatedSession });
-
-        console.log("✓ Pipeline saved to session:", currentSession.id);
+        console.log(
+          "✓ Session refreshed with new pipeline:",
+          currentSession.id
+        );
       } catch (error) {
-        console.error("Error saving pipeline to session:", error);
-        showToast("Failed to save pipeline to session", "error");
+        console.error("Error refreshing session:", error);
+        showToast("Pipeline created but failed to refresh session", "warning");
       }
     }
 

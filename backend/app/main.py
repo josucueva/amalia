@@ -9,7 +9,16 @@ from fastapi.staticfiles import StaticFiles
 import structlog
 
 from app.config import get_settings
-from app.api.routes import chat, agents, files, health, canvas, models, mcp_servers, sessions
+from app.api.routes import (
+    chat,
+    agents,
+    files,
+    health,
+    canvas,
+    models,
+    mcp_servers,
+    sessions,
+)
 from app.utils.logger import setup_logging
 
 
@@ -30,26 +39,57 @@ async def lifespan(app: FastAPI):
     os.makedirs(settings.upload_dir, exist_ok=True)
     os.makedirs(os.path.dirname(settings.log_file), exist_ok=True)
 
-    # Load agents from YAML configuration
-    from app.agents.registry import AgentRegistry
-    from app.agents.config_loader import load_agents_from_directory
+    # Initialize MongoDB connection
+    from app.database import Database
 
     try:
-        agent_registry = AgentRegistry()
-        agents_loaded = load_agents_from_directory(settings.agent_config_dir)
-        for agent in agents_loaded:
-            agent_registry.register_agent(agent)
-        logger.info("Agents loaded", count=len(agents_loaded))
-
-        # Store registry in app state
-        app.state.agent_registry = agent_registry
+        await Database.connect()
+        logger.info("MongoDB connection established")
     except Exception as e:
-        logger.error("Error loading agents", error=str(e))
-        # Continue without agents - app will use default configuration
+        logger.error("Failed to connect to MongoDB", error=str(e))
+        raise
+
+    # Initialize services with MongoDB
+    from app.services.agent_service_db import AgentService
+    from app.services.model_service_db import ModelService
+    from app.services.mcp_server_service_db import MCPServerService
+    from app.services.session_manager_db import SessionManager
+
+    try:
+        # Initialize agent service and load from YAML
+        agent_service = AgentService(config_dir=settings.agent_config_dir)
+        await agent_service.initialize_from_yaml()
+        logger.info("Agents loaded", count=agent_service.registry.count())
+
+        # Store both service and registry in app state
+        app.state.agent_service = agent_service
+        app.state.agent_registry = agent_service.registry
+
+        # Initialize model service with defaults
+        model_service = ModelService()
+        await model_service.initialize_default_models()
+        app.state.model_service = model_service
+        logger.info("Model service initialized")
+
+        # Initialize MCP server service with defaults
+        mcp_service = MCPServerService()
+        await mcp_service.initialize_default_servers()
+        app.state.mcp_server_service = mcp_service
+        logger.info("MCP server service initialized")
+
+        # Initialize session manager
+        session_manager = SessionManager()
+        app.state.session_manager = session_manager
+        logger.info("Session manager initialized")
+
+    except Exception as e:
+        logger.error("Error initializing services", error=str(e))
+        raise
 
     yield
 
     # Shutdown logic
+    await Database.disconnect()
     logger.info("Shutting down application")
 
 

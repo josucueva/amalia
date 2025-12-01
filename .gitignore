@@ -45,6 +45,9 @@ data/uploads/*
 data/*.db
 data/*.sqlite
 
+# Volume Backups
+volume-backups/
+
 # Testing
 .pytest_cache/
 .coverage

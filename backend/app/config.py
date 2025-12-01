@@ -45,8 +45,9 @@ class Settings(BaseSettings):
     upload_dir: str = "./data/uploads"
     allowed_file_types: str = ".csv"
 
-    # Database
-    database_url: str = "sqlite:///./data/agentic_platform.db"
+    # MongoDB
+    mongodb_url: str = "mongodb://mongodb:27017"
+    mongodb_db_name: str = "amalia"
 
     # Agent Configuration
     agent_config_dir: str = "./config/agents"
@@ -72,10 +73,10 @@ class Settings(BaseSettings):
     rate_limit_period: int = 60
 
     model_config = SettingsConfigDict(
-        env_file=".env", 
-        env_file_encoding="utf-8", 
+        env_file=".env",
+        env_file_encoding="utf-8",
         case_sensitive=False,
-        extra="allow"  # Allow extra fields for dynamically added API keys
+        extra="allow",  # Allow extra fields for dynamically added API keys
     )
 
     @property

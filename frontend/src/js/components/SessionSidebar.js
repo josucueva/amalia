@@ -143,6 +143,8 @@ class SessionSidebar {
   async createNewSession() {
     try {
       const session = await api.createSession();
+
+      // Update state with new session
       state.setState({ currentSession: session });
 
       // Clear chat and show welcome message
@@ -157,9 +159,13 @@ class SessionSidebar {
         globalThis.app.showCanvasWelcome();
       }
 
-      // Reload sessions list
+      // Reload sessions list to show new session
       await this.loadSessions();
 
+      // Update active indicator after reload
+      this.updateActiveSession(session.id);
+
+      console.log("✓ New session created:", session.id);
       showToast("New session created", "success");
     } catch (error) {
       console.error("Error creating session:", error);
@@ -174,10 +180,19 @@ class SessionSidebar {
       // Don't switch if already on this session
       if (currentSession?.id === sessionId) {
         console.log("Already on session:", sessionId);
+        // Still refresh the UI to ensure consistency
+        this.updateActiveSession(sessionId);
         return;
       }
 
+      // Fetch fresh session data from backend
       const session = await api.getSession(sessionId);
+      if (!session) {
+        showToast("Session not found", "error");
+        return;
+      }
+
+      // Update state with new session
       state.setState({ currentSession: session });
 
       // Load session messages into chat
@@ -196,27 +211,30 @@ class SessionSidebar {
         }
       }
 
-      // Clear canvas and load session-specific pipeline
-      if (globalThis.app) {
-        // Clear existing canvas
-        if (globalThis.app.canvasMode) {
-          globalThis.app.clearCanvas();
-          if (!session.pipelines || session.pipelines.length === 0) {
+      // Handle canvas mode pipeline loading
+      if (globalThis.app && globalThis.app.canvasMode) {
+        // Clear existing canvas first
+        globalThis.app.clearCanvas();
+
+        // Load last pipeline if session has any
+        if (session.pipelines && session.pipelines.length > 0) {
+          const lastPipeline = session.pipelines[session.pipelines.length - 1];
+          try {
+            await globalThis.app.createPipelineFromData(
+              lastPipeline.nodes,
+              lastPipeline.connections
+            );
+            console.log(
+              "✓ Loaded pipeline with",
+              lastPipeline.nodes.length,
+              "nodes"
+            );
+          } catch (error) {
+            console.error("Error loading pipeline:", error);
             globalThis.app.showCanvasWelcome();
           }
-        }
-
-        // Load last pipeline if in canvas mode and session has pipelines
-        if (
-          globalThis.app.canvasMode &&
-          session.pipelines &&
-          session.pipelines.length > 0
-        ) {
-          const lastPipeline = session.pipelines[session.pipelines.length - 1];
-          await globalThis.app.createPipelineFromData(
-            lastPipeline.nodes,
-            lastPipeline.connections
-          );
+        } else {
+          globalThis.app.showCanvasWelcome();
         }
       }
 
@@ -263,10 +281,13 @@ class SessionSidebar {
     if (!confirm("Delete this session? This cannot be undone.")) return;
 
     try {
+      const wasCurrent = state.getState().currentSession?.id === sessionId;
+
+      // Delete from backend
       await api.deleteSession(sessionId);
 
-      // If deleting current session, clear it and show welcome state
-      if (state.getState().currentSession?.id === sessionId) {
+      // If deleting current session, clear state and UI
+      if (wasCurrent) {
         state.setState({ currentSession: null });
 
         // Clear chat and show welcome message
@@ -285,6 +306,15 @@ class SessionSidebar {
       // Reload sessions list
       await this.loadSessions();
 
+      // If deleted current session, try to switch to most recent session
+      if (wasCurrent) {
+        const sessions = state.getState().sessions;
+        if (sessions && sessions.length > 0) {
+          await this.switchSession(sessions[0].id);
+        }
+      }
+
+      console.log("✓ Session deleted:", sessionId);
       showToast("Session deleted", "success");
     } catch (error) {
       console.error("Error deleting session:", error);

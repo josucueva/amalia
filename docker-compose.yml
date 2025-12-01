@@ -1,4 +1,22 @@
 services:
+  # MongoDB for persistence
+  mongodb:
+    image: mongo:7
+    container_name: agentic-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: amalia
+    networks:
+      - agentic-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/amalia --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # Redis for message queue
   redis:
     image: redis:7-alpine
@@ -23,10 +41,16 @@ services:
       - .env
     volumes:
       - ./backend:/app
-      - ./config:/app/config
-      - ./data:/app/data
+      # Mount host config directory (read agents from host, write to both host and MongoDB)
+      - ./config/agents:/app/config/agents
+      # Persistent volumes for data
+      - app_data:/app/data
+      - app_logs:/app/logs
     depends_on:
-      - redis
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_started
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     networks:
       - agentic-network
@@ -43,11 +67,15 @@ services:
       - ./frontend:/app
       - /app/node_modules
     command: npm run dev -- --host 0.0.0.0
-    networks:
-      - agentic-network
-
 volumes:
+  mongodb_data:
+    driver: local
   redis_data:
+    driver: local
+  app_data:
+    driver: local
+  app_logs:
+    driver: local
 
 networks:
   agentic-network:

@@ -23,9 +23,7 @@ router = APIRouter()
 def get_session_manager(req: Request):
     """Get session manager from app state."""
     if not hasattr(req.app.state, "session_manager"):
-        from app.services.session_manager import SessionManager
-
-        req.app.state.session_manager = SessionManager()
+        raise HTTPException(status_code=500, detail="Session manager not initialized")
     return req.app.state.session_manager
 
 
@@ -46,7 +44,7 @@ async def create_session(
     """
     try:
         session_manager = get_session_manager(request)
-        session = session_manager.create_session(title=request_data.title)
+        session = await session_manager.create_session(title=request_data.title)
         return session
     except Exception as e:
         logger.error("Error creating session", error=str(e))
@@ -72,7 +70,7 @@ async def list_sessions(
     """
     try:
         session_manager = get_session_manager(request)
-        sessions = session_manager.list_sessions(status=status, limit=limit)
+        sessions = await session_manager.list_sessions(status=status, limit=limit)
         return SessionListResponse(sessions=sessions, total=len(sessions))
     except Exception as e:
         logger.error("Error listing sessions", error=str(e))
@@ -93,9 +91,11 @@ async def get_session(session_id: str, request: Request):
     """
     try:
         session_manager = get_session_manager(request)
-        session = session_manager.get_session(session_id)
+        session = await session_manager.get_session(session_id)
         if not session:
-            raise HTTPException(status_code=404, detail=f"Session {session_id} not found")
+            raise HTTPException(
+                status_code=404, detail=f"Session {session_id} not found"
+            )
         return session
     except HTTPException:
         raise
@@ -123,13 +123,15 @@ async def update_session(
     """
     try:
         session_manager = get_session_manager(request)
-        session = session_manager.update_session(
+        session = await session_manager.update_session(
             session_id=session_id,
             title=request_data.title,
             status=request_data.status,
         )
         if not session:
-            raise HTTPException(status_code=404, detail=f"Session {session_id} not found")
+            raise HTTPException(
+                status_code=404, detail=f"Session {session_id} not found"
+            )
         return session
     except HTTPException:
         raise
@@ -152,8 +154,10 @@ async def delete_session(session_id: str, request: Request):
     """
     try:
         session_manager = get_session_manager(request)
-        if not session_manager.delete_session(session_id):
-            raise HTTPException(status_code=404, detail=f"Session {session_id} not found")
+        if not await session_manager.delete_session(session_id):
+            raise HTTPException(
+                status_code=404, detail=f"Session {session_id} not found"
+            )
         return {"success": True, "message": f"Session {session_id} deleted"}
     except HTTPException:
         raise
@@ -181,18 +185,22 @@ async def add_message_to_session(
     """
     try:
         session_manager = get_session_manager(request)
-        if not session_manager.add_message(
+        if not await session_manager.add_message(
             session_id=session_id,
             role=request_data.role,
             content=request_data.content,
             metadata=request_data.metadata,
         ):
-            raise HTTPException(status_code=404, detail=f"Session {session_id} not found")
+            raise HTTPException(
+                status_code=404, detail=f"Session {session_id} not found"
+            )
         return {"success": True}
     except HTTPException:
         raise
     except Exception as e:
-        logger.error("Error adding message to session", session_id=session_id, error=str(e))
+        logger.error(
+            "Error adding message to session", session_id=session_id, error=str(e)
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -215,17 +223,21 @@ async def add_pipeline_to_session(
     """
     try:
         session_manager = get_session_manager(request)
-        if not session_manager.add_pipeline(
+        if not await session_manager.add_pipeline(
             session_id=session_id,
             nodes=request_data.nodes,
             connections=request_data.connections,
         ):
-            raise HTTPException(status_code=404, detail=f"Session {session_id} not found")
+            raise HTTPException(
+                status_code=404, detail=f"Session {session_id} not found"
+            )
         return {"success": True}
     except HTTPException:
         raise
     except Exception as e:
-        logger.error("Error adding pipeline to session", session_id=session_id, error=str(e))
+        logger.error(
+            "Error adding pipeline to session", session_id=session_id, error=str(e)
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -243,11 +255,15 @@ async def clear_session_messages(session_id: str, request: Request):
     """
     try:
         session_manager = get_session_manager(request)
-        if not session_manager.clear_session_messages(session_id):
-            raise HTTPException(status_code=404, detail=f"Session {session_id} not found")
+        if not await session_manager.clear_session_messages(session_id):
+            raise HTTPException(
+                status_code=404, detail=f"Session {session_id} not found"
+            )
         return {"success": True, "message": "Messages cleared"}
     except HTTPException:
         raise
     except Exception as e:
-        logger.error("Error clearing session messages", session_id=session_id, error=str(e))
+        logger.error(
+            "Error clearing session messages", session_id=session_id, error=str(e)
+        )
         raise HTTPException(status_code=500, detail=str(e))

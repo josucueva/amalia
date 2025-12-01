@@ -2,7 +2,7 @@
 API routes for MCP server management.
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 import structlog
 import uuid
 
@@ -11,14 +11,13 @@ from app.models.mcp_server import (
     MCPServerCreateRequest,
     MCPServerListResponse,
 )
-from app.services.mcp_server_service import get_mcp_server_service
 
 router = APIRouter(prefix="/api/mcp-servers", tags=["mcp-servers"])
 logger = structlog.get_logger()
 
 
 @router.get("", response_model=MCPServerListResponse)
-async def list_mcp_servers(available_only: bool = False):
+async def list_mcp_servers(request: Request, available_only: bool = False):
     """
     Get all MCP servers or only available ones.
 
@@ -29,13 +28,8 @@ async def list_mcp_servers(available_only: bool = False):
         List of MCP servers
     """
     try:
-        service = get_mcp_server_service()
-
-        if available_only:
-            servers = service.get_available_servers()
-        else:
-            servers = service.get_all_servers()
-
+        service = request.app.state.mcp_server_service
+        servers = await service.list_servers(available_only=available_only)
         return MCPServerListResponse(servers=servers, count=len(servers))
     except Exception as e:
         logger.error("Error listing MCP servers", error=str(e))
@@ -43,7 +37,7 @@ async def list_mcp_servers(available_only: bool = False):
 
 
 @router.get("/{server_id}", response_model=MCPServer)
-async def get_mcp_server(server_id: str):
+async def get_mcp_server(request: Request, server_id: str):
     """
     Get a specific MCP server by ID.
 
@@ -54,8 +48,8 @@ async def get_mcp_server(server_id: str):
         The MCP server
     """
     try:
-        service = get_mcp_server_service()
-        server = service.get_server(server_id)
+        service = request.app.state.mcp_server_service
+        server = await service.get_server(server_id)
 
         if not server:
             raise HTTPException(
@@ -71,7 +65,7 @@ async def get_mcp_server(server_id: str):
 
 
 @router.post("", response_model=MCPServer)
-async def create_mcp_server(req: MCPServerCreateRequest):
+async def create_mcp_server(request: Request, req: MCPServerCreateRequest):
     """
     Create a new MCP server.
 
@@ -82,13 +76,13 @@ async def create_mcp_server(req: MCPServerCreateRequest):
         The created server
     """
     try:
-        service = get_mcp_server_service()
+        service = request.app.state.mcp_server_service
 
         # Generate unique ID from name
         server_id = req.name.lower().replace(" ", "-").replace("_", "-")
 
         # If ID exists, append random suffix
-        if service.get_server(server_id):
+        if await service.get_server(server_id):
             server_id = f"{server_id}-{uuid.uuid4().hex[:6]}"
 
         server = MCPServer(
@@ -101,7 +95,7 @@ async def create_mcp_server(req: MCPServerCreateRequest):
             is_available=True,
         )
 
-        created_server = service.add_server(server)
+        created_server = await service.add_server(server)
         logger.info("MCP server created", server_id=server_id, name=req.name)
 
         return created_server
@@ -113,7 +107,9 @@ async def create_mcp_server(req: MCPServerCreateRequest):
 
 
 @router.put("/{server_id}", response_model=MCPServer)
-async def update_mcp_server(server_id: str, req: MCPServerCreateRequest):
+async def update_mcp_server(
+    request: Request, server_id: str, req: MCPServerCreateRequest
+):
     """
     Update an existing MCP server.
 
@@ -125,7 +121,7 @@ async def update_mcp_server(server_id: str, req: MCPServerCreateRequest):
         The updated server
     """
     try:
-        service = get_mcp_server_service()
+        service = request.app.state.mcp_server_service
 
         server = MCPServer(
             id=server_id,
@@ -137,7 +133,7 @@ async def update_mcp_server(server_id: str, req: MCPServerCreateRequest):
             is_available=True,
         )
 
-        updated_server = service.update_server(server_id, server)
+        updated_server = await service.update_server(server_id, server)
         logger.info("MCP server updated", server_id=server_id)
 
         return updated_server
@@ -149,7 +145,7 @@ async def update_mcp_server(server_id: str, req: MCPServerCreateRequest):
 
 
 @router.delete("/{server_id}")
-async def delete_mcp_server(server_id: str):
+async def delete_mcp_server(request: Request, server_id: str):
     """
     Delete an MCP server.
 
@@ -160,8 +156,8 @@ async def delete_mcp_server(server_id: str):
         Success message
     """
     try:
-        service = get_mcp_server_service()
-        success = service.delete_server(server_id)
+        service = request.app.state.mcp_server_service
+        success = await service.delete_server(server_id)
 
         if not success:
             raise HTTPException(

@@ -1,41 +1,23 @@
 """
-Agent management routes.
+Agent management routes with MongoDB persistence.
 """
 
 from fastapi import APIRouter, HTTPException, Request
 from typing import List
 import structlog
-from datetime import datetime
 import uuid
 
-from app.models import Agent, AgentCreateRequest, AgentListResponse, AgentStatus
-from app.agents.registry import AgentRegistry
-from app.agents.config_loader import (
-    load_agent_configs_from_yaml,
-    save_agent_config_to_yaml,
-)
+from app.models import Agent, AgentCreateRequest, AgentListResponse
 
 logger = structlog.get_logger()
 router = APIRouter()
 
 
-def get_registry(req: Request) -> AgentRegistry:
-    """Get agent registry from app state, with fallback initialization."""
-    if not hasattr(req.app.state, "agent_registry"):
-        from app.config import get_settings
-        from app.agents.config_loader import load_agents_from_directory
-
-        registry = AgentRegistry()
-        settings = get_settings()
-        try:
-            agents = load_agents_from_directory(settings.agent_config_dir)
-            for agent in agents:
-                registry.register_agent(agent)
-            logger.info("Fallback: agents loaded", count=len(agents))
-        except Exception as e:
-            logger.error("Fallback: error loading agents", error=str(e))
-        req.app.state.agent_registry = registry
-    return req.app.state.agent_registry
+def get_agent_service(req: Request):
+    """Get agent service from app state."""
+    if not hasattr(req.app.state, "agent_service"):
+        raise HTTPException(status_code=500, detail="Agent service not initialized")
+    return req.app.state.agent_service
 
 
 @router.get("/", response_model=AgentListResponse)
@@ -50,14 +32,9 @@ async def list_agents(request: Request, include_hidden: bool = False):
         AgentListResponse: List of all agents
     """
     try:
-        all_agents = get_registry(request).list_agents()
-
-        # Filter out hidden agents unless explicitly requested
-        if not include_hidden:
-            agents = [agent for agent in all_agents if not agent.is_hidden()]
-        else:
-            agents = all_agents
-
+        agents = await get_agent_service(request).list_agents(
+            include_hidden=include_hidden
+        )
         return AgentListResponse(agents=agents, total=len(agents))
     except Exception as e:
         logger.error("Error listing agents", error=str(e))
@@ -76,7 +53,7 @@ async def get_agent(agent_id: str, request: Request):
         Agent: Agent details
     """
     try:
-        agent = get_registry(request).get_agent(agent_id)
+        agent = await get_agent_service(request).get_agent(agent_id)
         if not agent:
             raise HTTPException(status_code=404, detail=f"Agent {agent_id} not found")
         return agent
@@ -90,7 +67,7 @@ async def get_agent(agent_id: str, request: Request):
 @router.post("/", response_model=Agent, status_code=201)
 async def create_agent(req: AgentCreateRequest, request: Request):
     """
-    Create a new agent.
+    Create a new agent and persist to MongoDB.
 
     Args:
         request: Agent creation request
@@ -100,19 +77,13 @@ async def create_agent(req: AgentCreateRequest, request: Request):
     """
     try:
         agent_id = f"agent_{uuid.uuid4().hex[:12]}"
-        timestamp = datetime.now().isoformat()
-
-        agent = Agent(
-            id=agent_id,
-            config=req.config,
-            status=AgentStatus.ACTIVE,
-            created_at=timestamp,
+        agent = await get_agent_service(request).create_agent(agent_id, req.config)
+        logger.info(
+            "Agent created and persisted", agent_id=agent_id, name=req.config.name
         )
-
-        get_registry(request).register_agent(agent)
-        logger.info("Agent created", agent_id=agent_id, name=req.config.name)
-
         return agent
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.error("Error creating agent", error=str(e))
         raise HTTPException(status_code=500, detail=str(e))
@@ -121,7 +92,7 @@ async def create_agent(req: AgentCreateRequest, request: Request):
 @router.put("/{agent_id}", response_model=Agent)
 async def update_agent(agent_id: str, req: AgentCreateRequest, request: Request):
     """
-    Update an existing agent.
+    Update an existing agent and persist to MongoDB.
 
     Args:
         agent_id: Agent ID
@@ -131,23 +102,12 @@ async def update_agent(agent_id: str, req: AgentCreateRequest, request: Request)
         Agent: Updated agent
     """
     try:
-        existing_agent = get_registry(request).get_agent(agent_id)
-        if not existing_agent:
+        agent = await get_agent_service(request).update_agent(agent_id, req.config)
+        if not agent:
             raise HTTPException(status_code=404, detail=f"Agent {agent_id} not found")
 
-        updated_agent = Agent(
-            id=agent_id,
-            config=req.config,
-            status=existing_agent.status,
-            created_at=existing_agent.created_at,
-            updated_at=datetime.now().isoformat(),
-        )
-
-        get_registry(request).update_agent(updated_agent)
-        save_agent_config_to_yaml(updated_agent)
-        logger.info("Agent updated and saved to YAML", agent_id=agent_id)
-
-        return updated_agent
+        logger.info("Agent updated and persisted", agent_id=agent_id)
+        return agent
     except HTTPException:
         raise
     except Exception as e:
@@ -158,7 +118,7 @@ async def update_agent(agent_id: str, req: AgentCreateRequest, request: Request)
 @router.delete("/{agent_id}")
 async def delete_agent(agent_id: str, request: Request):
     """
-    Delete an agent.
+    Delete an agent from MongoDB and remove its YAML file.
 
     Args:
         agent_id: Agent ID
@@ -167,11 +127,11 @@ async def delete_agent(agent_id: str, request: Request):
         dict: Deletion confirmation
     """
     try:
-        success = get_registry(request).unregister_agent(agent_id)
+        success = await get_agent_service(request).delete_agent(agent_id)
         if not success:
             raise HTTPException(status_code=404, detail=f"Agent {agent_id} not found")
 
-        logger.info("Agent deleted", agent_id=agent_id)
+        logger.info("Agent deleted and config removed", agent_id=agent_id)
         return {"status": "deleted", "agent_id": agent_id}
     except HTTPException:
         raise
@@ -183,19 +143,15 @@ async def delete_agent(agent_id: str, request: Request):
 @router.post("/reload-from-yaml")
 async def reload_agents_from_yaml(request: Request):
     """
-    Reload all agents from YAML configuration files.
+    Reload all agents from YAML configuration files into MongoDB.
 
     Returns:
         dict: Reload status with count of loaded agents
     """
     try:
-        agents = load_agent_configs_from_yaml()
-
-        # Clear and re-register all agents
-        reg = get_registry(request)
-        reg.clear()
-        for agent in agents:
-            get_registry(request).register_agent(agent)
+        service = get_agent_service(request)
+        await service.reload_agents()
+        agents = await service.list_agents(include_hidden=True)
 
         logger.info("Agents reloaded from YAML", count=len(agents))
         return {

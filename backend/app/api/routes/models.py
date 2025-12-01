@@ -2,13 +2,12 @@
 API routes for LLM model management.
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from typing import List
 import structlog
 import uuid
 
 from app.models.llm_model import LLMModel, LLMModelCreateRequest, LLMModelListResponse
-from app.services.model_service import get_model_service
 from app.utils.env_manager import update_env_file, generate_env_var_name
 
 router = APIRouter(prefix="/api/models", tags=["models"])
@@ -16,7 +15,7 @@ logger = structlog.get_logger()
 
 
 @router.get("", response_model=LLMModelListResponse)
-async def list_models(available_only: bool = False):
+async def list_models(request: Request, available_only: bool = False):
     """
     Get all LLM models or only available ones.
 
@@ -27,13 +26,8 @@ async def list_models(available_only: bool = False):
         List of LLM models
     """
     try:
-        service = get_model_service()
-
-        if available_only:
-            models = service.get_available_models()
-        else:
-            models = service.get_all_models()
-
+        service = request.app.state.model_service
+        models = await service.list_models(available_only=available_only)
         return LLMModelListResponse(models=models, count=len(models))
     except Exception as e:
         logger.error("Error listing models", error=str(e))
@@ -41,7 +35,7 @@ async def list_models(available_only: bool = False):
 
 
 @router.get("/{model_id}", response_model=LLMModel)
-async def get_model(model_id: str):
+async def get_model(request: Request, model_id: str):
     """
     Get a specific LLM model by ID.
 
@@ -52,8 +46,8 @@ async def get_model(model_id: str):
         The LLM model
     """
     try:
-        service = get_model_service()
-        model = service.get_model(model_id)
+        service = request.app.state.model_service
+        model = await service.get_model(model_id)
 
         if not model:
             raise HTTPException(status_code=404, detail=f"Model {model_id} not found")
@@ -67,7 +61,7 @@ async def get_model(model_id: str):
 
 
 @router.post("", response_model=LLMModel)
-async def create_model(req: LLMModelCreateRequest):
+async def create_model(request: Request, req: LLMModelCreateRequest):
     """
     Create a new LLM model.
 
@@ -78,24 +72,23 @@ async def create_model(req: LLMModelCreateRequest):
         The created model
     """
     try:
-        service = get_model_service()
+        service = request.app.state.model_service
 
         # Generate unique ID
         model_id = f"model-{uuid.uuid4().hex[:12]}"
-        
+
         # Handle API key if provided
         api_key_name = req.api_key_name
         if req.api_key_value:
             # If API key value is provided but no env var name, generate one
             if not api_key_name:
                 api_key_name = generate_env_var_name(req.provider, req.model_name)
-            
+
             # Save API key to .env file
             success = update_env_file(api_key_name, req.api_key_value)
             if not success:
                 logger.warning(
-                    "Failed to save API key to .env file",
-                    api_key_name=api_key_name
+                    "Failed to save API key to .env file", api_key_name=api_key_name
                 )
 
         model = LLMModel(
@@ -104,12 +97,13 @@ async def create_model(req: LLMModelCreateRequest):
             model_name=req.model_name,
             provider=req.provider,
             api_key_name=api_key_name,
+            is_available=bool(api_key_name),  # Available if has API key configured
             supports_function_calling=req.supports_function_calling,
             max_tokens=req.max_tokens,
             description=req.description,
         )
 
-        created_model = service.add_model(model)
+        created_model = await service.add_model(model)
         logger.info("Model created", model_id=model_id, display_name=req.display_name)
 
         return created_model
@@ -121,7 +115,7 @@ async def create_model(req: LLMModelCreateRequest):
 
 
 @router.put("/{model_id}", response_model=LLMModel)
-async def update_model(model_id: str, req: LLMModelCreateRequest):
+async def update_model(request: Request, model_id: str, req: LLMModelCreateRequest):
     """
     Update an existing LLM model.
 
@@ -133,21 +127,20 @@ async def update_model(model_id: str, req: LLMModelCreateRequest):
         The updated model
     """
     try:
-        service = get_model_service()
-        
+        service = request.app.state.model_service
+
         # Handle API key if provided
         api_key_name = req.api_key_name
         if req.api_key_value:
             # If API key value is provided but no env var name, generate one
             if not api_key_name:
                 api_key_name = generate_env_var_name(req.provider, req.model_name)
-            
+
             # Save API key to .env file
             success = update_env_file(api_key_name, req.api_key_value)
             if not success:
                 logger.warning(
-                    "Failed to save API key to .env file",
-                    api_key_name=api_key_name
+                    "Failed to save API key to .env file", api_key_name=api_key_name
                 )
 
         model = LLMModel(
@@ -156,12 +149,13 @@ async def update_model(model_id: str, req: LLMModelCreateRequest):
             model_name=req.model_name,
             provider=req.provider,
             api_key_name=api_key_name,
+            is_available=bool(api_key_name),  # Available if has API key configured
             supports_function_calling=req.supports_function_calling,
             max_tokens=req.max_tokens,
             description=req.description,
         )
 
-        updated_model = service.update_model(model_id, model)
+        updated_model = await service.update_model(model_id, model)
         logger.info("Model updated", model_id=model_id)
 
         return updated_model
@@ -173,7 +167,7 @@ async def update_model(model_id: str, req: LLMModelCreateRequest):
 
 
 @router.delete("/{model_id}")
-async def delete_model(model_id: str):
+async def delete_model(request: Request, model_id: str):
     """
     Delete an LLM model.
 
@@ -184,8 +178,8 @@ async def delete_model(model_id: str):
         Success message
     """
     try:
-        service = get_model_service()
-        success = service.delete_model(model_id)
+        service = request.app.state.model_service
+        success = await service.delete_model(model_id)
 
         if not success:
             raise HTTPException(status_code=404, detail=f"Model {model_id} not found")

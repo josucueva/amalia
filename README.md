@@ -11,6 +11,7 @@ A conversational AI-powered AutoML platform that enables users to build machine 
 - 🛠️ **MCP Integration**: Model Context Protocol for tool usage
 - 📊 **CSV Support**: Upload and process datasets
 - 🎨 **Modern UI**: Clean, responsive interface with latest web technologies
+- 💾 **Persistent Storage**: Docker volumes ensure data survives container restarts
 
 ## Tech Stack
 
@@ -93,6 +94,23 @@ Access the application at: `http://localhost:5173`
 docker-compose up
 ```
 
+**Managing Persistent Data:**
+
+All application data is stored in Docker volumes and persists across container restarts:
+
+```powershell
+# Backup your data
+.\manage-volumes.ps1 -Action backup
+
+# Restore from backup
+.\manage-volumes.ps1 -Action restore
+
+# List all volumes
+.\manage-volumes.ps1 -Action list
+```
+
+See [PERSISTENCE.md](docs/PERSISTENCE.md) for detailed information about data persistence.
+
 ## Project Structure
 
 See [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) for detailed structure.
@@ -135,8 +153,9 @@ Type natural language queries like:
 
 ## Documentation
 
-- [Requirements Document](REQUIREMENTS.md)
-- [Project Structure](PROJECT_STRUCTURE.md)
+- [Data Persistence Guide](docs/PERSISTENCE.md)
+- [Requirements Document](docs/REQUIREMENTS.md)
+- [Project Structure](docs/PROJECT_STRUCTURE.md)
 - [API Documentation](http://localhost:8000/docs)
 
 ## Roadmap

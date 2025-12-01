@@ -212,10 +212,20 @@ class App {
   async restoreSession() {
     try {
       const sessions = state.getState().sessions;
+
       if (sessions && sessions.length > 0) {
-        // Get the most recent session (first in list)
+        // Get the most recent session (first in list, sorted by updated_at desc)
         const mostRecentSession = sessions[0];
+
+        // Fetch full session data from backend
         const fullSession = await api.getSession(mostRecentSession.id);
+        if (!fullSession) {
+          console.warn("Most recent session not found, showing welcome");
+          this.chat.showWelcomeMessage();
+          return;
+        }
+
+        // Update state with full session
         state.setState({ currentSession: fullSession });
 
         // Restore messages to chat
@@ -227,13 +237,20 @@ class App {
               timestamp: msg.timestamp,
             });
           });
+          console.log("✓ Restored", fullSession.messages.length, "messages");
         } else {
           this.chat.showWelcomeMessage();
         }
 
-        console.log("✓ Restored session:", fullSession.id);
+        console.log(
+          "✓ Restored session:",
+          fullSession.id,
+          "-",
+          fullSession.title
+        );
       } else {
-        // No sessions, show welcome
+        // No sessions available
+        console.log("No sessions available, showing welcome");
         this.chat.showWelcomeMessage();
       }
     } catch (error) {
@@ -1209,13 +1226,27 @@ The file path has been passed to the agent's execution context.
 
     if (this.canvasMode) {
       this.initializeCanvasMode();
-      // Show welcome if no session or no pipelines
+
+      // Check if current session has pipelines to load
       const currentSession = globalThis.state?.getState().currentSession;
       if (
-        !currentSession ||
-        !currentSession.pipelines ||
-        currentSession.pipelines.length === 0
+        currentSession &&
+        currentSession.pipelines &&
+        currentSession.pipelines.length > 0
       ) {
+        // Load the most recent pipeline
+        const lastPipeline =
+          currentSession.pipelines[currentSession.pipelines.length - 1];
+        console.log("Loading pipeline from session:", currentSession.id);
+
+        setTimeout(() => {
+          this.createPipelineFromData(
+            lastPipeline.nodes,
+            lastPipeline.connections
+          );
+        }, 300); // Small delay to ensure canvas is ready
+      } else {
+        // No pipelines in current session
         this.showCanvasWelcome();
       }
     }

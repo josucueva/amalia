@@ -1,33 +1,34 @@
-agent:
-  name: interaction_agent
-  description: General-purpose assistant that helps users with various tasks, can
-    use external tools when needed
-  model: gemini/gemini-2.5-flash
-  system_prompt: "You are AMALIA's interaction agent. Be direct and concise.\n\n**FILES:**\n\
-    When you see [File attached: filename at path: /app/data/...], use read_file or\
-    \ read_text_file tools to read and analyze it.\n\n**CAPABILITIES:**\n- Answer\
-    \ questions\n- Use MCP filesystem tools for file operations\n- Help with ML/data\
-    \ science tasks\n\n**PIPELINE CREATION:**\nWhen user requests a pipeline, respond:\n\
-    ```json\n{\n  \"action\": \"plan_pipeline\",\n  \"improved_prompt\": \"Task description:\
-    \ data source, steps, goal\",\n  \"user_intent\": \"Objective\"\n}\n```\n\n**PIPELINE\
-    \ PATTERNS:**\nFor data analysis with CSV:\n- Use: data_loader → missing_values_detector\
-    \ → statistics_analyzer\n- Goal: Load, check quality, generate statistics\n\n\
-    **Available agents:**\ndata_loader, missing_values_detector, statistics_analyzer,\
-    \ data_preprocessor, model_trainer, model_evaluator, data_visualizer\n"
-  a2a_enabled: false
-  tools: []
-  communication:
-    can_receive_from:
-    - '*'
-    can_send_to:
-    - data_preprocessor
-    - model_trainer
-    - model_evaluator
-  temperature: 0.5
-  max_tokens: 1000
-  metadata:
-    category: interaction
-    priority: critical
-    version: '1.0'
-    is_primary: true
-    is_hidden: true
+name: interaction_agent
+description: General-purpose assistant that helps users with various tasks, can use
+  external tools when needed
+model: gemini/gemini-2.5-flash-lite
+system_prompt: "You are AMALIA's interaction agent. Be direct and concise.\n\n**FILES:**\n\
+  When you see [File attached: filename at path: /app/data/...], use read_file or\
+  \ read_text_file tools to read and analyze it.\n\n**CAPABILITIES:**\n- Answer questions\n\
+  - Use MCP filesystem tools for file operations\n- Help with ML/data science tasks\n\
+  \n**PIPELINE CREATION:**\nWhen user requests a pipeline, respond:\n```json\n{\n\
+  \  \"action\": \"plan_pipeline\",\n  \"improved_prompt\": \"Task description: data\
+  \ source, steps, goal\",\n  \"user_intent\": \"Objective\"\n}\n```\n\n**PIPELINE\
+  \ PATTERNS:**\nFor data analysis with CSV:\n- Use: data_loader → missing_values_detector\
+  \ → statistics_analyzer\n- Goal: Load, check quality, generate statistics\n\n**Available\
+  \ agents:**\ndata_loader, missing_values_detector, statistics_analyzer, data_preprocessor,\
+  \ model_trainer, model_evaluator, data_visualizer\n"
+a2a_enabled: false
+tools: []
+mcp_servers: {}
+mcp_server_ids: []
+communication:
+  can_receive_from:
+  - '*'
+  can_send_to:
+  - data_preprocessor
+  - model_trainer
+  - model_evaluator
+temperature: 0.5
+max_tokens: 1000
+metadata:
+  category: interaction
+  priority: critical
+  version: '1.0'
+  is_primary: true
+  is_hidden: true

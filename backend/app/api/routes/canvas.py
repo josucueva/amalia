@@ -12,8 +12,6 @@ import structlog
 from app.services.agent_pipeline import AgentPipelineService
 from app.services.llm_service import get_llm_service
 from app.services.mcp_service import MCPService
-from app.services.mcp_server_service import get_mcp_server_service
-from app.services.model_service import ModelService
 from app.config import get_settings
 
 logger = structlog.get_logger()
@@ -162,7 +160,7 @@ async def execute_node(
             combined_input = (
                 "No input data provided. Please process this request independently."
             )
-        
+
         # If this node has a file attached, prepend file path to input
         if request_data.filePath:
             file_instruction = f"""[FILE ATTACHED]
@@ -174,7 +172,11 @@ IMPORTANT: The file path is: {request_data.filePath}
 
 """
             combined_input = file_instruction + combined_input
-            logger.info("File path added to node input", instance_id=request_data.instanceId, file_path=request_data.filePath)
+            logger.info(
+                "File path added to node input",
+                instance_id=request_data.instanceId,
+                file_path=request_data.filePath,
+            )
 
         # Get LLM service
         settings = get_settings()
@@ -196,8 +198,8 @@ IMPORTANT: The file path is: {request_data.filePath}
 
         # Check if model supports function calling
         model_supports_tools = True
-        model_service = ModelService()
-        models = model_service.get_all_models()
+        model_service = request.app.state.model_service
+        models = await model_service.list_models()
         for model in models:
             if model.model_name == (
                 request_data.config.get("model", agent.config.model)
@@ -210,11 +212,11 @@ IMPORTANT: The file path is: {request_data.filePath}
         if mcp_server_ids_to_use and model_supports_tools:
             # Load MCP servers using the new server IDs approach
             mcp_service = MCPService()
-            mcp_server_service = get_mcp_server_service()
+            mcp_server_service = request.app.state.mcp_server_service
             mcp_servers_config = {}
 
             for server_id in mcp_server_ids_to_use:
-                server = mcp_server_service.get_server(server_id)
+                server = await mcp_server_service.get_server(server_id)
                 if server and server.is_available:
                     from app.models.agent import MCPServerConfig
 
