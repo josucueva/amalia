@@ -1474,9 +1474,11 @@ The file path has been passed to the agent's execution context.
       welcome.style.transform = `translate(-50%, -50%) scale(${this.canvasPan.scale})`;
     }
 
-    // Update all connection positions to match zoom/pan
-    if (this.connectionManager) {
-      this.updateAllConnections();
+    // Apply transform to SVG overlay (no need to redraw connections)
+    if (this.connectionManager && this.connectionManager.svgOverlay) {
+      const svg = this.connectionManager.svgOverlay;
+      svg.style.transform = `translate(${this.canvasPan.x}px, ${this.canvasPan.y}px) scale(${this.canvasPan.scale})`;
+      svg.style.transformOrigin = "0 0";
     }
   }
 
@@ -1493,6 +1495,7 @@ The file path has been passed to the agent's execution context.
 
   /**
    * Update all connection positions (called after zoom/pan)
+   * Note: With SVG transform applied to overlay, this is only needed when nodes are moved
    */
   updateAllConnections() {
     if (!this.connectionManager) return;

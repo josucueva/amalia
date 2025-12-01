@@ -11,6 +11,7 @@ class ConnectionManager {
     this.mouseMoveHandler = null;
     this.escapeHandler = null;
     this.enabled = true; // Control whether connections are active
+    this.selectedConnectionId = null; // Track currently selected connection
   }
 
   /**
@@ -396,16 +397,12 @@ class ConnectionManager {
       });
 
       path.addEventListener("mouseleave", () => {
-        const connection = this.connections.get(connectionId);
-        const isEnabled = connection && connection.enabled !== false;
-        // Check if this connection is currently highlighted (selected)
-        const currentStroke = visiblePath.getAttribute("stroke");
-        const currentWidth = visiblePath.getAttribute("stroke-width");
-        // Only restore if not highlighted (selected connections stay highlighted)
-        if (currentWidth === "3" && currentStroke === "#d3d3ff") {
-          // Don't restore - connection is selected
+        // Don't restore if this connection is currently selected
+        if (this.selectedConnectionId === connectionId) {
           return;
         }
+        const connection = this.connections.get(connectionId);
+        const isEnabled = connection && connection.enabled !== false;
         visiblePath.setAttribute("stroke", isEnabled ? "#1a1a1a" : "#9ca3af");
         visiblePath.setAttribute("stroke-width", "2");
       });
@@ -451,6 +448,15 @@ class ConnectionManager {
     const connection = this.connections.get(connectionId);
     if (!connection) return;
 
+    // Clear previous selection and set new one
+    if (
+      this.selectedConnectionId &&
+      this.selectedConnectionId !== connectionId
+    ) {
+      this.highlightConnection(this.selectedConnectionId, false);
+    }
+    this.selectedConnectionId = connectionId;
+
     // Highlight the selected connection
     this.highlightConnection(connectionId, true);
 
@@ -476,6 +482,7 @@ class ConnectionManager {
     toggleBtn.addEventListener("click", () => {
       this.toggleConnectionEnabled(connectionId);
       this.highlightConnection(connectionId, false);
+      this.selectedConnectionId = null;
       menu.remove();
     });
 
@@ -483,6 +490,7 @@ class ConnectionManager {
     const deleteBtn = menu.querySelector(".delete");
     deleteBtn.addEventListener("click", () => {
       this.removeConnection(connectionId);
+      this.selectedConnectionId = null;
       menu.remove();
     });
 
@@ -490,6 +498,7 @@ class ConnectionManager {
     const closeMenu = (e) => {
       if (!menu.contains(e.target)) {
         this.highlightConnection(connectionId, false);
+        this.selectedConnectionId = null;
         menu.remove();
         document.removeEventListener("click", closeMenu);
       }
