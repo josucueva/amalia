@@ -7,15 +7,26 @@ platform/
 │   │   ├── __init__.py
 │   │   ├── main.py                 # FastAPI application entry point
 │   │   ├── config.py               # Configuration management
+│   │   ├── database.py             # MongoDB connection handling
 │   │   ├── api/
 │   │   │   ├── __init__.py
 │   │   │   ├── routes/
 │   │   │   │   ├── __init__.py
 │   │   │   │   ├── chat.py         # Chat endpoints
+│   │   │   │   ├── sessions.py     # Session management endpoints
 │   │   │   │   ├── agents.py       # Agent management endpoints
+│   │   │   │   ├── mcp_servers.py  # MCP server endpoints
+│   │   │   │   ├── models.py       # LLM model endpoints
 │   │   │   │   ├── files.py        # File upload endpoints
+│   │   │   │   ├── canvas.py       # Canvas/Pipeline endpoints
 │   │   │   │   └── health.py       # Health check endpoints
 │   │   │   └── deps.py             # API dependencies
+│   │   ├── services/
+│   │   │   ├── __init__.py
+│   │   │   ├── agent_service_db.py       # Agent persistence service
+│   │   │   ├── session_manager_db.py     # Session persistence service
+│   │   │   ├── mcp_server_service_db.py  # MCP server persistence service
+│   │   │   └── model_service_db.py       # Model persistence service
 │   │   ├── agents/
 │   │   │   ├── __init__.py
 │   │   │   ├── base.py             # Base agent class
@@ -35,6 +46,8 @@ platform/
 │   │   ├── models/
 │   │   │   ├── __init__.py
 │   │   │   ├── agent.py            # Agent data models
+│   │   │   ├── session.py          # Session data models
+│   │   │   ├── mcp_server.py       # MCP server data models
 │   │   │   ├── message.py          # Message data models
 │   │   │   └── config.py           # Config data models
 │   │   └── utils/

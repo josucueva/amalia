@@ -2491,7 +2491,6 @@ The file path has been passed to the agent's execution context.
         <h2>Agent Canvas</h2>
         <p>Start chatting to build your first pipeline</p>
         <div class="canvas-welcome-hint">
-          <span>💡</span>
           <p>Or drag agents from the sidebar to create a custom workflow</p>
         </div>
       </div>
