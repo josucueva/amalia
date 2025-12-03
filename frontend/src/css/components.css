@@ -726,7 +726,7 @@
 }
 
 .session-action-btn.delete-btn:hover {
-  color: #dc2626;
+  color: var(--agent-delete);
 }
 
 .empty-sessions {

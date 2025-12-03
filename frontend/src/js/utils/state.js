@@ -11,6 +11,7 @@ class State {
       isLoading: false,
       currentSession: null, // Current active session
       sessions: [], // List of all sessions
+      theme: localStorage.getItem("theme") || "light", // Theme preference
     };
     this.listeners = [];
   }

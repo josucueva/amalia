@@ -30,6 +30,13 @@
             <h1 class="app-title">AMALIA</h1>
           </div>
           <div class="header-actions">
+            <button
+              id="theme-toggle-btn"
+              class="header-icon-btn"
+              title="Toggle Theme (Ctrl+Shift+T)"
+            >
+              <span id="theme-icon">🌙</span>
+            </button>
             <button id="run-btn" class="btn btn-primary" title="Run Pipeline">
               <span>Run</span>
             </button>
@@ -47,7 +54,7 @@
       <!-- Main Content -->
       <main class="app-main">
         <!-- Sidebar (Hidden by Default) -->
-        <aside class="sidebar" id="sidebar">
+        <aside class="sidebar" id="sidebar" aria-label="Active Agents">
           <div class="sidebar-header">
             <h2>Active Agents</h2>
             <button
@@ -115,7 +122,11 @@
       <!-- Canvas Mode Overlay -->
       <div class="canvas-overlay" id="canvas-overlay">
         <!-- Canvas Sidebar -->
-        <aside class="canvas-sidebar" id="canvas-sidebar">
+        <aside
+          class="canvas-sidebar"
+          id="canvas-sidebar"
+          aria-label="Canvas Sidebar"
+        >
           <div class="canvas-sidebar-header">
             <h3>AGENTS</h3>
           </div>

@@ -16,6 +16,7 @@ import ConnectionManager from "./managers/ConnectionManager.js";
 import { showToast } from "./utils/helpers.js";
 import state from "./utils/state.js";
 import config from "./config.js";
+import themeManager from "./utils/theme.js";
 
 const { API_BASE_URL } = config;
 
@@ -200,10 +201,31 @@ class App {
       });
     }
 
+    // Theme toggle button
+    const themeToggleBtn = document.getElementById("theme-toggle-btn");
+    if (themeToggleBtn) {
+      themeToggleBtn.addEventListener("click", () => {
+        themeManager.toggle();
+        this.updateThemeIcon();
+      });
+      // Set initial icon
+      this.updateThemeIcon();
+    }
+
     // Setup keyboard shortcuts
     this.setupKeyboardShortcuts();
 
     console.log("✓ Application initialized successfully");
+  }
+
+  /**
+   * Update theme toggle icon based on current theme
+   */
+  updateThemeIcon() {
+    const themeIcon = document.getElementById("theme-icon");
+    if (themeIcon) {
+      themeIcon.textContent = themeManager.isDark() ? "☀️" : "🌙";
+    }
   }
 
   /**
@@ -351,6 +373,17 @@ class App {
           e.preventDefault();
           this.toggleConnections();
         }
+      }
+
+      // Ctrl+Shift+T: Toggle theme (works everywhere)
+      if (e.ctrlKey && e.shiftKey && e.key === "T") {
+        e.preventDefault();
+        themeManager.toggle();
+        this.updateThemeIcon();
+        showToast(
+          `Switched to ${themeManager.isDark() ? "dark" : "light"} mode`,
+          "info"
+        );
       }
     });
   }
