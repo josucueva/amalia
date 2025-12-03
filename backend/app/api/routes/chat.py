@@ -105,12 +105,15 @@ async def chat(
 
         # Get agent registry from app state
         agent_registry = getattr(request.app.state, "agent_registry", None)
+        mcp_server_service = getattr(request.app.state, "mcp_server_service", None)
 
         if not agent_registry:
             raise HTTPException(status_code=500, detail="Agent registry not available")
 
         # Create pipeline service
-        pipeline_service = AgentPipelineService(llm_service, agent_registry)
+        pipeline_service = AgentPipelineService(
+            llm_service, agent_registry, mcp_server_service
+        )
 
         # Process through the three-agent pipeline
         try:

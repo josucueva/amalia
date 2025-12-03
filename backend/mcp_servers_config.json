@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "description": "Python MCP servers configuration for AMALIA",
+  "servers": {
+    "mathematics": {
+      "name": "Mathematics Server",
+      "path": "/app/mcp_servers/mathematics/server.py",
+      "command": "python",
+      "args": [],
+      "allowed_paths": ["/app/data/uploads"],
+      "env": { "PYTHONPATH": "/app" },
+      "description": "Mathematical operations and statistical calculations",
+      "dependencies_file": "/app/mcp_servers/mathematics/requirements.txt"
+    }
+  }
+}

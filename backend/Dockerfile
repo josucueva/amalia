@@ -21,8 +21,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
-# Create necessary directories
-RUN mkdir -p /app/data/uploads /app/logs
+# Create necessary directories and make init script executable
+RUN mkdir -p /app/data/uploads /app/logs /app/mcp_servers && \
+    chmod +x /app/init_python_mcp.py || true
 
 # Expose port
 EXPOSE 8000

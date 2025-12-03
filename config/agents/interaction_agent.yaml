@@ -16,7 +16,9 @@ system_prompt: "You are AMALIA's interaction agent. Be direct and concise.\n\n**
 a2a_enabled: false
 tools: []
 mcp_servers: {}
-mcp_server_ids: []
+mcp_server_ids:
+- python-mathematics
+- filesystem
 communication:
   can_receive_from:
   - '*'
