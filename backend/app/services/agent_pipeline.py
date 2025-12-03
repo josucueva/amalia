@@ -11,7 +11,6 @@ from typing import Dict, Any, Optional, Tuple, List
 from app.services.llm_service import LLMService
 from app.services.mcp_service import MCPService
 from app.services.model_service import ModelService
-from app.services.mcp_server_service import get_mcp_server_service
 from app.agents.registry import AgentRegistry
 from app.models.agent import Agent
 
@@ -24,17 +23,24 @@ MAX_TOOL_ITERATIONS = 10
 class AgentPipelineService:
     """Service for orchestrating multi-agent pipelines."""
 
-    def __init__(self, llm_service: LLMService, agent_registry: AgentRegistry):
+    def __init__(
+        self,
+        llm_service: LLMService,
+        agent_registry: AgentRegistry,
+        mcp_server_service=None,
+    ):
         """
         Initialize the pipeline service.
 
         Args:
             llm_service: LLM service instance
             agent_registry: Agent registry instance
+            mcp_server_service: MCP server service instance (optional)
         """
         self.llm_service = llm_service
         self.agent_registry = agent_registry
         self.model_service = ModelService()
+        self.mcp_server_service = mcp_server_service
 
     async def _execute_tool_calls(
         self, mcp_service: MCPService, tool_calls: List[Dict[str, Any]]
@@ -130,15 +136,20 @@ class AgentPipelineService:
                 and agent.config.mcp_server_ids is not None
             ):
                 # Use the new server IDs approach
-                mcp_server_service = get_mcp_server_service()
-                for server_id in agent.config.mcp_server_ids:
-                    server = mcp_server_service.get_server(server_id)
-                    if server and server.is_available:
-                        from app.models.agent import MCPServerConfig
+                if self.mcp_server_service:
+                    for server_id in agent.config.mcp_server_ids:
+                        server = await self.mcp_server_service.get_server(server_id)
+                        if server and server.is_available:
+                            from app.models.agent import MCPServerConfig
 
-                        mcp_servers_config[server_id] = MCPServerConfig(
-                            command=server.command, args=server.args, env=server.env
-                        )
+                            mcp_servers_config[server_id] = MCPServerConfig(
+                                command=server.command, args=server.args, env=server.env
+                            )
+                else:
+                    logger.warning(
+                        "MCP server service not available, skipping MCP server loading",
+                        agent=agent.config.name,
+                    )
             elif agent.config.mcp_servers:
                 # Legacy: Fall back to old mcp_servers dict only if new field doesn't exist
                 mcp_servers_config = agent.config.mcp_servers

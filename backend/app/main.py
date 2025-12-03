@@ -54,8 +54,25 @@ async def lifespan(app: FastAPI):
     from app.services.model_service_db import ModelService
     from app.services.mcp_server_service_db import MCPServerService
     from app.services.session_manager_db import SessionManager
+    from app.utils.python_mcp_manager import get_python_mcp_manager
 
     try:
+        # Initialize Python MCP servers (install dependencies, validate)
+        logger.info("Initializing Python MCP servers...")
+        python_mcp_manager = get_python_mcp_manager()
+        validation_results = python_mcp_manager.validate_all_servers()
+        install_results = python_mcp_manager.install_all_dependencies()
+        
+        valid_count = sum(1 for v in validation_results.values() if v)
+        deps_count = sum(1 for v in install_results.values() if v)
+        logger.info(
+            "Python MCP initialization complete",
+            total=len(python_mcp_manager.list_servers()),
+            valid=valid_count,
+            dependencies_installed=deps_count
+        )
+        app.state.python_mcp_manager = python_mcp_manager
+        
         # Initialize agent service and load from YAML
         agent_service = AgentService(config_dir=settings.agent_config_dir)
         await agent_service.initialize_from_yaml()
@@ -76,6 +93,28 @@ async def lifespan(app: FastAPI):
         await mcp_service.initialize_default_servers()
         app.state.mcp_server_service = mcp_service
         logger.info("MCP server service initialized")
+        
+        # Register Python MCP servers in main MCP database
+        from app.models.mcp_server import MCPServer
+        for server_id, config in python_mcp_manager.list_servers().items():
+            mcp_server_id = f"python-{server_id}"
+            
+            # Check if already registered
+            existing = await mcp_service.get_server(mcp_server_id)
+            if not existing:
+                python_mcp_server = MCPServer(
+                    id=mcp_server_id,
+                    name=config.name,
+                    command=config.command,
+                    args=[config.path],
+                    env=config.env,
+                    description=config.description or f"Python MCP Server: {config.name}",
+                    is_available=True,
+                )
+                await mcp_service.add_server(python_mcp_server)
+                logger.info("Registered Python MCP server", server_id=mcp_server_id, name=config.name)
+            else:
+                logger.info("Python MCP server already registered", server_id=mcp_server_id)
 
         # Initialize session manager
         session_manager = SessionManager()

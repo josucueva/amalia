@@ -43,6 +43,10 @@ services:
       - ./backend:/app
       # Mount host config directory (read agents from host, write to both host and MongoDB)
       - ./config/agents:/app/config/agents
+      # Mount MCP servers directory for Python MCP servers
+      - ./backend/mcp_servers:/app/mcp_servers
+      # Mount MCP servers config
+      - ./backend/mcp_servers_config.json:/app/mcp_servers_config.json
       # Persistent volumes for data
       - app_data:/app/data
       - app_logs:/app/logs

@@ -3,11 +3,7 @@
     "id": "filesystem",
     "name": "filesystem",
     "command": "npx",
-    "args": [
-      "-y",
-      "@modelcontextprotocol/server-filesystem",
-      "/app/data"
-    ],
+    "args": ["-y", "@modelcontextprotocol/server-filesystem", "/app/data"],
     "env": null,
     "description": null,
     "is_available": true
