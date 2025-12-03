@@ -19,7 +19,10 @@ export default class NodeDataManager {
         (conn) => conn.to.instanceId === instanceId
       );
       if (inputConnections.length === 0) {
-        showToast("No data available - agent not executed and no inputs connected", "info");
+        showToast(
+          "No data available - agent not executed and no inputs connected",
+          "info"
+        );
         return;
       }
     }
@@ -29,7 +32,9 @@ export default class NodeDataManager {
       (conn) => conn.to.instanceId === instanceId
     );
     const inputData = inputConnections.map((conn) => {
-      const inputResult = this.app.pipelineManager.executionResults.get(conn.from.instanceId);
+      const inputResult = this.app.pipelineManager.executionResults.get(
+        conn.from.instanceId
+      );
       return {
         fromAgent: conn.from.agentId,
         fromInstance: conn.from.instanceId,
@@ -59,16 +64,26 @@ export default class NodeDataManager {
             <div class="data-grid">
               <div class="data-field">
                 <label>Instance ID:</label>
-                <span class="data-value monospace">${hasExecutionData ? result.instanceId : instanceId}</span>
+                <span class="data-value monospace">${
+                  hasExecutionData ? result.instanceId : instanceId
+                }</span>
               </div>
               <div class="data-field">
                 <label>Agent Type:</label>
-                <span class="data-value">${hasExecutionData ? result.agentType : agentInstance.config?.name || agentInstance.id}</span>
+                <span class="data-value">${
+                  hasExecutionData
+                    ? result.agentType
+                    : agentInstance.config?.name || agentInstance.id
+                }</span>
               </div>
-              ${hasExecutionData ? `
+              ${
+                hasExecutionData
+                  ? `
               <div class="data-field">
                 <label>Timestamp:</label>
-                <span class="data-value">${new Date(result.timestamp).toLocaleString()}</span>
+                <span class="data-value">${new Date(
+                  result.timestamp
+                ).toLocaleString()}</span>
               </div>
               <div class="data-field">
                 <label>Input Count:</label>
@@ -76,20 +91,28 @@ export default class NodeDataManager {
               </div>
               <div class="data-field">
                 <label>Status:</label>
-                <span class="data-value status-${result.error ? "error" : "success"}">${result.error ? "Error" : "Success"}</span>
+                <span class="data-value status-${
+                  result.error ? "error" : "success"
+                }">${result.error ? "Error" : "Success"}</span>
               </div>
-              ` : `
+              `
+                  : `
               <div class="data-field">
                 <label>Status:</label>
                 <span class="data-value status-pending">Not Executed</span>
               </div>
-              `}
+              `
+              }
             </div>
           </div>
 
           <div class="data-section">
-            <h3>Input Data (${totalInputs} source${totalInputs === 1 ? "" : "s"})</h3>
-            ${hasFileInput ? `
+            <h3>Input Data (${totalInputs} source${
+      totalInputs === 1 ? "" : "s"
+    })</h3>
+            ${
+              hasFileInput
+                ? `
               <div class="data-connections">
                 <div class="connection-data">
                   <div class="connection-header">
@@ -99,37 +122,71 @@ export default class NodeDataManager {
                   <pre class="data-preview file-path-display">File Path: ${agentInstance.filePath}\n\nNote: Agent should use MCP filesystem tools to read this file.</pre>
                 </div>
               </div>
-            ` : ""}
-            ${inputData.length > 0 ? `
+            `
+                : ""
+            }
+            ${
+              inputData.length > 0
+                ? `
               <div class="data-connections">
-                ${inputData.map((input) => `
+                ${inputData
+                  .map(
+                    (input) => `
                   <div class="connection-data">
                     <div class="connection-header">
-                      <span class="connection-label">From: ${input.fromAgent}</span>
-                      <span class="connection-id monospace">${input.fromInstance}</span>
+                      <span class="connection-label">From: ${
+                        input.fromAgent
+                      }</span>
+                      <span class="connection-id monospace">${
+                        input.fromInstance
+                      }</span>
                     </div>
-                    ${input.data ? `<pre class="data-preview">${this.formatDataForDisplay(input.data.output)}</pre>` : '<p class="no-data">No data available</p>'}
+                    ${
+                      input.data
+                        ? `<pre class="data-preview">${this.formatDataForDisplay(
+                            input.data.output
+                          )}</pre>`
+                        : '<p class="no-data">No data available</p>'
+                    }
                   </div>
-                `).join("")}
+                `
+                  )
+                  .join("")}
               </div>
-            ` : !hasFileInput ? '<p class="no-data">No input connections</p>' : ""}
+            `
+                : !hasFileInput
+                ? '<p class="no-data">No input connections</p>'
+                : ""
+            }
           </div>
 
           <div class="data-section">
             <h3>Output Data</h3>
-            ${!hasExecutionData ? '<p class="no-data">Agent has not been executed yet</p>' : result.error ? `
+            ${
+              !hasExecutionData
+                ? '<p class="no-data">Agent has not been executed yet</p>'
+                : result.error
+                ? `
               <div class="error-display"><span>ERROR: ${result.error}</span></div>
-            ` : `
-              <pre class="data-preview output-preview">${this.formatDataForDisplay(result.output)}</pre>
-            `}
+            `
+                : `
+              <pre class="data-preview output-preview">${this.formatDataForDisplay(
+                result.output
+              )}</pre>
+            `
+            }
           </div>
 
-          ${hasExecutionData ? `
+          ${
+            hasExecutionData
+              ? `
           <div class="data-section data-actions">
             <button class="btn btn-secondary" id="copy-output-btn">COPY OUTPUT</button>
             <button class="btn btn-secondary" id="download-output-btn">DOWNLOAD JSON</button>
           </div>
-          ` : ""}
+          `
+              : ""
+          }
         </div>
         <div class="modal-footer">
           <button class="btn btn-primary" onclick="document.getElementById('node-data-viewer-modal').remove()">Close</button>
@@ -143,7 +200,8 @@ export default class NodeDataManager {
       const copyBtn = modal.querySelector("#copy-output-btn");
       if (copyBtn) {
         copyBtn.addEventListener("click", () => {
-          navigator.clipboard.writeText(JSON.stringify(result.output, null, 2))
+          navigator.clipboard
+            .writeText(JSON.stringify(result.output, null, 2))
             .then(() => showToast("Output copied to clipboard", "success"))
             .catch(() => showToast("Failed to copy output", "error"));
         });
@@ -169,7 +227,8 @@ export default class NodeDataManager {
   formatDataForDisplay(data) {
     if (data === null || data === undefined) return "(no data)";
     if (typeof data === "string") {
-      if (data.length > 2000) return data.substring(0, 2000) + "\n... (truncated)";
+      if (data.length > 2000)
+        return data.substring(0, 2000) + "\n... (truncated)";
       return data;
     }
     try {
@@ -181,14 +240,14 @@ export default class NodeDataManager {
 
   downloadData(result) {
     const dataStr = JSON.stringify(result, null, 2);
-    const blob = new Blob([dataStr], { type: 'application/json' });
+    const blob = new Blob([dataStr], { type: "application/json" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = `execution-${result.instanceId}-${Date.now()}.json`;
     a.click();
     URL.revokeObjectURL(url);
-    showToast('Data downloaded', 'success');
+    showToast("Data downloaded", "success");
   }
 
   showExecutionLogs(instanceId) {
@@ -213,14 +272,26 @@ export default class NodeDataManager {
         </div>
         <div class="modal-body">
           <div class="execution-logs-info">
-            <div class="log-field"><label>Instance ID:</label><span>${result.instanceId}</span></div>
-            <div class="log-field"><label>Agent Type:</label><span>${result.agentType}</span></div>
-            <div class="log-field"><label>Timestamp:</label><span>${new Date(result.timestamp).toLocaleString()}</span></div>
-            <div class="log-field"><label>Input Count:</label><span>${result.inputs}</span></div>
+            <div class="log-field"><label>Instance ID:</label><span>${
+              result.instanceId
+            }</span></div>
+            <div class="log-field"><label>Agent Type:</label><span>${
+              result.agentType
+            }</span></div>
+            <div class="log-field"><label>Timestamp:</label><span>${new Date(
+              result.timestamp
+            ).toLocaleString()}</span></div>
+            <div class="log-field"><label>Input Count:</label><span>${
+              result.inputs
+            }</span></div>
           </div>
           <div class="execution-logs-output">
             <h3>Output</h3>
-            <pre>${result.error ? `ERROR: ${result.error}` : JSON.stringify(result.output, null, 2)}</pre>
+            <pre>${
+              result.error
+                ? `ERROR: ${result.error}`
+                : JSON.stringify(result.output, null, 2)
+            }</pre>
           </div>
         </div>
         <div class="modal-footer">
@@ -231,7 +302,9 @@ export default class NodeDataManager {
 
     document.body.appendChild(modal);
     if (globalThis.lucide) globalThis.lucide.createIcons();
-    modal.addEventListener("click", (e) => { if (e.target === modal) modal.remove(); });
+    modal.addEventListener("click", (e) => {
+      if (e.target === modal) modal.remove();
+    });
   }
 
   async showFileAttachmentModal(node, agentInstance) {
@@ -253,7 +326,9 @@ export default class NodeDataManager {
             </button>
           </div>
           <div class="modal-body">
-            ${agentInstance.filePath ? `
+            ${
+              agentInstance.filePath
+                ? `
               <div class="current-file-info">
                 <h3>Current File</h3>
                 <div class="file-path-display">
@@ -265,24 +340,38 @@ export default class NodeDataManager {
                 </button>
               </div>
               <div class="divider"></div>
-            ` : ""}
+            `
+                : ""
+            }
             <h3>Available Files</h3>
-            ${files.length === 0 ? '<p class="no-data">No files uploaded yet.</p>' : `
+            ${
+              files.length === 0
+                ? '<p class="no-data">No files uploaded yet.</p>'
+                : `
               <div class="file-list">
-                ${files.map(file => `
+                ${files
+                  .map(
+                    (file) => `
                   <div class="file-item" data-filename="${file.filename}">
                     <div class="file-info">
                       <i data-lucide="file-text"></i>
                       <div class="file-details">
                         <span class="file-name">${file.filename}</span>
-                        <span class="file-meta">${file.size_mb} MB • ${new Date(file.created_at * 1000).toLocaleDateString()}</span>
+                        <span class="file-meta">${file.size_mb} MB • ${new Date(
+                      file.created_at * 1000
+                    ).toLocaleDateString()}</span>
                       </div>
                     </div>
-                    <button class="btn btn-primary btn-sm attach-file-btn" data-filename="${file.filename}">ATTACH</button>
+                    <button class="btn btn-primary btn-sm attach-file-btn" data-filename="${
+                      file.filename
+                    }">ATTACH</button>
                   </div>
-                `).join("")}
+                `
+                  )
+                  .join("")}
               </div>
-            `}
+            `
+            }
           </div>
           <div class="modal-footer">
             <button class="btn btn-secondary" onclick="document.getElementById('file-attachment-modal').remove()">Cancel</button>
@@ -310,7 +399,9 @@ export default class NodeDataManager {
         });
       }
 
-      modal.addEventListener("click", (e) => { if (e.target === modal) modal.remove(); });
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) modal.remove();
+      });
     } catch (error) {
       console.error("Error loading files:", error);
       showToast("Failed to load files", "error");
@@ -330,8 +421,7 @@ export default class NodeDataManager {
     }
 
     fileIndicator.setAttribute("title", `File attached: ${filename}`);
-    fileIndicator.innerHTML = '<i data-lucide="file-text"></i>';
-    if (globalThis.lucide) globalThis.lucide.createIcons();
+    fileIndicator.textContent = "CSV";
 
     this.app.pipelineManager.updateNodeDataBadges(node, { inputs: 0 }); // Trigger badge update
     showToast(`File "${filename}" attached successfully`, "success");

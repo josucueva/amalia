@@ -219,12 +219,12 @@ class App {
   }
 
   /**
-   * Update theme toggle icon based on current theme
+   * Update theme toggle text based on current theme
    */
   updateThemeIcon() {
-    const themeIcon = document.getElementById("theme-icon");
-    if (themeIcon) {
-      themeIcon.textContent = themeManager.isDark() ? "☀️" : "🌙";
+    const themeText = document.getElementById("theme-text");
+    if (themeText) {
+      themeText.textContent = themeManager.isDark() ? "Light" : "Dark";
     }
   }
 
@@ -650,8 +650,18 @@ class App {
 
     // Show output badge if node produced output
     if (outputBadge && executionData.output) {
-      outputBadge.style.display = "flex";
-      outputBadge.title = "Output generated";
+      // Validate that output is meaningful (not empty, not "None", not null)
+      const output = executionData.output.trim();
+      const isValidOutput =
+        output &&
+        output.toLowerCase() !== "none" &&
+        output !== "null" &&
+        output !== "undefined";
+
+      if (isValidOutput) {
+        outputBadge.style.display = "flex";
+        outputBadge.title = "Output generated";
+      }
     }
 
     // Re-initialize Lucide icons for badges
@@ -1133,12 +1143,7 @@ The file path has been passed to the agent's execution context.
     }
 
     fileIndicator.setAttribute("title", `File attached: ${filename}`);
-    fileIndicator.innerHTML = '<i data-lucide="file-text"></i>';
-
-    // Re-initialize Lucide icons
-    if (globalThis.lucide) {
-      globalThis.lucide.createIcons();
-    }
+    fileIndicator.textContent = "CSV";
 
     // Update data badges
     this.updateNodeDataBadges(node.dataset.instanceId, {
@@ -2607,17 +2612,17 @@ The file path has been passed to the agent's execution context.
           nodeData.filePath
             ? '<div class="node-file-indicator" title="File attached: ' +
               nodeData.filePath.split("/").pop() +
-              '"><i data-lucide="file-text"></i></div>'
+              '">CSV</div>'
             : ""
         }
         <div class="agent-node-input" data-port="input" title="Input connection"></div>
         <div class="agent-node-output" data-port="output" title="Output connection"></div>
         <div class="agent-node-data-badges">
           <span class="data-badge input-badge" style="display: none;" title="Has input data">
-            <i data-lucide="arrow-down-to-line"></i>
+            IN
           </span>
           <span class="data-badge output-badge" style="display: none;" title="Has output data">
-            <i data-lucide="arrow-up-from-line"></i>
+            OUT
           </span>
         </div>
       `;

@@ -669,66 +669,74 @@ body {
   display: none;
 }
 
-/* Agent Node Data Badges */
+/* Agent Node Data Badges - Industrial Square Design */
 .agent-node-data-badges {
   position: absolute;
-  bottom: 4px;
-  left: 50%;
-  transform: translateX(-50%);
+  bottom: 0;
+  left: 0;
+  right: 0;
   display: flex;
-  gap: 4px;
+  gap: 0;
   z-index: 3;
+  border-top: 1px solid var(--border-color);
 }
 
 .data-badge {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
-  background: var(--bg-primary);
-  border: 1px solid var(--border-color);
-  border-radius: 50%;
-  font-size: 10px;
-  color: var(--text-secondary);
-  transition: all 0.2s ease;
+  height: 16px;
+  background: var(--bg-tertiary);
+  border-right: 1px solid var(--border-color);
+  font-size: var(--font-size-xxs);
+  font-family: var(--font-family);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  transition: all 0.15s ease;
+  line-height: 1;
+}
+
+.data-badge:last-child {
+  border-right: none;
 }
 
 .data-badge:hover {
-  transform: scale(1.2);
-  border-color: var(--text-primary);
   background: var(--bg-secondary);
+  color: var(--text-primary);
 }
 
 .data-badge i {
-  width: 12px;
-  height: 12px;
+  width: 10px;
+  height: 10px;
 }
 
 .input-badge {
   color: var(--agent-info);
-  border-color: var(--agent-info);
+  border-color: var(--border-color);
+}
+
+.input-badge:hover {
+  background: var(--agent-info);
+  color: var(--text-white);
 }
 
 .output-badge {
   color: var(--agent-completed);
-  border-color: var(--agent-completed);
+  border-color: var(--border-color);
+}
+
+.output-badge:hover {
+  background: var(--agent-completed);
+  color: var(--bg-primary);
 }
 
 .agent-node.node-completed .output-badge {
   background: var(--agent-completed);
   color: var(--bg-primary);
-  animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.6;
-  }
+  font-weight: var(--font-weight-bold);
 }
 
 /* Tool Count Badge (existing - adjust position to not conflict with data badges) */
@@ -745,40 +753,23 @@ body {
   border: 1px solid var(--border-color);
 }
 
-/* File Indicator Badge */
+/* File Indicator Badge - Brutalist Corner Notch */
 .node-file-indicator {
   position: absolute;
-  top: 4px;
-  left: 4px;
-  background: var(--primary-color);
-  color: white;
-  width: 20px;
-  height: 20px;
-  border-radius: 3px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
+  top: 0;
+  left: 0;
+  background: var(--accent-color);
+  color: var(--text-white);
+  padding: 2px 4px;
+  font-family: var(--font-family);
+  font-size: var(--font-size-xxs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
   z-index: 10;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  animation: filePulse 2s ease-in-out infinite;
-}
-
-.node-file-indicator i {
-  width: 12px;
-  height: 12px;
-}
-
-@keyframes filePulse {
-  0%,
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.8;
-    transform: scale(1.05);
-  }
+  border-right: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  line-height: 1;
 }
 
 .agent-node-model {

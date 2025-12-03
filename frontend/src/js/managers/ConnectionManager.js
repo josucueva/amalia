@@ -392,7 +392,7 @@ class ConnectionManager {
 
     path.setAttribute("d", d);
     path.setAttribute("fill", "none");
-    path.setAttribute("stroke", isTemporary ? "#888888" : "#1a1a1a");
+    path.setAttribute("stroke", isTemporary ? "#888888" : "#6366f1");
     path.setAttribute("stroke-width", "2");
     path.setAttribute("stroke-dasharray", isTemporary ? "5,5" : "none");
     path.setAttribute(
@@ -411,7 +411,7 @@ class ConnectionManager {
     );
     visiblePath.setAttribute("d", d);
     visiblePath.setAttribute("fill", "none");
-    visiblePath.setAttribute("stroke", isTemporary ? "#888888" : "#1a1a1a");
+    visiblePath.setAttribute("stroke", isTemporary ? "#888888" : "#6366f1");
     visiblePath.setAttribute("stroke-width", "2");
     visiblePath.setAttribute(
       "stroke-dasharray",
@@ -441,7 +441,7 @@ class ConnectionManager {
       path.addEventListener("mouseenter", () => {
         const connection = this.connections.get(connectionId);
         const isEnabled = connection && connection.enabled !== false;
-        visiblePath.setAttribute("stroke", isEnabled ? "#d3d3ff" : "#9ca3af");
+        visiblePath.setAttribute("stroke", isEnabled ? "#818cf8" : "#9ca3af");
         visiblePath.setAttribute("stroke-width", "3");
       });
 
@@ -452,7 +452,7 @@ class ConnectionManager {
         }
         const connection = this.connections.get(connectionId);
         const isEnabled = connection && connection.enabled !== false;
-        visiblePath.setAttribute("stroke", isEnabled ? "#1a1a1a" : "#9ca3af");
+        visiblePath.setAttribute("stroke", isEnabled ? "#6366f1" : "#9ca3af");
         visiblePath.setAttribute("stroke-width", "2");
       });
     }
@@ -567,13 +567,13 @@ class ConnectionManager {
 
     if (highlight) {
       // Use CSS variable highlight color
-      visiblePath.setAttribute("stroke", "#d3d3ff");
+      visiblePath.setAttribute("stroke", "#818cf8");
       visiblePath.setAttribute("stroke-width", "3");
       visiblePath.setAttribute("opacity", "1");
     } else {
       // Restore normal state
       const isEnabled = connection.enabled !== false;
-      visiblePath.setAttribute("stroke", isEnabled ? "#1a1a1a" : "#9ca3af");
+      visiblePath.setAttribute("stroke", isEnabled ? "#6366f1" : "#9ca3af");
       visiblePath.setAttribute("stroke-width", "2");
       this.updateConnectionVisualState(connection);
     }
@@ -741,7 +741,7 @@ class ConnectionManager {
     if (this.enabled && !connection.enabled) {
       visiblePath.setAttribute("stroke", "#9ca3af"); // Gray for disabled
     } else {
-      visiblePath.setAttribute("stroke", "#1a1a1a"); // Black for normal
+      visiblePath.setAttribute("stroke", "#6366f1"); // Accent color for normal
     }
   }
 
