@@ -40,8 +40,8 @@ A conversational AI-powered AutoML platform that enables users to build machine 
 1. **Clone the repository**
 
 ```bash
-git clone <repository-url>
-cd platform
+git clone https://github.com/josucueva/amalia.git
+cd amalia
 ```
 
 2. **Backend Setup**
@@ -145,14 +145,14 @@ Type natural language queries like:
 
 - [x] Requirements documentation
 - [x] Project structure
-- [ ] Chat interface
+- [x] Chat interface
 - [ ] Agent configuration system
 - [ ] CSV processing
-- [ ] MCP tool integration
+- [x] MCP tool integration
 
 ### Future Phases
 
-- [ ] Visual pipeline builder
+- [x] Visual pipeline builder
 - [ ] Multi-user support
 - [ ] Advanced orchestration
 - [ ] Model deployment
