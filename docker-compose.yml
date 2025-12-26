@@ -63,10 +63,10 @@ services:
     ports:
       - "9000:9000"
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
       - PYTHONUNBUFFERED=1
-      - USE_REAL_LLMS=true
-      - GOOGLE_API_KEY=AIzaSyBzKMtigqnFqECparJRWFSNmNzPG0FSLMo
     volumes:
       - ./extagents:/app
     depends_on:
