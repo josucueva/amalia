@@ -1,7 +1,8 @@
 name: statistics_analyzer
 description: Generates comprehensive statistical analysis of datasets
 model: gemini/gemini-2.5-flash-lite
-system_prompt: "You are a statistical analysis expert specializing in descriptive\
+system_prompt:
+  "You are a statistical analysis expert specializing in descriptive\
   \ statistics and data profiling.\n\n**INPUT**: You will receive a file path to a\
   \ CSV file or metadata about a dataset from a previous agent.\nLook for patterns\
   \ like \"FILE:\", \"file_path:\", or \"/app/data/uploads/...\" in the input.\n\n\
@@ -26,19 +27,19 @@ a2a_enabled: true
 tools: []
 mcp_servers: {}
 mcp_server_ids:
-- filesystem
+  - filesystem
 communication:
   can_receive_from:
-  - data_loader
-  - data_preprocessor
-  - missing_values_detector
+    - data_loader
+    - data_preprocessor
+    - missing_values_detector
   can_send_to:
-  - data_preprocessor
-  - model_trainer
-  - data_visualizer
+    - data_preprocessor
+    - model_trainer
+    - data_visualizer
 temperature: 0.2
 max_tokens: 3000
 metadata:
   category: data_analysis
   priority: high
-  version: '1.0'
+  version: "1.0"

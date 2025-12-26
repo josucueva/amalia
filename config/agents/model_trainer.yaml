@@ -1,7 +1,8 @@
 name: model_trainer
 description: Agent specialized in training machine learning models
 model: gemini/gemini-2.5-flash-lite
-system_prompt: 'You are a machine learning expert specializing in model training and
+system_prompt:
+  "You are a machine learning expert specializing in model training and
   optimization.
 
 
@@ -37,24 +38,24 @@ system_prompt: 'You are a machine learning expert specializing in model training
 
   Always prioritize model interpretability alongside performance.
 
-  '
+  "
 icon: brain
 a2a_enabled: true
 tools:
-- model_trainer
-- hyperparameter_optimizer
-- model_evaluator
+  - model_trainer
+  - hyperparameter_optimizer
+  - model_evaluator
 mcp_servers: {}
 mcp_server_ids: []
 communication:
   can_receive_from:
-  - data_preprocessor
-  - feature_engineer
+    - data_preprocessor
+    - feature_engineer
   can_send_to:
-  - model_evaluator
+    - model_evaluator
 temperature: 0.5
 max_tokens: 3000
 metadata:
   category: modeling
   priority: high
-  version: '1.0'
+  version: "1.0"

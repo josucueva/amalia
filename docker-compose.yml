@@ -41,13 +41,9 @@ services:
       - .env
     volumes:
       - ./backend:/app
-      # Mount host config directory (read agents from host, write to both host and MongoDB)
       - ./config/agents:/app/config/agents
-      # Mount MCP servers directory for Python MCP servers
       - ./backend/mcp_servers:/app/mcp_servers
-      # Mount MCP servers config
       - ./backend/mcp_servers_config.json:/app/mcp_servers_config.json
-      # Persistent volumes for data
       - app_data:/app/data
       - app_logs:/app/logs
     depends_on:
@@ -56,6 +52,25 @@ services:
       redis:
         condition: service_started
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - agentic-network
+
+  extagents:
+    build:
+      context: ./extagents
+      dockerfile: Dockerfile
+    container_name: agentic-extagents
+    ports:
+      - "9000:9000"
+    restart: unless-stopped
+    environment:
+      - PYTHONUNBUFFERED=1
+      - USE_REAL_LLMS=true
+      - GOOGLE_API_KEY=AIzaSyBzKMtigqnFqECparJRWFSNmNzPG0FSLMo
+    volumes:
+      - ./extagents:/app
+    depends_on:
+      - backend
     networks:
       - agentic-network
 

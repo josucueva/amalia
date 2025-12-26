@@ -2,7 +2,8 @@ agent:
   name: planner_agent
   description: Hidden agent that creates execution plans from refined user requirements
   model: groq/llama-3.3-70b-versatile
-  system_prompt: "You are AMALIA's planner agent. Create structured execution plans\
+  system_prompt:
+    "You are AMALIA's planner agent. Create structured execution plans\
     \ from user requirements.\n\n**AVAILABLE AGENTS:**\ndata_loader, missing_values_detector,\
     \ statistics_analyzer, data_preprocessor, model_trainer, model_evaluator, data_visualizer\n\
     \n**FILE CONTEXT:**\nIf you see [ATTACHED_FILE: /app/data/...] in the message,\
@@ -29,13 +30,13 @@ agent:
   tools: []
   communication:
     can_receive_from:
-    - interaction_agent
+      - interaction_agent
     can_send_to:
-    - orchestrator_agent
+      - orchestrator_agent
   temperature: 0.4
   max_tokens: 2000
   metadata:
     category: planning
     priority: critical
-    version: '1.0'
+    version: "1.0"
     is_hidden: true

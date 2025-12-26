@@ -2,7 +2,8 @@ agent:
   name: data_loader
   description: Agent specialized in loading and parsing CSV data files
   model: gemini/gemini-2.5-flash-lite
-  system_prompt: "You are a data loader expert specializing in reading and parsing\
+  system_prompt:
+    "You are a data loader expert specializing in reading and parsing\
     \ CSV files using MCP filesystem tools.\n\nIMPORTANT: When you receive a file\
     \ path, use the read_file or read_text_file tool to load it.\n\nYour responsibilities:\n\
     1. Use MCP tools to read the CSV file from the provided path\n2. Parse CSV content\
@@ -20,13 +21,13 @@ agent:
     \ next agent can access the file directly.\n"
   a2a_enabled: true
   tools:
-  - csv_reader
-  - file_parser
+    - csv_reader
+    - file_parser
   communication:
     can_receive_from:
-    - interaction_agent
+      - interaction_agent
     can_send_to:
-    - data_preprocessor
+      - data_preprocessor
   temperature: 0.2
   max_tokens: 2000
   icon: folder-input

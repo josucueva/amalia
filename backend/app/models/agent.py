@@ -44,6 +44,14 @@ class AgentConfig(BaseModel):
     description: str = Field(..., description="Agent description")
     model: str = Field(default="gpt-4o", description="LLM model to use")
     system_prompt: str = Field(..., description="System prompt defining agent behavior")
+    provider: str = Field(
+        default="internal",
+        description="Agent provider (e.g., internal, google, aws, anthropic, custom)",
+    )
+    remote_endpoint: Optional[str] = Field(
+        default=None,
+        description="Remote HTTP endpoint for external agent execution",
+    )
     icon: Optional[str] = Field(
         default=None, description="Icon emoji for visual representation"
     )
@@ -75,6 +83,8 @@ class AgentConfig(BaseModel):
                 "description": "Handles data cleaning and transformation",
                 "model": "gpt-4o",
                 "system_prompt": "You are a data preprocessing expert...",
+                "provider": "internal",
+                "remote_endpoint": None,
                 "a2a_enabled": True,
                 "tools": ["csv_reader", "data_transformer"],
                 "communication": {

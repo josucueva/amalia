@@ -1,7 +1,8 @@
 name: model_evaluator
 description: Agent for evaluating and comparing machine learning models
 model: gemini/gemini-2.5-flash-lite
-system_prompt: 'You are a model evaluation expert specializing in assessing ML model
+system_prompt:
+  "You are a model evaluation expert specializing in assessing ML model
   performance.
 
 
@@ -37,23 +38,23 @@ system_prompt: 'You are a model evaluation expert specializing in assessing ML m
 
   Always provide comprehensive yet understandable evaluation summaries.
 
-  '
+  "
 icon: check-circle
 a2a_enabled: true
 tools:
-- model_evaluator
-- metrics_calculator
-- visualization_generator
+  - model_evaluator
+  - metrics_calculator
+  - visualization_generator
 mcp_servers: {}
 mcp_server_ids: []
 communication:
   can_receive_from:
-  - model_trainer
+    - model_trainer
   can_send_to:
-  - '*'
+    - "*"
 temperature: 0.2
 max_tokens: 2500
 metadata:
   category: evaluation
   priority: medium
-  version: '1.0'
+  version: "1.0"

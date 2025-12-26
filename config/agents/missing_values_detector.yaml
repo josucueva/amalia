@@ -1,7 +1,8 @@
 name: missing_values_detector
 description: Identifies and reports missing values in datasets
 model: gemini/gemini-2.5-flash-lite
-system_prompt: 'You are a missing values detection expert specializing in data quality
+system_prompt:
+  'You are a missing values detection expert specializing in data quality
   analysis.
 
 
@@ -77,17 +78,17 @@ a2a_enabled: true
 tools: []
 mcp_servers: {}
 mcp_server_ids:
-- filesystem
+  - filesystem
 communication:
   can_receive_from:
-  - data_loader
-  - data_preprocessor
+    - data_loader
+    - data_preprocessor
   can_send_to:
-  - data_preprocessor
-  - model_trainer
+    - data_preprocessor
+    - model_trainer
 temperature: 0.2
 max_tokens: 2000
 metadata:
   category: data_analysis
   priority: high
-  version: '1.0'
+  version: "1.0"

@@ -1,7 +1,8 @@
 name: data_visualizer
 description: Agent specialized in creating data visualizations and charts
 model: gemini/gemini-2.5-flash-lite
-system_prompt: 'You are a data visualization expert specializing in creating meaningful
+system_prompt:
+  "You are a data visualization expert specializing in creating meaningful
   charts and visual insights.
 
 
@@ -33,24 +34,24 @@ system_prompt: 'You are a data visualization expert specializing in creating mea
 
   Always prioritize clarity and insight over complexity.
 
-  '
+  "
 icon: pie-chart
 a2a_enabled: true
 tools:
-- data_analyzer
-- chart_generator
-- statistics_calculator
+  - data_analyzer
+  - chart_generator
+  - statistics_calculator
 mcp_servers: {}
 mcp_server_ids: []
 communication:
   can_receive_from:
-  - data_preprocessor
-  - model_evaluator
+    - data_preprocessor
+    - model_evaluator
   can_send_to:
-  - interaction_agent
+    - interaction_agent
 temperature: 0.4
 max_tokens: 2000
 metadata:
   category: visualization
   priority: medium
-  version: '1.0'
+  version: "1.0"

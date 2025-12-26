@@ -1,7 +1,8 @@
 name: data_preprocessor
 description: Expert agent for data cleaning, transformation, and preprocessing tasks
 model: gemini/gemini-2.5-flash-lite
-system_prompt: 'You are a data preprocessing expert specializing in cleaning and transforming
+system_prompt:
+  'You are a data preprocessing expert specializing in cleaning and transforming
   datasets.
 
 
@@ -69,20 +70,20 @@ system_prompt: 'You are a data preprocessing expert specializing in cleaning and
 icon: sliders
 a2a_enabled: true
 tools:
-- csv_reader
-- data_analyzer
-- data_transformer
+  - csv_reader
+  - data_analyzer
+  - data_transformer
 mcp_servers: {}
 mcp_server_ids: []
 communication:
   can_receive_from:
-  - '*'
+    - "*"
   can_send_to:
-  - feature_engineer
-  - model_trainer
+    - feature_engineer
+    - model_trainer
 temperature: 0.3
 max_tokens: 2000
 metadata:
   category: data_processing
   priority: high
-  version: '1.0'
+  version: "1.0"

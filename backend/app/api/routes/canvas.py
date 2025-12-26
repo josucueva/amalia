@@ -178,7 +178,61 @@ IMPORTANT: The file path is: {request_data.filePath}
                 file_path=request_data.filePath,
             )
 
-        # Get LLM service
+        # Determine provider and possible remote endpoint
+        instance_provider = (
+            request_data.config.get("provider", agent.config.provider)
+            if request_data.config
+            else agent.config.provider
+        )
+        instance_remote_endpoint = (
+            request_data.config.get("remote_endpoint", agent.config.remote_endpoint)
+            if request_data.config
+            else agent.config.remote_endpoint
+        )
+
+        # If agent is external (non-internal provider) and has remote endpoint, route via HTTP
+        if instance_provider != "internal" and instance_remote_endpoint:
+            try:
+                import httpx
+                async with httpx.AsyncClient(timeout=30.0) as client:
+                    payload = {
+                        "instanceId": request_data.instanceId,
+                        "agentType": request_data.agentType,
+                        "input": combined_input,
+                        "filePath": request_data.filePath,
+                        "inputs": request_data.inputs,
+                        "config": request_data.config or {},
+                    }
+                    resp = await client.post(instance_remote_endpoint, json=payload)
+                    resp.raise_for_status()
+                    data = resp.json()
+
+                output_text = data.get("output") if isinstance(data, dict) else str(data)
+
+                return ExecuteNodeResponse(
+                    instanceId=request_data.instanceId,
+                    agentType=request_data.agentType,
+                    timestamp=datetime.now(timezone.utc).isoformat(),
+                    inputs=len(request_data.inputs),
+                    output=output_text,
+                )
+            except Exception as e:
+                logger.error(
+                    "External agent execution failed",
+                    provider=instance_provider,
+                    endpoint=instance_remote_endpoint,
+                    error=str(e),
+                )
+                return ExecuteNodeResponse(
+                    instanceId=request_data.instanceId,
+                    agentType=request_data.agentType,
+                    timestamp=datetime.now(timezone.utc).isoformat(),
+                    inputs=len(request_data.inputs),
+                    output="",
+                    error=f"External agent error: {str(e)}",
+                )
+
+        # Get LLM service for internal agents
         settings = get_settings()
         llm_service = get_llm_service(settings)
 

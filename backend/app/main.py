@@ -33,7 +33,6 @@ async def lifespan(app: FastAPI):
     settings = get_settings()
     logger.info("Starting application", version=settings.app_version)
 
-    # Startup logic
     import os
 
     os.makedirs(settings.upload_dir, exist_ok=True)

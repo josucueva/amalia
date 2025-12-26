@@ -9,6 +9,7 @@ See `/docs/PYTHON_MCP_QUICK_START.md` for a complete quick start guide.
 ## 📁 Included Servers
 
 ### Mathematics Server
+
 - **Location**: `mathematics/`
 - **Tools**: 15 mathematical and statistical operations
 - **Usage**: Add `python-mathematics` to agent's `mcp_servers` list
