@@ -1,5 +1,4 @@
 services:
-  # MongoDB for persistence
   mongodb:
     image: mongo:7
     container_name: agentic-mongodb
@@ -17,7 +16,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # Redis for message queue
   redis:
     image: redis:7-alpine
     container_name: agentic-redis
@@ -29,7 +27,6 @@ services:
     networks:
       - agentic-network
 
-  # Backend API
   backend:
     build:
       context: ./backend
@@ -74,7 +71,6 @@ services:
     networks:
       - agentic-network
 
-  # Frontend
   frontend:
     build:
       context: ./frontend
