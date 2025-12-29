@@ -11,6 +11,46 @@
       "env": { "PYTHONPATH": "/app" },
       "description": "Mathematical operations and statistical calculations",
       "dependencies_file": "/app/mcp_servers/mathematics/requirements.txt"
+    },
+    "data_loading": {
+      "name": "Data Loading Server",
+      "path": "/app/mcp_servers/data_loading/server.py",
+      "command": "python",
+      "args": [],
+      "allowed_paths": ["/app/data/uploads"],
+      "env": { "PYTHONPATH": "/app" },
+      "description": "CSV file loading, analysis, and validation tools",
+      "dependencies_file": "/app/mcp_servers/data_loading/requirements.txt"
+    },
+    "data_preparation": {
+      "name": "Data Preparation Server",
+      "path": "/app/mcp_servers/data_preparation/server.py",
+      "command": "python",
+      "args": [],
+      "allowed_paths": ["/app/data/uploads"],
+      "env": { "PYTHONPATH": "/app" },
+      "description": "Data transformation, feature engineering, and dataset preparation tools",
+      "dependencies_file": "/app/mcp_servers/data_preparation/requirements.txt"
+    },
+    "model_training": {
+      "name": "Model Training Server",
+      "path": "/app/mcp_servers/model_training/server.py",
+      "command": "python",
+      "args": [],
+      "allowed_paths": ["/app/data/uploads"],
+      "env": { "PYTHONPATH": "/app" },
+      "description": "Machine learning model training, hyperparameter tuning, and optimization",
+      "dependencies_file": "/app/mcp_servers/model_training/requirements.txt"
+    },
+    "model_evaluation": {
+      "name": "Model Evaluation Server",
+      "path": "/app/mcp_servers/model_evaluation/server.py",
+      "command": "python",
+      "args": [],
+      "allowed_paths": ["/app/data/uploads"],
+      "env": { "PYTHONPATH": "/app" },
+      "description": "Model evaluation, metrics calculation, and error analysis tools",
+      "dependencies_file": "/app/mcp_servers/model_evaluation/requirements.txt"
     }
   }
 }
