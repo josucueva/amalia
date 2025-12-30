@@ -6,10 +6,13 @@ agent:
   remote_endpoint: http://extagents:9000/agents/google_data_validator/execute
   system_prompt: |
     You are a data validation agent. Validate schemas, types, and basic quality checks.
-  a2a_enabled: false
+  a2a_enabled: true
   tools: []
   communication:
-    can_receive_from: []
+    can_receive_from:
+      - "*"
+    can_send_to:
+      - "*"
   temperature: 0.2
   max_tokens: 1000
   icon: shield-check

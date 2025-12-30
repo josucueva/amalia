@@ -136,8 +136,13 @@ export default class PipelineManager {
         this.setNodeExecutionState(node, "completed");
         this.updateNodeDataBadges(node, result);
       } catch (error) {
-        console.error(`Error executing node ${node.dataset.instanceId}:`, error);
-        this.executionResults.set(node.dataset.instanceId, { error: error.message });
+        console.error(
+          `Error executing node ${node.dataset.instanceId}:`,
+          error
+        );
+        this.executionResults.set(node.dataset.instanceId, {
+          error: error.message,
+        });
         this.setNodeExecutionState(node, "error");
         showToast(`Execution failed: ${error.message}`, "error");
         this.executionCancelled = true;
@@ -152,25 +157,51 @@ export default class PipelineManager {
     const instanceConfig = agentData.config || null;
 
     const allConnections = this.app.connectionManager.getConnectionsData();
-    const enabledConnections = allConnections.filter((conn) => conn.enabled !== false);
+    const enabledConnections = allConnections.filter(
+      (conn) => conn.enabled !== false
+    );
 
     const inputs = enabledConnections
       .filter((conn) => conn.to.instanceId === instanceId)
       .map((conn) => this.executionResults.get(conn.from.instanceId))
       .filter((result) => result !== undefined);
 
+    // Find next agent for A2A communication
+    const outgoingConnection = enabledConnections.find(
+      (conn) => conn.from.instanceId === instanceId
+    );
+    const nextAgentId = outgoingConnection
+      ? this.app.canvas.querySelector(
+          `[data-instance-id="${outgoingConnection.to.instanceId}"]`
+        )?.dataset.agentId
+      : null;
+
+    console.log("🔍 A2A Debug:", {
+      instanceId,
+      agentId,
+      outgoingConnection,
+      nextAgentId,
+      willUseA2A: nextAgentId !== null,
+    });
+
     try {
+      const payload = {
+        instanceId,
+        agentType: agentId,
+        inputs,
+        config: instanceConfig,
+        mcpServerIds: agentData.mcpServerIds || [],
+        filePath: agentData.filePath || null,
+        useA2A: true, // Enable A2A for all pipeline executions
+        nextAgentId: nextAgentId, // Target agent for A2A messaging
+      };
+
+      console.log("📤 Sending execute request:", payload);
+
       const response = await fetch(`${API_BASE_URL}/api/canvas/execute`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          instanceId,
-          agentType: agentId,
-          inputs,
-          config: instanceConfig,
-          mcpServerIds: agentData.mcpServerIds || [],
-          filePath: agentData.filePath || null,
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -191,7 +222,13 @@ export default class PipelineManager {
   }
 
   setNodeExecutionState(node, state) {
-    node.classList.remove("node-running", "node-completed", "node-error", "node-cancelled", "node-loading");
+    node.classList.remove(
+      "node-running",
+      "node-completed",
+      "node-error",
+      "node-cancelled",
+      "node-loading"
+    );
 
     if (state === "running") {
       node.classList.add("node-running", "node-loading");

@@ -18,6 +18,8 @@ from app.api.routes import (
     models,
     mcp_servers,
     sessions,
+    a2a,
+    a2a_analytics,
 )
 from app.utils.logger import setup_logging
 
@@ -120,6 +122,14 @@ async def lifespan(app: FastAPI):
         app.state.session_manager = session_manager
         logger.info("Session manager initialized")
 
+        # Initialize A2A communication service
+        from app.communication.a2a import A2AService
+
+        a2a_service = A2AService(agent_service.registry)
+        await a2a_service.connect()
+        app.state.a2a_service = a2a_service
+        logger.info("A2A communication service initialized")
+
     except Exception as e:
         logger.error("Error initializing services", error=str(e))
         raise
@@ -127,6 +137,14 @@ async def lifespan(app: FastAPI):
     yield
 
     # Shutdown logic
+    # Disconnect A2A service
+    if hasattr(app.state, "a2a_service"):
+        try:
+            await app.state.a2a_service.disconnect()
+            logger.info("A2A service disconnected")
+        except Exception as e:
+            logger.warning("Error disconnecting A2A service", error=str(e))
+
     await Database.disconnect()
     logger.info("Shutting down application")
 
@@ -162,6 +180,8 @@ app.include_router(canvas.router, prefix="/api/canvas", tags=["canvas"])
 app.include_router(models.router, tags=["models"])
 app.include_router(mcp_servers.router, tags=["mcp-servers"])
 app.include_router(sessions.router, prefix="/api/sessions", tags=["sessions"])
+app.include_router(a2a.router, prefix="/api/a2a", tags=["a2a"])
+app.include_router(a2a_analytics.router, prefix="/api/a2a", tags=["a2a-analytics"])
 
 
 @app.get("/")

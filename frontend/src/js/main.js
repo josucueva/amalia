@@ -565,21 +565,45 @@ class App {
       .map((conn) => this.executionResults.get(conn.from.instanceId))
       .filter((result) => result !== undefined);
 
+    // Find next agent for A2A communication
+    const outgoingConnection = enabledConnections.find(
+      (conn) => conn.from.instanceId === instanceId
+    );
+    const nextAgentId = outgoingConnection
+      ? document.querySelector(
+          `[data-instance-id="${outgoingConnection.to.instanceId}"]`
+        )?.dataset.agentId
+      : null;
+
+    console.log("🔍 A2A Debug:", {
+      instanceId,
+      agentId,
+      outgoingConnection,
+      nextAgentId,
+      willUseA2A: nextAgentId !== null,
+    });
+
     // Call backend API to execute agent
     try {
+      const payload = {
+        instanceId,
+        agentType: agentId, // Send agentId as agentType
+        inputs,
+        config: instanceConfig, // Send instance-specific config
+        mcpServerIds: agentData.mcpServerIds || [], // Send MCP server IDs
+        filePath: agentData.filePath || null, // Send file path if attached
+        useA2A: true, // Enable A2A for all pipeline executions
+        nextAgentId: nextAgentId, // Target agent for A2A messaging
+      };
+
+      console.log("📤 Sending execute request:", payload);
+
       const response = await fetch(`${API_BASE_URL}/api/canvas/execute`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          instanceId,
-          agentType: agentId, // Send agentId as agentType
-          inputs,
-          config: instanceConfig, // Send instance-specific config
-          mcpServerIds: agentData.mcpServerIds || [], // Send MCP server IDs
-          filePath: agentData.filePath || null, // Send file path if attached
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {

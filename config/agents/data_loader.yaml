@@ -25,9 +25,9 @@ agent:
     - file_parser
   communication:
     can_receive_from:
-      - interaction_agent
+      - "*"
     can_send_to:
-      - data_preprocessor
+      - "*"
   temperature: 0.2
   max_tokens: 2000
   icon: folder-input

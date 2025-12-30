@@ -13,6 +13,7 @@ from app.services.agent_pipeline import AgentPipelineService
 from app.services.llm_service import get_llm_service
 from app.services.mcp_service import MCPService
 from app.config import get_settings
+from app.communication.router import MessageRoutingError
 
 logger = structlog.get_logger()
 router = APIRouter()
@@ -56,6 +57,8 @@ class ExecuteNodeRequest(BaseModel):
     config: Optional[Dict[str, Any]] = None  # Instance-specific config overrides
     mcpServerIds: Optional[List[str]] = None  # MCP server IDs for this instance
     filePath: Optional[str] = None  # File path attached to this node
+    useA2A: Optional[bool] = None  # Force A2A mode (overrides agent config)
+    nextAgentId: Optional[str] = None  # Target agent for A2A messaging
 
 
 class ExecuteNodeResponse(BaseModel):
@@ -65,6 +68,9 @@ class ExecuteNodeResponse(BaseModel):
     inputs: int
     output: str
     error: Optional[str] = None
+    a2a_used: bool = False  # Whether A2A communication was used
+    a2a_target: Optional[str] = None  # Target agent if A2A was used
+    a2a_correlation_id: Optional[str] = None  # Correlation ID for A2A message
 
 
 async def _execute_tool_calls(
@@ -404,12 +410,80 @@ IMPORTANT: The file path is: {request_data.filePath}
         if mcp_service:
             await mcp_service.disconnect_all()
 
+        # Extract final output
+        final_output = result if isinstance(result, str) else str(result)
+
+        # Check if A2A communication should be used
+        use_a2a = request_data.useA2A if request_data.useA2A is not None else agent.config.a2a_enabled
+        a2a_correlation_id = None
+        a2a_target = None
+        a2a_was_used = False
+        
+        logger.info(
+            "🔍 A2A Decision Point",
+            use_a2a=use_a2a,
+            request_useA2A=request_data.useA2A,
+            agent_a2a_enabled=agent.config.a2a_enabled,
+            nextAgentId=request_data.nextAgentId,
+            will_use_a2a=bool(use_a2a and request_data.nextAgentId),
+        )
+        
+        if use_a2a and request_data.nextAgentId:
+            # A2A MODE: Send result to next agent via message queue
+            try:
+                a2a_service = getattr(request.app.state, "a2a_service", None)
+                if not a2a_service:
+                    logger.warning(
+                        "A2A service not available, falling back to direct execution",
+                        agent=request_data.agentType,
+                    )
+                else:
+                    a2a_correlation_id = await a2a_service.send_message(
+                        from_agent=request_data.agentType,
+                        to_agent=request_data.nextAgentId,
+                        content={
+                            "output": final_output,
+                            "instanceId": request_data.instanceId,
+                            "filePath": request_data.filePath,
+                        },
+                        message_type="task",
+                    )
+                    a2a_was_used = True
+                    a2a_target = request_data.nextAgentId
+                    
+                    logger.info(
+                        "✅ A2A MESSAGE SENT",
+                        from_agent=request_data.agentType,
+                        to_agent=request_data.nextAgentId,
+                        correlation_id=a2a_correlation_id,
+                        mode="A2A_ENABLED",
+                    )
+                    
+                    # Add visible indicator to output
+                    final_output = f"{final_output}\n\n🔗 A2A: Message sent to '{request_data.nextAgentId}' (correlation: {a2a_correlation_id[:8]}...)"
+                    
+            except MessageRoutingError as e:
+                logger.error(
+                    "A2A routing failed, returning direct result",
+                    error=str(e),
+                    from_agent=request_data.agentType,
+                    to_agent=request_data.nextAgentId,
+                )
+                # Continue with direct execution result
+                final_output = f"{final_output}\n\n[A2A Error: {str(e)}]"
+            except Exception as e:
+                logger.error("A2A communication error", error=str(e))
+                final_output = f"{final_output}\n\n[A2A Error: {str(e)}]"
+
         return ExecuteNodeResponse(
             instanceId=request_data.instanceId,
             agentType=request_data.agentType,
             timestamp=datetime.now(timezone.utc).isoformat(),
             inputs=len(request_data.inputs),
-            output=result if isinstance(result, str) else str(result),
+            output=final_output,
+            a2a_used=a2a_was_used,
+            a2a_target=a2a_target,
+            a2a_correlation_id=a2a_correlation_id,
         )
 
     except HTTPException:
