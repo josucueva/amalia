@@ -253,6 +253,36 @@ class A2AService:
             agent_id: Agent ID to unsubscribe
         """
         await self.message_queue.unsubscribe(agent_id)
+    
+    async def subscribe(self, agent_id: str):
+        """
+        Subscribe to messages for an agent (async generator).
+        
+        Yields incoming A2AMessage objects for the agent.
+        Used by autonomous listeners to receive messages.
+        
+        Args:
+            agent_id: Agent ID to subscribe to
+            
+        Yields:
+            A2AMessage: Incoming messages
+        """
+        message_queue = asyncio.Queue()
+        
+        async def callback(message: A2AMessage):
+            await message_queue.put(message)
+        
+        # Subscribe to agent's channel
+        await self.subscribe_agent(agent_id, callback)
+        
+        try:
+            # Yield messages as they arrive
+            while True:
+                message = await message_queue.get()
+                yield message
+        finally:
+            # Cleanup on exit
+            await self.unsubscribe_agent(agent_id)
         
     async def wait_for_reply(
         self,

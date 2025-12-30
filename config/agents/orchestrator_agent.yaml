@@ -14,7 +14,8 @@ agent:
     \ include: \"mcpServerIds\": [\"filesystem\"]\n- Other agents: \"mcpServerIds\"\
     : []\n\n**RULES:**\n- Instance IDs: inst_1, inst_2, etc.\n- Position: start x=100,\
     \ y=200, space +300px horizontally\n- One node per phase\n- Connect sequentially\n"
-  a2a_enabled: false
+  a2a_enabled: true
+  a2a_mode: autonomous
   tools: []
   communication:
     can_receive_from:

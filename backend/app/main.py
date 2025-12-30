@@ -21,6 +21,7 @@ from app.api.routes import (
     a2a,
     a2a_analytics,
 )
+from app.api.routes import a2a_autonomous
 from app.utils.logger import setup_logging
 
 
@@ -55,6 +56,7 @@ async def lifespan(app: FastAPI):
     from app.services.model_service_db import ModelService
     from app.services.mcp_server_service_db import MCPServerService
     from app.services.session_manager_db import SessionManager
+    from app.services.llm_service import get_llm_service
     from app.utils.python_mcp_manager import get_python_mcp_manager
 
     try:
@@ -124,11 +126,24 @@ async def lifespan(app: FastAPI):
 
         # Initialize A2A communication service
         from app.communication.a2a import A2AService
+        from app.communication.agent_executor import AgentExecutor
+        from app.communication.listener_manager import A2AListenerManager
 
         a2a_service = A2AService(agent_service.registry)
         await a2a_service.connect()
         app.state.a2a_service = a2a_service
         logger.info("A2A communication service initialized")
+        
+        # Initialize agent executor for autonomous A2A
+        llm_service = get_llm_service(settings)
+        agent_executor = AgentExecutor(llm_service, agent_service.registry, a2a_service)
+        app.state.agent_executor = agent_executor
+        
+        # Initialize and start A2A listener manager
+        listener_manager = A2AListenerManager(a2a_service, agent_executor)
+        await listener_manager.start_listeners(agent_service.registry)
+        app.state.listener_manager = listener_manager
+        logger.info("A2A autonomous listeners initialized")
 
     except Exception as e:
         logger.error("Error initializing services", error=str(e))
@@ -137,6 +152,14 @@ async def lifespan(app: FastAPI):
     yield
 
     # Shutdown logic
+    # Stop A2A listeners
+    if hasattr(app.state, "listener_manager"):
+        try:
+            await app.state.listener_manager.stop_all_listeners()
+            logger.info("A2A listeners stopped")
+        except Exception as e:
+            logger.warning("Error stopping A2A listeners", error=str(e))
+    
     # Disconnect A2A service
     if hasattr(app.state, "a2a_service"):
         try:
@@ -182,6 +205,7 @@ app.include_router(mcp_servers.router, tags=["mcp-servers"])
 app.include_router(sessions.router, prefix="/api/sessions", tags=["sessions"])
 app.include_router(a2a.router, prefix="/api/a2a", tags=["a2a"])
 app.include_router(a2a_analytics.router, prefix="/api/a2a", tags=["a2a-analytics"])
+app.include_router(a2a_autonomous.router, prefix="/api/a2a", tags=["a2a-autonomous"])
 
 
 @app.get("/")

@@ -41,6 +41,7 @@ system_prompt:
   "
 icon: brain
 a2a_enabled: true
+a2a_mode: autonomous
 tools:
   - model_trainer
   - hyperparameter_optimizer
@@ -49,10 +50,9 @@ mcp_servers: {}
 mcp_server_ids: []
 communication:
   can_receive_from:
-    - data_preprocessor
-    - feature_engineer
+    - "*"
   can_send_to:
-    - model_evaluator
+    - "*"
 temperature: 0.5
 max_tokens: 3000
 metadata:

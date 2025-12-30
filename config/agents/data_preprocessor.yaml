@@ -69,6 +69,7 @@ system_prompt:
   '
 icon: sliders
 a2a_enabled: true
+a2a_mode: autonomous # Listen and auto-execute on A2A messages
 tools:
   - csv_reader
   - data_analyzer

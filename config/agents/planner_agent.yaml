@@ -26,7 +26,8 @@ agent:
     \ → missing_values_detector → statistics_analyzer\n- For first phase with data_loader:\
     \ include file path as \"file: /path/to/file.csv\" in inputs\n- Each phase: clear\
     \ inputs/outputs\n- Keep plans practical and focused\n"
-  a2a_enabled: false
+  a2a_enabled: true
+  a2a_mode: autonomous
   tools: []
   communication:
     can_receive_from:

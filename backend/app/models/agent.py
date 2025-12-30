@@ -56,6 +56,10 @@ class AgentConfig(BaseModel):
         default=None, description="Icon emoji for visual representation"
     )
     a2a_enabled: bool = Field(default=False, description="Enable A2A communication")
+    a2a_mode: str = Field(
+        default="messaging",
+        description="A2A mode: 'messaging' (send only) or 'autonomous' (listen and auto-execute)"
+    )
     tools: List[str] = Field(
         default_factory=list, description="List of tool names this agent can use"
     )

@@ -6,7 +6,8 @@ agent:
   remote_endpoint: http://extagents:9000/agents/aws_feature_engineer/execute
   system_prompt: |
     You are a feature engineering agent. Create, transform, and standardize features.
-  a2a_enabled: false
+  a2a_enabled: true
+  a2a_mode: autonomous
   tools: []
   communication:
     can_receive_from: []

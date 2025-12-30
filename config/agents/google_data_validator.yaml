@@ -7,6 +7,7 @@ agent:
   system_prompt: |
     You are a data validation agent. Validate schemas, types, and basic quality checks.
   a2a_enabled: true
+  a2a_mode: autonomous
   tools: []
   communication:
     can_receive_from:

@@ -24,6 +24,7 @@ system_prompt:
   \ insights with proper numerical precision.\n"
 icon: bar-chart-3
 a2a_enabled: true
+a2a_mode: autonomous
 tools: []
 mcp_servers: {}
 mcp_server_ids:

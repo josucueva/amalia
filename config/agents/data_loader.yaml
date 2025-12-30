@@ -20,6 +20,7 @@ agent:
     \ rows]\n```\n\n**CRITICAL**: Always include the file path in your output so the\
     \ next agent can access the file directly.\n"
   a2a_enabled: true
+  a2a_mode: autonomous
   tools:
     - csv_reader
     - file_parser
