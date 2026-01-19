@@ -10,7 +10,7 @@ import structlog
 from datetime import datetime
 import uuid
 
-from app.models import Agent, AgentConfig, AgentStatus, CommunicationConfig
+from app.models import Agent, AgentConfig, AgentStatus, CommunicationConfig, MCPServerConfig
 from app.config import get_settings
 
 logger = structlog.get_logger()
@@ -45,15 +45,28 @@ def load_agent_config_from_file(file_path: Path) -> Agent:
             can_send_to=comm_data.get("can_send_to", []),
         )
 
+        # Parse MCP servers
+        mcp_servers = {}
+        if "mcp_servers" in agent_data:
+            for name, server_data in agent_data["mcp_servers"].items():
+                mcp_servers[name] = MCPServerConfig(
+                    command=server_data["command"],
+                    args=server_data.get("args", []),
+                    env=server_data.get("env"),
+                )
+
         # Create agent config
         config = AgentConfig(
             name=agent_data["name"],
             description=agent_data["description"],
             model=agent_data.get("model", "gpt-4o"),
             system_prompt=agent_data["system_prompt"],
+            provider=agent_data.get("provider", "internal"),
+            remote_endpoint=agent_data.get("remote_endpoint"),
             icon=agent_data.get("icon"),
             a2a_enabled=agent_data.get("a2a_enabled", False),
             tools=agent_data.get("tools", []),
+            mcp_servers=mcp_servers,
             communication=communication,
             temperature=agent_data.get("temperature", 0.7),
             max_tokens=agent_data.get("max_tokens", 2000),
@@ -166,6 +179,8 @@ def save_agent_config_to_yaml(agent: Agent, directory: Optional[Path] = None) ->
             "description": agent.config.description,
             "model": agent.config.model,
             "system_prompt": agent.config.system_prompt,
+            "provider": agent.config.provider,
+            "remote_endpoint": agent.config.remote_endpoint,
             "a2a_enabled": agent.config.a2a_enabled,
             "tools": agent.config.tools,
             "communication": {
@@ -180,6 +195,17 @@ def save_agent_config_to_yaml(agent: Agent, directory: Optional[Path] = None) ->
     # Add icon if present
     if agent.config.icon:
         data["agent"]["icon"] = agent.config.icon
+
+    # Add MCP servers if present
+    if agent.config.mcp_servers:
+        data["agent"]["mcp_servers"] = {
+            name: {
+                "command": config.command,
+                "args": config.args,
+                "env": config.env or {},
+            }
+            for name, config in agent.config.mcp_servers.items()
+        }
 
     if agent.config.metadata:
         data["agent"]["metadata"] = agent.config.metadata

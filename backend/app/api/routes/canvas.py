@@ -2,17 +2,24 @@
 Canvas routes for managing agent pipelines and connections.
 """
 
+import json
+from datetime import datetime, timezone
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 import structlog
 
 from app.services.agent_pipeline import AgentPipelineService
 from app.services.llm_service import get_llm_service
+from app.services.mcp_service import MCPService
 from app.config import get_settings
+from app.communication.router import MessageRoutingError
 
 logger = structlog.get_logger()
 router = APIRouter()
+
+# Maximum number of tool call iterations to prevent infinite loops
+MAX_TOOL_ITERATIONS = 10
 
 
 class NodePosition(BaseModel):
@@ -47,6 +54,11 @@ class ExecuteNodeRequest(BaseModel):
     instanceId: str
     agentType: str
     inputs: List[dict] = []
+    config: Optional[Dict[str, Any]] = None  # Instance-specific config overrides
+    mcpServerIds: Optional[List[str]] = None  # MCP server IDs for this instance
+    filePath: Optional[str] = None  # File path attached to this node
+    useA2A: Optional[bool] = None  # Force A2A mode (overrides agent config)
+    nextAgentId: Optional[str] = None  # Target agent for A2A messaging
 
 
 class ExecuteNodeResponse(BaseModel):
@@ -56,6 +68,51 @@ class ExecuteNodeResponse(BaseModel):
     inputs: int
     output: str
     error: Optional[str] = None
+    a2a_used: bool = False  # Whether A2A communication was used
+    a2a_target: Optional[str] = None  # Target agent if A2A was used
+    a2a_correlation_id: Optional[str] = None  # Correlation ID for A2A message
+
+
+async def _execute_tool_calls(
+    mcp_service: MCPService, tool_calls: List[Dict[str, Any]]
+) -> List[Dict[str, Any]]:
+    """Execute a list of tool calls and return the results.
+
+    Args:
+        mcp_service: The MCP service instance to use.
+        tool_calls: List of tool call specifications.
+
+    Returns:
+        List of tool results with tool_call_id and output.
+    """
+    tool_results = []
+    for tool_call in tool_calls:
+        try:
+            tool_result = await mcp_service.execute_tool(
+                tool_call["name"], tool_call["arguments"]
+            )
+            # Format result content
+            if isinstance(tool_result, list):
+                output = "\n".join(
+                    str(item.get("text", item)) if isinstance(item, dict) else str(item)
+                    for item in tool_result
+                )
+            else:
+                output = str(tool_result)
+
+            tool_results.append(
+                {"tool_call_id": tool_call["id"], "role": "tool", "content": output}
+            )
+        except Exception as e:
+            logger.error("Tool execution failed", tool=tool_call["name"], error=str(e))
+            tool_results.append(
+                {
+                    "tool_call_id": tool_call["id"],
+                    "role": "tool",
+                    "content": f"Error executing tool: {str(e)}",
+                }
+            )
+    return tool_results
 
 
 @router.post("/execute", response_model=ExecuteNodeResponse)
@@ -73,15 +130,14 @@ async def execute_node(
     Returns:
         ExecuteNodeResponse: Execution result
     """
+    mcp_service = None
+
     try:
-        from datetime import datetime, timezone
-        from app.services.mcp_service import MCPService
-        
         logger.info(
             "Executing agent node",
             instance_id=request_data.instanceId,
             agent_type=request_data.agentType,
-            inputs_count=len(request_data.inputs)
+            inputs_count=len(request_data.inputs),
         )
 
         # Get agent registry
@@ -94,107 +150,363 @@ async def execute_node(
         if not agent:
             raise HTTPException(
                 status_code=404,
-                detail=f"Agent type '{request_data.agentType}' not found"
+                detail=f"Agent type '{request_data.agentType}' not found",
             )
 
         # Prepare input for agent execution
         # Combine all inputs into a single context
         if request_data.inputs:
-            combined_input = "\n\n".join([
-                f"Input {i+1}:\n{inp.get('output', '')}" 
-                for i, inp in enumerate(request_data.inputs)
-            ])
+            combined_input = "\n\n".join(
+                [
+                    f"Input {i+1}:\n{inp.get('output', '')}"
+                    for i, inp in enumerate(request_data.inputs)
+                ]
+            )
         else:
-            combined_input = "No input data provided. Please process this request independently."
+            combined_input = (
+                "No input data provided. Please process this request independently."
+            )
 
-        # Get LLM service
+        # If this node has a file attached, prepend file path to input
+        if request_data.filePath:
+            file_instruction = f"""[FILE ATTACHED]
+You have access to a file at path: {request_data.filePath}
+
+Use the read_file or read_text_file tool to load and process this file.
+
+IMPORTANT: The file path is: {request_data.filePath}
+
+"""
+            combined_input = file_instruction + combined_input
+            logger.info(
+                "File path added to node input",
+                instance_id=request_data.instanceId,
+                file_path=request_data.filePath,
+            )
+
+        # Determine provider and possible remote endpoint
+        instance_provider = (
+            request_data.config.get("provider", agent.config.provider)
+            if request_data.config
+            else agent.config.provider
+        )
+        instance_remote_endpoint = (
+            request_data.config.get("remote_endpoint", agent.config.remote_endpoint)
+            if request_data.config
+            else agent.config.remote_endpoint
+        )
+
+        # If agent is external (non-internal provider) and has remote endpoint, route via HTTP
+        if instance_provider != "internal" and instance_remote_endpoint:
+            try:
+                import httpx
+                async with httpx.AsyncClient(timeout=30.0) as client:
+                    payload = {
+                        "instanceId": request_data.instanceId,
+                        "agentType": request_data.agentType,
+                        "input": combined_input,
+                        "filePath": request_data.filePath,
+                        "inputs": request_data.inputs,
+                        "config": request_data.config or {},
+                    }
+                    resp = await client.post(instance_remote_endpoint, json=payload)
+                    resp.raise_for_status()
+                    data = resp.json()
+
+                output_text = data.get("output") if isinstance(data, dict) else str(data)
+
+                return ExecuteNodeResponse(
+                    instanceId=request_data.instanceId,
+                    agentType=request_data.agentType,
+                    timestamp=datetime.now(timezone.utc).isoformat(),
+                    inputs=len(request_data.inputs),
+                    output=output_text,
+                )
+            except Exception as e:
+                logger.error(
+                    "External agent execution failed",
+                    provider=instance_provider,
+                    endpoint=instance_remote_endpoint,
+                    error=str(e),
+                )
+                return ExecuteNodeResponse(
+                    instanceId=request_data.instanceId,
+                    agentType=request_data.agentType,
+                    timestamp=datetime.now(timezone.utc).isoformat(),
+                    inputs=len(request_data.inputs),
+                    output="",
+                    error=f"External agent error: {str(e)}",
+                )
+
+        # Get LLM service for internal agents
         settings = get_settings()
         llm_service = get_llm_service(settings)
 
         # Initialize MCP service if agent has MCP servers configured
-        mcp_service = None
         available_tools = []
-        
-        if agent.config.mcp_servers:
-            mcp_service = MCPService()
-            await mcp_service.connect_servers(agent.config.mcp_servers)
-            
-            # Get available tools in OpenAI format
-            mcp_tools = mcp_service.get_available_tools()
-            available_tools = [
-                {
-                    "type": "function",
-                    "function": {
-                        "name": tool["name"],
-                        "description": tool["description"],
-                        "parameters": tool["inputSchema"]
-                    }
-                }
-                for tool in mcp_tools
-            ]
-            
-            logger.info("MCP tools loaded", tool_count=len(available_tools))
 
-        # Execute the agent using LLM service with tools
-        result = await llm_service.generate_agent_response(
-            user_message=combined_input,
-            agent_config={**agent.config.dict(), "tools": available_tools} if available_tools else agent.config.dict(),
-            conversation_history=[]
+        # Use instance-specific MCP server IDs if provided, otherwise fall back to agent config
+        mcp_server_ids_to_use = (
+            request_data.mcpServerIds
+            if request_data.mcpServerIds is not None
+            else (
+                agent.config.mcp_server_ids
+                if hasattr(agent.config, "mcp_server_ids")
+                else None
+            )
         )
 
-        # Handle tool calls if present
-        if isinstance(result, dict) and "tool_calls" in result:
-            # Execute tools and get results
-            tool_results = []
-            for tool_call in result["tool_calls"]:
-                try:
-                    tool_result = await mcp_service.execute_tool(
-                        tool_call["name"],
-                        tool_call["arguments"]
+        # Check if model supports function calling
+        model_supports_tools = True
+        model_service = request.app.state.model_service
+        models = await model_service.list_models()
+        for model in models:
+            if model.model_name == (
+                request_data.config.get("model", agent.config.model)
+                if request_data.config
+                else agent.config.model
+            ):
+                model_supports_tools = model.supports_function_calling
+                break
+
+        if mcp_server_ids_to_use and model_supports_tools:
+            # Load MCP servers using the new server IDs approach
+            mcp_service = MCPService()
+            mcp_server_service = request.app.state.mcp_server_service
+            mcp_servers_config = {}
+
+            for server_id in mcp_server_ids_to_use:
+                server = await mcp_server_service.get_server(server_id)
+                if server and server.is_available:
+                    from app.models.agent import MCPServerConfig
+
+                    mcp_servers_config[server_id] = MCPServerConfig(
+                        command=server.command, args=server.args, env=server.env
                     )
-                    tool_results.append({
-                        "tool_call_id": tool_call["id"],
-                        "output": str(tool_result)
-                    })
-                except Exception as e:
-                    logger.error("Tool execution failed", tool=tool_call["name"], error=str(e))
-                    tool_results.append({
-                        "tool_call_id": tool_call["id"],
-                        "output": f"Error: {str(e)}"
-                    })
-            
-            # Get final response from LLM with tool results
-            # This would require another LLM call with tool results
-            # For simplicity, we'll return the tool results as output
-            result = f"Tools executed: {len(tool_results)}\n\n" + "\n\n".join(
-                [f"Tool result: {tr['output']}" for tr in tool_results]
+
+            if mcp_servers_config:
+                await mcp_service.connect_servers(mcp_servers_config)
+                available_tools = mcp_service.get_tools_for_llm()
+                logger.info(
+                    "MCP tools loaded for instance",
+                    instance_id=request_data.instanceId,
+                    tool_count=len(available_tools),
+                )
+        elif agent.config.mcp_servers:
+            # Legacy: Fall back to old mcp_servers dict if no server IDs provided
+            mcp_service = MCPService()
+            await mcp_service.connect_servers(agent.config.mcp_servers)
+
+            # Get available tools in OpenAI function calling format
+            available_tools = mcp_service.get_tools_for_llm()
+            logger.info("MCP tools loaded", tool_count=len(available_tools))
+
+        # Use instance config overrides if provided
+        instance_model = (
+            request_data.config.get("model", agent.config.model)
+            if request_data.config
+            else agent.config.model
+        )
+        instance_temperature = (
+            request_data.config.get("temperature", agent.config.temperature)
+            if request_data.config
+            else agent.config.temperature
+        )
+        instance_max_tokens = (
+            request_data.config.get("max_tokens", agent.config.max_tokens)
+            if request_data.config
+            else agent.config.max_tokens
+        )
+        instance_system_prompt = (
+            request_data.config.get("system_prompt", agent.config.system_prompt)
+            if request_data.config
+            else agent.config.system_prompt
+        )
+
+        # Build conversation messages for the LLM
+        messages = [
+            {"role": "system", "content": instance_system_prompt},
+            {"role": "user", "content": combined_input},
+        ]
+
+        # Execute the agent using LLM service with tools
+        result = await llm_service.generate_response(
+            messages=messages,
+            model=instance_model,
+            temperature=instance_temperature,
+            max_tokens=instance_max_tokens,
+            tools=available_tools if available_tools else None,
+        )
+
+        # Handle tool calls with proper LLM loop
+        iteration = 0
+        while (
+            isinstance(result, dict)
+            and "tool_calls" in result
+            and iteration < MAX_TOOL_ITERATIONS
+        ):
+            iteration += 1
+            tool_calls = result["tool_calls"]
+
+            logger.info(
+                "Processing tool calls",
+                iteration=iteration,
+                tool_count=len(tool_calls),
+                tools=[tc["name"] for tc in tool_calls],
+            )
+
+            # Execute tools and collect results
+            tool_results = await _execute_tool_calls(mcp_service, tool_calls)
+
+            # Build the assistant message with tool calls
+            assistant_message = {
+                "role": "assistant",
+                "content": None,
+                "tool_calls": [
+                    {
+                        "id": tc["id"],
+                        "type": "function",
+                        "function": {
+                            "name": tc["name"],
+                            "arguments": (
+                                json.dumps(tc["arguments"])
+                                if not isinstance(tc["arguments"], str)
+                                else tc["arguments"]
+                            ),
+                        },
+                    }
+                    for tc in tool_calls
+                ],
+            }
+
+            # Add assistant message and tool results to conversation
+            messages.append(assistant_message)
+            for tr in tool_results:
+                messages.append(
+                    {
+                        "role": "tool",
+                        "tool_call_id": tr["tool_call_id"],
+                        "content": tr["content"],
+                    }
+                )
+
+            # Get next response from LLM
+            result = await llm_service.generate_response(
+                messages=messages,
+                model=instance_model,
+                temperature=instance_temperature,
+                max_tokens=instance_max_tokens,
+                tools=available_tools,
+            )
+
+        if iteration >= MAX_TOOL_ITERATIONS:
+            logger.warning(
+                "Max tool iterations reached",
+                instance_id=request_data.instanceId,
+                iterations=iteration,
             )
 
         # Cleanup MCP connections
         if mcp_service:
             await mcp_service.disconnect_all()
 
+        # Extract final output
+        final_output = result if isinstance(result, str) else str(result)
+
+        # Check if A2A communication should be used
+        use_a2a = request_data.useA2A if request_data.useA2A is not None else agent.config.a2a_enabled
+        a2a_correlation_id = None
+        a2a_target = None
+        a2a_was_used = False
+        
+        logger.info(
+            "🔍 A2A Decision Point",
+            use_a2a=use_a2a,
+            request_useA2A=request_data.useA2A,
+            agent_a2a_enabled=agent.config.a2a_enabled,
+            nextAgentId=request_data.nextAgentId,
+            will_use_a2a=bool(use_a2a and request_data.nextAgentId),
+        )
+        
+        if use_a2a and request_data.nextAgentId:
+            # A2A MODE: Send result to next agent via message queue
+            try:
+                a2a_service = getattr(request.app.state, "a2a_service", None)
+                if not a2a_service:
+                    logger.warning(
+                        "A2A service not available, falling back to direct execution",
+                        agent=request_data.agentType,
+                    )
+                else:
+                    a2a_correlation_id = await a2a_service.send_message(
+                        from_agent=request_data.agentType,
+                        to_agent=request_data.nextAgentId,
+                        content={
+                            "output": final_output,
+                            "instanceId": request_data.instanceId,
+                            "filePath": request_data.filePath,
+                        },
+                        message_type="task",
+                    )
+                    a2a_was_used = True
+                    a2a_target = request_data.nextAgentId
+                    
+                    logger.info(
+                        "✅ A2A MESSAGE SENT",
+                        from_agent=request_data.agentType,
+                        to_agent=request_data.nextAgentId,
+                        correlation_id=a2a_correlation_id,
+                        mode="A2A_ENABLED",
+                    )
+                    
+                    # Add visible indicator to output
+                    final_output = f"{final_output}\n\n🔗 A2A: Message sent to '{request_data.nextAgentId}' (correlation: {a2a_correlation_id[:8]}...)"
+                    
+            except MessageRoutingError as e:
+                logger.error(
+                    "A2A routing failed, returning direct result",
+                    error=str(e),
+                    from_agent=request_data.agentType,
+                    to_agent=request_data.nextAgentId,
+                )
+                # Continue with direct execution result
+                final_output = f"{final_output}\n\n[A2A Error: {str(e)}]"
+            except Exception as e:
+                logger.error("A2A communication error", error=str(e))
+                final_output = f"{final_output}\n\n[A2A Error: {str(e)}]"
+
         return ExecuteNodeResponse(
             instanceId=request_data.instanceId,
             agentType=request_data.agentType,
             timestamp=datetime.now(timezone.utc).isoformat(),
             inputs=len(request_data.inputs),
-            output=result if isinstance(result, str) else str(result),
+            output=final_output,
+            a2a_used=a2a_was_used,
+            a2a_target=a2a_target,
+            a2a_correlation_id=a2a_correlation_id,
         )
 
     except HTTPException:
         raise
     except Exception as e:
-        from datetime import datetime, timezone
-        logger.error("Error executing node", error=str(e), instance_id=request_data.instanceId)
+        logger.error(
+            "Error executing node", error=str(e), instance_id=request_data.instanceId
+        )
         return ExecuteNodeResponse(
             instanceId=request_data.instanceId,
             agentType=request_data.agentType,
             timestamp=datetime.now(timezone.utc).isoformat(),
             inputs=len(request_data.inputs),
             output="",
-            error=str(e)
+            error=str(e),
         )
+    finally:
+        # Ensure MCP connections are cleaned up even on error
+        if mcp_service:
+            try:
+                await mcp_service.disconnect_all()
+            except Exception as cleanup_error:
+                logger.warning("Error during MCP cleanup", error=str(cleanup_error))
 
 
 @router.post("/build", response_model=BuildPipelineResponse)
@@ -229,9 +541,9 @@ async def build_pipeline(
 
         # Execute simple build (for backward compatibility)
         result = pipeline_service.execute_simple_build()
-        
+
         orchestration = result["orchestration"]
-        
+
         return BuildPipelineResponse(
             success=True,
             message=orchestration.get("message", "Pipeline created"),
@@ -244,4 +556,3 @@ async def build_pipeline(
     except Exception as e:
         logger.error("Error building pipeline", error=str(e))
         raise HTTPException(status_code=500, detail=str(e))
-

@@ -145,9 +145,9 @@ A web-based AutoML platform powered by AI agents that enables users to build mac
 - **Web Server**: Uvicorn
 - **Agent Framework**: LangGraph or custom implementation
 - **LLM Integration**: LiteLLM (unified interface for all models)
-- **Message Queue**: Redis or RabbitMQ (for A2A communication)
-- **File Storage**: Local filesystem (session-based for MVP)
-- **Database**: SQLite (for MVP) → PostgreSQL (production)
+- **Message Queue**: Redis (for A2A communication)
+- **File Storage**: Local filesystem (uploads)
+- **Database**: MongoDB (Agents, Sessions, MCP Servers)
 - **Configuration**: Pydantic for validation, PyYAML for parsing
 
 #### 6.2 Frontend
@@ -221,13 +221,13 @@ A web-based AutoML platform powered by AI agents that enables users to build mac
 
 #### Included in MVP
 
-✅ Chat interface with natural language interaction
+✅ Chat interface with natural language interaction (Persistent)
 ✅ Agent configuration via YAML files
-✅ Agent configuration via GUI
+✅ Agent configuration via GUI (Synced with DB)
 ✅ Basic agent execution with system prompts
 ✅ CSV file upload and parsing
-✅ MCP tool integration (basic tools)
-✅ A2A communication (simplified)
+✅ MCP tool integration (Server management)
+✅ A2A communication
 ✅ Single model support (OpenAI GPT or local Ollama)
 ✅ Basic data preprocessing capabilities
 

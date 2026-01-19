@@ -1,5 +1,21 @@
 services:
-  # Redis for message queue
+  mongodb:
+    image: mongo:7
+    container_name: agentic-mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    environment:
+      MONGO_INITDB_DATABASE: amalia
+    networks:
+      - agentic-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/amalia --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   redis:
     image: redis:7-alpine
     container_name: agentic-redis
@@ -21,17 +37,44 @@ services:
       - "8000:8000"
     env_file:
       - .env
+    environment:
+      - REDIS_HOST=redis
+      - MONGODB_URL=mongodb://mongodb:27017
     volumes:
       - ./backend:/app
-      - ./config:/app/config
-      - ./data:/app/data
+      - ./config/agents:/app/config/agents
+      - ./backend/mcp_servers:/app/mcp_servers
+      - ./backend/mcp_servers_config.json:/app/mcp_servers_config.json
+      - app_data:/app/data
+      - app_logs:/app/logs
     depends_on:
-      - redis
+      mongodb:
+        condition: service_healthy
+      redis:
+        condition: service_started
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     networks:
       - agentic-network
 
-  # Frontend
+  extagents:
+    build:
+      context: ./extagents
+      dockerfile: Dockerfile
+    container_name: agentic-extagents
+    ports:
+      - "9000:9000"
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./extagents:/app
+    depends_on:
+      - backend
+    networks:
+      - agentic-network
+
   frontend:
     build:
       context: ./frontend
@@ -43,11 +86,15 @@ services:
       - ./frontend:/app
       - /app/node_modules
     command: npm run dev -- --host 0.0.0.0
-    networks:
-      - agentic-network
-
 volumes:
+  mongodb_data:
+    driver: local
   redis_data:
+    driver: local
+  app_data:
+    driver: local
+  app_logs:
+    driver: local
 
 networks:
   agentic-network:

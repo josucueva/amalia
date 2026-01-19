@@ -4,6 +4,8 @@
 import api from "../api.js";
 import state from "../utils/state.js";
 import { showToast } from "../utils/helpers.js";
+import modelConfig from "./ModelConfig.js";
+import mcpServerManager from "./MCPServerManager.js";
 
 class AgentConfig {
   constructor() {
@@ -16,7 +18,15 @@ class AgentConfig {
     this.reloadBtn = document.getElementById("reload-agents-btn");
     this.currentAgentId = null;
     this.currentAgentData = null; // Store original agent data to preserve metadata
-    this.mcpServers = {}; // Store MCP server configurations
+    this.selectedMCPServerIds = []; // Store selected MCP server IDs
+    this.availableMCPServers = []; // Store available MCP servers
+    this.models = []; // Available models from API
+
+    // Model selector elements
+    this.modelSelect = document.getElementById("agent-model");
+    this.addModelBtn = document.getElementById("add-model-btn");
+    this.editModelBtn = document.getElementById("edit-model-btn");
+    this.deleteModelBtn = document.getElementById("delete-model-btn");
 
     // Icon picker elements
     this.iconPickerModal = document.getElementById("icon-picker-modal");
@@ -28,8 +38,11 @@ class AgentConfig {
 
     this.init();
     this.loadAgents();
+    this.loadModels();
+    this.loadMCPServers();
     this.initIconPicker();
     this.initMCPSection();
+    this.initModelSection();
   }
 
   init() {
@@ -193,159 +206,15 @@ class AgentConfig {
   initMCPSection() {
     const addMCPBtn = document.getElementById("add-mcp-server-btn");
     if (addMCPBtn) {
-      addMCPBtn.addEventListener("click", () => this.openMCPConfigPanel());
-    }
-
-    // MCP config panel handlers
-    const closeMCPConfig = document.getElementById("close-mcp-config");
-    const cancelMCPServer = document.getElementById("cancel-mcp-server");
-    const mcpServerForm = document.getElementById("mcp-server-form");
-
-    if (closeMCPConfig) {
-      closeMCPConfig.addEventListener("click", () =>
-        this.closeMCPConfigPanel()
-      );
-    }
-
-    if (cancelMCPServer) {
-      cancelMCPServer.addEventListener("click", () =>
-        this.closeMCPConfigPanel()
-      );
-    }
-
-    if (mcpServerForm) {
-      mcpServerForm.addEventListener("submit", (e) =>
-        this.handleMCPServerSubmit(e)
-      );
-    }
-  }
-
-  openMCPConfigPanel() {
-    const modalContainer = document.querySelector(".agent-modal-container");
-
-    if (modalContainer) {
-      modalContainer.classList.add("mcp-panel-active");
-    }
-  }
-
-  closeMCPConfigPanel() {
-    const modalContainer = document.querySelector(".agent-modal-container");
-    const form = document.getElementById("mcp-server-form");
-
-    if (modalContainer) {
-      modalContainer.classList.remove("mcp-panel-active");
-    }
-
-    // Wait for animation to complete before resetting form
-    setTimeout(() => {
-      if (form) {
-        form.reset();
-      }
-    }, 300);
-  }
-
-  handleMCPServerSubmit(e) {
-    e.preventDefault();
-
-    const name = document.getElementById("mcp-server-name").value.trim();
-    const command = document.getElementById("mcp-server-command").value.trim();
-    const argsText = document.getElementById("mcp-server-args").value.trim();
-    const envText = document.getElementById("mcp-server-env").value.trim();
-
-    // Parse arguments (one per line)
-    const args = argsText
-      ? argsText
-          .split("\n")
-          .map((a) => a.trim())
-          .filter((a) => a)
-      : [];
-
-    // Parse environment variables (JSON)
-    let env = null;
-    if (envText) {
-      try {
-        env = JSON.parse(envText);
-      } catch (error) {
-        alert(
-          "Invalid JSON in environment variables. Please check the format."
-        );
-        return;
-      }
-    }
-
-    // Add server to collection
-    this.mcpServers[name] = {
-      command,
-      args,
-      env,
-    };
-
-    // Update the server list display
-    this.renderMCPServers();
-
-    // Close the panel
-    this.closeMCPConfigPanel();
-  }
-
-  showAddMCPServerDialog() {
-    const name = prompt("Server name:");
-    if (!name || !name.trim()) return;
-
-    const command = prompt("Command to run:");
-    if (!command || !command.trim()) return;
-
-    const argsInput = prompt("Arguments (comma-separated, optional):");
-    const args = argsInput ? argsInput.split(",").map((a) => a.trim()) : [];
-
-    this.mcpServers[name.trim()] = {
-      command: command.trim(),
-      args: args,
-      env: null,
-    };
-
-    this.renderMCPServers();
-  }
-
-  renderMCPServers() {
-    const container = document.getElementById("mcp-servers-list");
-    if (!container) return;
-
-    if (Object.keys(this.mcpServers).length === 0) {
-      container.innerHTML = `
-        <div class="mcp-empty-state">
-          No MCP servers configured. Click "Add MCP Server" to connect tools.
-        </div>
-      `;
-      return;
-    }
-
-    container.innerHTML = Object.entries(this.mcpServers)
-      .map(
-        ([name, config]) => `
-        <div class="mcp-server-item" data-server-name="${name}">
-          <div class="mcp-server-info">
-            <div class="mcp-server-name">${name}</div>
-            <div class="mcp-server-command">${
-              config.command
-            } ${config.args.join(" ")}</div>
-          </div>
-          <button class="mcp-server-remove" data-server-name="${name}">✕</button>
-        </div>
-      `
-      )
-      .join("");
-
-    // Add remove handlers
-    container.querySelectorAll(".mcp-server-remove").forEach((btn) => {
-      btn.addEventListener("click", (e) => {
-        const serverName = e.target.dataset.serverName;
-        delete this.mcpServers[serverName];
-        this.renderMCPServers();
+      addMCPBtn.addEventListener("click", () => {
+        mcpServerManager.open(null, () => {
+          this.loadMCPServers();
+        });
       });
-    });
+    }
   }
 
-  openModal(agent = null, updateCallback = null) {
+  async openModal(agent = null, updateCallback = null) {
     this.currentAgentId = agent ? agent.id : null;
     this.currentAgentData = agent; // Store original agent data
     this.instanceUpdateCallback = updateCallback; // Store callback for canvas instances
@@ -373,6 +242,9 @@ class AgentConfig {
       iconFormGroup.style.display = isHidden ? "none" : "block";
     }
 
+    // Ensure models and MCP servers are loaded before populating
+    await Promise.all([this.loadModels(), this.loadMCPServers()]);
+
     if (agent) {
       // Populate form with agent data
       document.getElementById("agent-name").value = agent.config.name;
@@ -388,18 +260,60 @@ class AgentConfig {
       // Hide icon preview - we only show the icon name in the input
       document.getElementById("icon-preview").style.display = "none";
 
-      document.getElementById("agent-model").value = agent.config.model;
+      // Set model value - ensure it's set after dropdown is populated
+      const modelSelect = document.getElementById("agent-model");
+      if (modelSelect && agent.config.model) {
+        modelSelect.value = agent.config.model;
+        // If the value didn't set (model not in dropdown), log a warning
+        if (modelSelect.value !== agent.config.model) {
+          console.warn(
+            `Model ${agent.config.model} not found in dropdown, available models:`,
+            Array.from(modelSelect.options).map((opt) => opt.value)
+          );
+        }
+      }
+
       document.getElementById("agent-prompt").value =
         agent.config.system_prompt;
       document.getElementById("agent-a2a").checked = agent.config.a2a_enabled;
 
-      // Load MCP servers
-      this.mcpServers = agent.config.mcp_servers || {};
-      this.renderMCPServers();
+      // Load selected MCP servers
+      this.selectedMCPServerIds = agent.config.mcp_server_ids || [];
+
+      // Legacy: Support old mcp_servers format
+      if (
+        agent.config.mcp_servers &&
+        Object.keys(agent.config.mcp_servers).length > 0 &&
+        this.selectedMCPServerIds.length === 0
+      ) {
+        this.selectedMCPServerIds = Object.keys(agent.config.mcp_servers);
+      }
+
+      this.renderMCPServersList();
     } else {
       // Reset MCP servers for new agent
-      this.mcpServers = {};
-      this.renderMCPServers();
+      this.selectedMCPServerIds = [];
+      this.renderMCPServersList();
+
+      // Set default model if none selected
+      if (this.models && this.models.length > 0 && this.modelSelect) {
+        // Try to find the default model from config (gemini-2.5-flash)
+        const defaultModel = this.models.find(
+          (m) => m.id === "gemini-2.5-flash"
+        );
+        if (defaultModel) {
+          this.modelSelect.value = defaultModel.model_name;
+        } else {
+          // Fall back to first available model
+          const firstAvailable = this.models.find((m) => m.is_available);
+          if (firstAvailable) {
+            this.modelSelect.value = firstAvailable.model_name;
+          } else if (this.models[0]) {
+            // Last resort: just use first model
+            this.modelSelect.value = this.models[0].model_name;
+          }
+        }
+      }
     }
 
     this.agentModal.style.display = "flex";
@@ -412,13 +326,14 @@ class AgentConfig {
     this.currentAgentData = null; // Clear stored agent data
     this.instanceUpdateCallback = null; // Clear callback
     this.selectedIcon = null;
-    this.mcpServers = {}; // Clear MCP servers
+    this.selectedMCPServerIds = []; // Clear selected MCP servers
     document.getElementById("icon-preview").style.display = "none";
 
-    // Close MCP config panel if open
+    // Close MCP config panel and model config panel if open
     const modalContainer = document.querySelector(".agent-modal-container");
     if (modalContainer) {
       modalContainer.classList.remove("mcp-panel-active");
+      modalContainer.classList.remove("model-panel-active");
     }
 
     // Reset icon form group visibility
@@ -442,7 +357,8 @@ class AgentConfig {
       system_prompt: document.getElementById("agent-prompt").value,
       a2a_enabled: document.getElementById("agent-a2a").checked,
       tools: this.currentAgentData?.config?.tools || [],
-      mcp_servers: this.mcpServers, // Include MCP servers
+      mcp_server_ids: this.selectedMCPServerIds, // Use new server IDs
+      mcp_servers: {}, // Clear legacy mcp_servers when using new system
       // Preserve communication and metadata from original agent
       communication: this.currentAgentData?.config?.communication || {
         can_receive_from: ["*"],
@@ -580,6 +496,269 @@ class AgentConfig {
     } catch (error) {
       showToast("Failed to delete agent", "error");
       console.error("Error deleting agent:", error);
+    }
+  }
+
+  // Model Management Methods
+  initModelSection() {
+    // Add click handler for add model button
+    if (this.addModelBtn) {
+      this.addModelBtn.addEventListener("click", () => {
+        modelConfig.open((newModel) => {
+          // Callback when model is added
+          this.loadModels();
+        });
+      });
+    }
+
+    // Edit model button
+    if (this.editModelBtn) {
+      this.editModelBtn.addEventListener("click", () => {
+        const selectedOption =
+          this.modelSelect.options[this.modelSelect.selectedIndex];
+        if (!selectedOption || !selectedOption.dataset.modelId) {
+          showToast("Please select a model to edit", "info");
+          return;
+        }
+
+        const modelId = selectedOption.dataset.modelId;
+        const model = this.models.find((m) => m.id === modelId);
+
+        if (model) {
+          modelConfig.open((updatedModel) => {
+            // Callback when model is updated
+            this.loadModels();
+          }, model);
+        }
+      });
+    }
+
+    // Delete model button
+    if (this.deleteModelBtn) {
+      this.deleteModelBtn.addEventListener("click", async () => {
+        const selectedOption =
+          this.modelSelect.options[this.modelSelect.selectedIndex];
+        if (!selectedOption || !selectedOption.dataset.modelId) {
+          showToast("Please select a model to delete", "info");
+          return;
+        }
+
+        const modelId = selectedOption.dataset.modelId;
+        const model = this.models.find((m) => m.id === modelId);
+
+        if (!model) return;
+
+        const confirmed = confirm(
+          `Are you sure you want to delete the model "${model.display_name}"?\n\nThis will NOT delete the API key from your .env file.`
+        );
+
+        if (confirmed) {
+          try {
+            await api.deleteModel(modelId);
+            showToast(
+              `Model "${model.display_name}" deleted successfully`,
+              "success"
+            );
+            await this.loadModels();
+          } catch (error) {
+            console.error("Error deleting model:", error);
+            showToast("Failed to delete model", "error");
+          }
+        }
+      });
+    }
+  }
+
+  async loadModels() {
+    try {
+      const response = await api.listModels(false); // Load ALL models, not just available ones
+      this.models = response.models || [];
+      this.populateModelDropdown();
+    } catch (error) {
+      console.error("Error loading models:", error);
+      showToast("Failed to load models", "error");
+    }
+  }
+
+  populateModelDropdown() {
+    if (!this.modelSelect) return;
+
+    const currentValue = this.modelSelect.value;
+
+    // Clear existing options
+    this.modelSelect.innerHTML = "";
+
+    // If no models loaded yet, show a placeholder
+    if (!this.models || this.models.length === 0) {
+      const option = document.createElement("option");
+      option.value = "";
+      option.textContent = "Loading models...";
+      this.modelSelect.appendChild(option);
+      return;
+    }
+
+    // Add models from API, showing availability status
+    this.models.forEach((model) => {
+      const option = document.createElement("option");
+      option.value = model.model_name;
+      // Show availability indicator in the display name
+      const availabilityIndicator = model.is_available ? "✓" : "⚠";
+      option.textContent = `${availabilityIndicator} ${model.display_name}`;
+      option.dataset.modelId = model.id;
+      option.dataset.available = model.is_available;
+
+      // Add a hint in the title for unavailable models
+      if (!model.is_available) {
+        option.title = `API key not configured: ${
+          model.api_key_name || "unknown"
+        }`;
+      }
+
+      this.modelSelect.appendChild(option);
+    });
+
+    // Restore selection if it exists in the new list
+    if (currentValue) {
+      const matchingOption = Array.from(this.modelSelect.options).find(
+        (opt) => opt.value === currentValue
+      );
+      if (matchingOption) {
+        this.modelSelect.value = currentValue;
+        return;
+      }
+    }
+
+    // If no current value or it doesn't exist anymore, set default
+    if (!this.modelSelect.value || this.modelSelect.value === "") {
+      // Try to select gemini-2.5-flash as default
+      const defaultModel = this.models.find((m) => m.id === "gemini-2.5-flash");
+      if (defaultModel) {
+        this.modelSelect.value = defaultModel.model_name;
+      } else {
+        // Fall back to first available model
+        const firstAvailable = this.models.find((m) => m.is_available);
+        if (firstAvailable) {
+          this.modelSelect.value = firstAvailable.model_name;
+        }
+      }
+    }
+  }
+
+  async loadMCPServers() {
+    try {
+      const response = await api.listMCPServers(true); // Only available servers
+      this.availableMCPServers = response.servers || [];
+      this.renderMCPServersList();
+    } catch (error) {
+      console.error("Error loading MCP servers:", error);
+      showToast("Failed to load MCP servers", "error");
+    }
+  }
+
+  renderMCPServersList() {
+    const container = document.getElementById("mcp-servers-list");
+    if (!container) return;
+
+    container.innerHTML = "";
+
+    if (this.availableMCPServers.length === 0) {
+      container.innerHTML = `
+        <div style="padding: 1rem; text-align: center; color: #6b7280;">
+          No MCP servers available. Add one to get started.
+        </div>
+      `;
+      return;
+    }
+
+    this.availableMCPServers.forEach((server) => {
+      const isSelected = this.selectedMCPServerIds.includes(server.id);
+
+      const serverItem = document.createElement("div");
+      serverItem.className = `mcp-server-item ${isSelected ? "selected" : ""}`;
+      serverItem.innerHTML = `
+        <div class="mcp-server-checkbox">
+          <input type="checkbox" id="mcp-${server.id}" ${
+        isSelected ? "checked" : ""
+      } data-server-id="${server.id}">
+          <label for="mcp-${server.id}">
+            <div class="mcp-server-name">${server.name}</div>
+            ${
+              server.description
+                ? `<div class="mcp-server-description">${server.description}</div>`
+                : ""
+            }
+          </label>
+        </div>
+        <div class="mcp-server-actions">
+          <button type="button" class="icon-btn edit-mcp-server" data-server-id="${
+            server.id
+          }" title="Edit server">
+            <i data-lucide="edit-2"></i>
+          </button>
+          <button type="button" class="icon-btn delete-mcp-server" data-server-id="${
+            server.id
+          }" title="Delete server">
+            <i data-lucide="trash-2"></i>
+          </button>
+        </div>
+      `;
+
+      container.appendChild(serverItem);
+
+      // Add event listeners
+      const checkbox = serverItem.querySelector("input[type='checkbox']");
+      checkbox?.addEventListener("change", (e) => {
+        if (e.target.checked) {
+          if (!this.selectedMCPServerIds.includes(server.id)) {
+            this.selectedMCPServerIds.push(server.id);
+          }
+        } else {
+          this.selectedMCPServerIds = this.selectedMCPServerIds.filter(
+            (id) => id !== server.id
+          );
+        }
+        serverItem.classList.toggle("selected", e.target.checked);
+      });
+
+      const editBtn = serverItem.querySelector(".edit-mcp-server");
+      editBtn?.addEventListener("click", () => this.editMCPServer(server.id));
+
+      const deleteBtn = serverItem.querySelector(".delete-mcp-server");
+      deleteBtn?.addEventListener("click", () =>
+        this.deleteMCPServer(server.id)
+      );
+    });
+
+    // Reinitialize Lucide icons
+    if (window.lucide) {
+      window.lucide.createIcons();
+    }
+  }
+
+  editMCPServer(serverId) {
+    mcpServerManager.open(serverId, () => {
+      this.loadMCPServers();
+    });
+  }
+
+  async deleteMCPServer(serverId) {
+    const server = this.availableMCPServers.find((s) => s.id === serverId);
+    if (!server) return;
+
+    if (!confirm(`Are you sure you want to delete "${server.name}"?`)) {
+      return;
+    }
+
+    try {
+      await api.deleteMCPServer(serverId);
+      showToast(`MCP server "${server.name}" deleted successfully`, "success");
+      this.selectedMCPServerIds = this.selectedMCPServerIds.filter(
+        (id) => id !== serverId
+      );
+      this.loadMCPServers();
+    } catch (error) {
+      console.error("Error deleting MCP server:", error);
+      showToast("Failed to delete MCP server", "error");
     }
   }
 }

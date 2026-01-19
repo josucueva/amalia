@@ -7,7 +7,8 @@ from app.models.agent import (
     AgentStatus,
     AgentCreateRequest,
     AgentListResponse,
-    CommunicationConfig
+    CommunicationConfig,
+    MCPServerConfig
 )
 from app.models.message import (
     Message,
@@ -17,6 +18,22 @@ from app.models.message import (
     ChatResponse,
     A2AMessage
 )
+from app.models.mcp_server import (
+    MCPServer,
+    MCPServerCreateRequest,
+    MCPServerListResponse
+)
+from app.models.session import (
+    Session,
+    SessionMessage,
+    PipelineSnapshot,
+    SessionStatus,
+    SessionCreateRequest,
+    SessionUpdateRequest,
+    SessionListResponse,
+    AddMessageRequest,
+    AddPipelineRequest,
+)
 
 __all__ = [
     "Agent",
@@ -25,10 +42,23 @@ __all__ = [
     "AgentCreateRequest",
     "AgentListResponse",
     "CommunicationConfig",
+    "MCPServerConfig",
     "Message",
     "MessageRole",
     "MessageStatus",
     "ChatRequest",
     "ChatResponse",
     "A2AMessage",
+    "MCPServer",
+    "MCPServerCreateRequest",
+    "MCPServerListResponse",
+    "Session",
+    "SessionMessage",
+    "PipelineSnapshot",
+    "SessionStatus",
+    "SessionCreateRequest",
+    "SessionUpdateRequest",
+    "SessionListResponse",
+    "AddMessageRequest",
+    "AddPipelineRequest",
 ]

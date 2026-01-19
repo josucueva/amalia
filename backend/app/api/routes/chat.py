@@ -39,49 +39,121 @@ async def chat(
     try:
         logger.info("Processing chat request", message_length=len(request_data.message))
 
+        # Get session manager from app state
+        session_manager = getattr(request.app.state, "session_manager", None)
+        if not session_manager:
+            raise HTTPException(
+                status_code=500, detail="Session manager not initialized"
+            )
+
+        # Determine session ID (prefer session_id, fallback to conversation_id for backward compatibility)
+        session_id = request_data.session_id or request_data.conversation_id
+
+        # If no session exists, create one
+        if not session_id or not await session_manager.get_session(session_id):
+            session = await session_manager.create_session()
+            session_id = session.id
+            logger.info("Created new session", session_id=session_id)
+
         # Generate IDs
-        conversation_id = (
-            request_data.conversation_id or f"conv_{uuid.uuid4().hex[:12]}"
-        )
+        conversation_id = session_id  # Keep for backward compatibility
         message_id = f"msg_{uuid.uuid4().hex[:12]}"
         response_id = f"msg_{uuid.uuid4().hex[:12]}"
 
         # Get LLM service
         llm_service = get_llm_service(settings)
 
-        # Get or create conversation history
-        history = conversation_history.get_history(conversation_id, max_messages=20)
+        # Get conversation history from session
+        history = await session_manager.get_session_history(session_id)
 
-        # Add user message to history
-        conversation_history.add_message(
-            conversation_id=conversation_id, role="user", content=request_data.message
+        # Prepare user message with file context if attached
+        user_message = request_data.message
+
+        # DEBUG: Log request data
+        logger.info(
+            "[DEBUG] Request data",
+            message_preview=user_message[:50],
+            has_attached_file=bool(request_data.attached_file),
+            attached_file=(
+                request_data.attached_file if request_data.attached_file else None
+            ),
+        )
+
+        if request_data.attached_file:
+            file_info = request_data.attached_file
+            file_context = f"\n\n[File attached: {file_info.get('filename')} ({file_info.get('size_mb', 0)} MB) at path: {file_info.get('path')}]"
+            user_message_with_context = user_message + file_context
+            logger.info(
+                "File attached to message",
+                filename=file_info.get("filename"),
+                path=file_info.get("path"),
+            )
+        else:
+            user_message_with_context = user_message
+
+        # Add user message to session
+        await session_manager.add_message(
+            session_id=session_id,
+            role="user",
+            content=request_data.message,
+            metadata=(
+                {"attached_file": request_data.attached_file}
+                if request_data.attached_file
+                else None
+            ),
         )
 
         # Get agent registry from app state
         agent_registry = getattr(request.app.state, "agent_registry", None)
-        
+        mcp_server_service = getattr(request.app.state, "mcp_server_service", None)
+
         if not agent_registry:
             raise HTTPException(status_code=500, detail="Agent registry not available")
 
         # Create pipeline service
-        pipeline_service = AgentPipelineService(llm_service, agent_registry)
+        pipeline_service = AgentPipelineService(
+            llm_service, agent_registry, mcp_server_service
+        )
 
         # Process through the three-agent pipeline
         try:
-            assistant_content, orchestration_data = await pipeline_service.process_with_pipeline(
-                user_message=request_data.message,
-                conversation_history=history
+            assistant_content, orchestration_data = (
+                await pipeline_service.process_with_pipeline(
+                    user_message=user_message_with_context,  # Use message with file context
+                    conversation_history=history,
+                )
             )
         except Exception as pipeline_error:
             logger.error("Pipeline processing error", error=str(pipeline_error))
             raise HTTPException(
-                status_code=500, detail=f"Error processing pipeline: {str(pipeline_error)}"
+                status_code=500,
+                detail=f"Error processing pipeline: {str(pipeline_error)}",
             )
 
-        # Add assistant response to history
-        conversation_history.add_message(
-            conversation_id=conversation_id, role="assistant", content=assistant_content
+        # Add assistant response to session
+        await session_manager.add_message(
+            session_id=session_id,
+            role="assistant",
+            content=assistant_content,
+            metadata={
+                "orchestration": orchestration_data,
+                "agents_used": ["interaction_agent"]
+                + (
+                    ["planner_agent", "orchestrator_agent"]
+                    if orchestration_data
+                    else []
+                ),
+            },
         )
+
+        # If pipeline was created, save it to session
+        if orchestration_data and "orchestration" in orchestration_data:
+            orch = orchestration_data["orchestration"]
+            await session_manager.add_pipeline(
+                session_id=session_id,
+                nodes=orch.get("nodes", []),
+                connections=orch.get("connections", []),
+            )
 
         # Determine which agents were involved
         agents_involved = ["interaction_agent"]
@@ -97,6 +169,7 @@ async def chat(
             status=MessageStatus.COMPLETED,
             metadata={
                 "conversation_id": conversation_id,
+                "session_id": session_id,
                 "user_message_id": message_id,
                 "model": settings.default_model,
                 "orchestration": orchestration_data,  # Include orchestration if present

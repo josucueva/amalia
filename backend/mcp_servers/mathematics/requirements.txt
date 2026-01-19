@@ -1,0 +1,2 @@
+# No additional dependencies required for mathematics server
+# The base MCP package is already in the main requirements.txt
