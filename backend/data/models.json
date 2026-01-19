@@ -1,0 +1,68 @@
+{
+  "groq-llama-3.3-70b": {
+    "id": "groq-llama-3.3-70b",
+    "display_name": "Groq Llama 3.3 70B",
+    "model_name": "groq/llama-3.3-70b-versatile",
+    "provider": "groq",
+    "api_key_name": "GROQ_API_KEY",
+    "is_available": true,
+    "supports_function_calling": false,
+    "max_tokens": 8000,
+    "description": "Fast and capable 70B model (no function calling support)"
+  },
+  "gemini-2.5-flash": {
+    "id": "gemini-2.5-flash",
+    "display_name": "Gemini 2.5 Flash",
+    "model_name": "gemini/gemini-2.5-flash",
+    "provider": "gemini",
+    "api_key_name": "GOOGLE_API_KEY",
+    "is_available": true,
+    "supports_function_calling": true,
+    "max_tokens": 8192,
+    "description": "Fast Gemini 2.5 model"
+  },
+  "gemini-2.5-pro": {
+    "id": "gemini-2.5-pro",
+    "display_name": "Gemini 2.5 Pro",
+    "model_name": "gemini/gemini-2.5-pro",
+    "provider": "gemini",
+    "api_key_name": "GOOGLE_API_KEY",
+    "is_available": true,
+    "supports_function_calling": true,
+    "max_tokens": 8192,
+    "description": "Advanced Gemini 2.5 model with enhanced capabilities"
+  },
+  "gemini-2.5-flash-lite": {
+    "id": "gemini-2.5-flash-lite",
+    "display_name": "Gemini 2.5 Flash Lite",
+    "model_name": "gemini/gemini-2.5-flash-lite",
+    "provider": "gemini",
+    "api_key_name": "GOOGLE_API_KEY",
+    "is_available": true,
+    "supports_function_calling": true,
+    "max_tokens": 20000,
+    "description": "Lightweight Gemini 2.5 model"
+  },
+  "gemma-3-27b": {
+    "id": "gemma-3-27b",
+    "display_name": "Gemma 3 27B",
+    "model_name": "gemini/gemma-3-27b",
+    "provider": "gemini",
+    "api_key_name": "GOOGLE_API_KEY",
+    "is_available": true,
+    "supports_function_calling": true,
+    "max_tokens": 10000,
+    "description": "Google's open-source Gemma 3 model with 27B parameters"
+  },
+  "openrouter-claude-sonnet": {
+    "id": "openrouter-claude-sonnet",
+    "display_name": "Claude 3.5 Sonnet (OpenRouter)",
+    "model_name": "openrouter/anthropic/claude-3.5-sonnet",
+    "provider": "openrouter",
+    "api_key_name": "OPENROUTER_API_KEY",
+    "is_available": true,
+    "supports_function_calling": true,
+    "max_tokens": 8192,
+    "description": "Claude 3.5 Sonnet via OpenRouter"
+  }
+}

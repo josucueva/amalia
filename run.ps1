@@ -9,7 +9,7 @@ $rootDir = Get-Location
 
 # Start backend in new window
 Write-Host "Starting backend server..." -ForegroundColor Yellow
-$backendCommand = "Set-Location '$rootDir\backend'; & '.\venv\Scripts\Activate.ps1'; uvicorn app.main:app --reload --host 0.0.0.0 --port 8000"
+$backendCommand = "Set-Location '$rootDir\backend'; & '.\.venv\Scripts\Activate.ps1'; uvicorn app.main:app --reload --host 0.0.0.0 --port 8000"
 Start-Process powershell -ArgumentList "-NoExit", "-Command", $backendCommand
 
 Start-Sleep -Seconds 2

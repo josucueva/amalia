@@ -1,12 +1,15 @@
-FROM python:3.11-slim
+FROM python:3.13-trixie
 
 WORKDIR /app
 
-# Install system dependencies
+# Install system dependencies including Node.js for MCP servers
 RUN apt-get update && apt-get install -y \
+    curl \
     g++ \
     gcc \
     libmagic1 \
+    && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
+    && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements
@@ -18,8 +21,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
-# Create necessary directories
-RUN mkdir -p /app/data/uploads /app/logs
+# Create necessary directories and make init script executable
+RUN mkdir -p /app/data/uploads /app/logs /app/mcp_servers && \
+    chmod +x /app/init_python_mcp.py || true
 
 # Expose port
 EXPOSE 8000

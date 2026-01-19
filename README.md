@@ -6,9 +6,10 @@ A conversational AI-powered AutoML platform that enables users to build machine 
 
 - 🤖 **AI Agent System**: Configurable agents with specialized behaviors
 - 💬 **ChatGPT-like Interface**: Natural language interaction for ML tasks
-- 🔧 **Dual Configuration**: YAML files + GUI-based agent configuration
+- 💾 **Persistent Sessions**: MongoDB-backed chat history and state management
+- 🔧 **Dual Configuration**: YAML files + GUI-based agent configuration (Synced via DB)
 - 🔗 **Agent Communication**: A2A (Agent-to-Agent) protocol support
-- 🛠️ **MCP Integration**: Model Context Protocol for tool usage
+- 🛠️ **MCP Integration**: Model Context Protocol for tool usage (Filesystem, etc.)
 - 📊 **CSV Support**: Upload and process datasets
 - 🎨 **Modern UI**: Clean, responsive interface with latest web technologies
 
@@ -18,6 +19,7 @@ A conversational AI-powered AutoML platform that enables users to build machine 
 
 - **FastAPI**: Modern, high-performance Python web framework
 - **LiteLLM**: Unified interface for multiple LLM providers
+- **MongoDB**: NoSQL database for flexible persistence (Agents, Sessions, MCP Servers)
 - **Pydantic**: Data validation and settings management
 - **Redis**: Message queue for agent communication
 
@@ -33,7 +35,7 @@ A conversational AI-powered AutoML platform that enables users to build machine 
 
 - Python 3.11+
 - Node.js 18+ (for frontend development)
-- Docker (optional)
+- Docker & Docker Compose (Required for Database and Redis)
 
 ### Installation
 
@@ -44,7 +46,13 @@ git clone https://github.com/josucueva/amalia.git
 cd amalia
 ```
 
-2. **Backend Setup**
+2. **Start Infrastructure**
+
+```bash
+docker-compose up -d mongodb redis
+```
+
+3. **Backend Setup**
 
 ```bash
 cd backend
@@ -53,14 +61,14 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-3. **Frontend Setup**
+4. **Frontend Setup**
 
 ```bash
 cd frontend
 npm install
 ```
 
-4. **Environment Configuration**
+5. **Environment Configuration**
 
 ```bash
 cp .env.example .env
@@ -87,7 +95,7 @@ npm run dev
 
 Access the application at: `http://localhost:5173`
 
-**Using Docker:**
+**Using Docker (Full Stack):**
 
 ```bash
 docker-compose up
@@ -101,7 +109,7 @@ See [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) for detailed structure.
 
 ### Agent Configuration (YAML)
 
-Create agent configurations in `config/agents/`:
+Create agent configurations in `config/agents/`. These are automatically synced to MongoDB on startup.
 
 ```yaml
 agent:
@@ -131,7 +139,7 @@ Type natural language queries like:
 ### Agent Configuration
 
 **Via YAML**: Create/edit YAML files in `config/agents/`
-**Via GUI**: Use the web interface to configure agents visually
+**Via GUI**: Use the web interface to configure agents visually (Syncs back to YAML)
 
 ## Documentation
 
@@ -145,15 +153,15 @@ Type natural language queries like:
 
 - [x] Requirements documentation
 - [x] Project structure
-- [x] Chat interface
-- [ ] Agent configuration system
-- [ ] CSV processing
-- [x] MCP tool integration
+- [x] Chat interface (with Session Persistence)
+- [x] Agent configuration system (DB + YAML Sync)
+- [x] CSV processing (Uploads & Management)
+- [x] MCP tool integration (Server Management)
 
 ### Future Phases
 
-- [x] Visual pipeline builder
-- [ ] Multi-user support
+- [ ] Visual pipeline builder
+- [ ] Multi-user support (Authentication)
 - [ ] Advanced orchestration
 - [ ] Model deployment
 

@@ -1,0 +1,19 @@
+agent:
+  name: aws_feature_engineer
+  description: External agent simulating AWS feature engineering utilities
+  model: gemini/gemini-2.5-flash-lite
+  provider: aws
+  remote_endpoint: http://extagents:9000/agents/aws_feature_engineer/execute
+  system_prompt: |
+    You are a feature engineering agent. Create, transform, and standardize features.
+  a2a_enabled: true
+  a2a_mode: autonomous
+  tools: []
+  communication:
+    can_receive_from: []
+  temperature: 0.3
+  max_tokens: 1200
+  icon: wrench
+  metadata:
+    category: data_processing
+    is_hidden: false

@@ -10,6 +10,9 @@ export const API_ENDPOINTS = {
   agents: `${API_BASE_URL}/api/agents`,
   files: `${API_BASE_URL}/api/files`,
   canvas: `${API_BASE_URL}/api/canvas`,
+  models: `${API_BASE_URL}/api/models`,
+  mcpServers: `${API_BASE_URL}/api/mcp-servers`,
+  sessions: `${API_BASE_URL}/api/sessions`,
 };
 
 export default {

@@ -123,12 +123,20 @@ class ApiClient {
   }
 
   // Chat API
-  async sendMessage(message, conversationId = null) {
-    return this.post(API_ENDPOINTS.chat, {
-      message,
-      conversation_id: conversationId,
-      stream: false,
-    });
+  async sendMessage(requestData) {
+    // Support both old format (message, conversationId) and new format (requestData object)
+    if (typeof requestData === "string") {
+      // Old format: sendMessage(message, conversationId)
+      const message = requestData;
+      const conversationId = arguments[1] || null;
+      requestData = {
+        message,
+        conversation_id: conversationId,
+        stream: false,
+      };
+    }
+
+    return this.post(API_ENDPOINTS.chat, requestData);
   }
 
   async getConversationHistory(conversationId) {
@@ -183,6 +191,99 @@ class ApiClient {
     return this.post(`${API_ENDPOINTS.canvas}/build`, {
       command,
     });
+  }
+
+  // Models API
+  async listModels(availableOnly = false) {
+    const url = availableOnly
+      ? `${API_ENDPOINTS.models}?available_only=true`
+      : API_ENDPOINTS.models;
+    return this.get(url);
+  }
+
+  async getModel(modelId) {
+    return this.get(`${API_ENDPOINTS.models}/${modelId}`);
+  }
+
+  async addModel(data) {
+    return this.post(API_ENDPOINTS.models, data);
+  }
+
+  async updateModel(modelId, data) {
+    return this.put(`${API_ENDPOINTS.models}/${modelId}`, data);
+  }
+
+  async deleteModel(modelId) {
+    return this.delete(`${API_ENDPOINTS.models}/${modelId}`);
+  }
+
+  // MCP Server API methods
+  async listMCPServers(availableOnly = false) {
+    const url = availableOnly
+      ? `${API_ENDPOINTS.mcpServers}?available_only=true`
+      : API_ENDPOINTS.mcpServers;
+    return this.get(url);
+  }
+
+  async getMCPServer(serverId) {
+    return this.get(`${API_ENDPOINTS.mcpServers}/${serverId}`);
+  }
+
+  async addMCPServer(data) {
+    return this.post(API_ENDPOINTS.mcpServers, data);
+  }
+
+  async updateMCPServer(serverId, data) {
+    return this.put(`${API_ENDPOINTS.mcpServers}/${serverId}`, data);
+  }
+
+  async deleteMCPServer(serverId) {
+    return this.delete(`${API_ENDPOINTS.mcpServers}/${serverId}`);
+  }
+
+  // Sessions API
+  async createSession(title = null) {
+    return this.post(API_ENDPOINTS.sessions, { title });
+  }
+
+  async listSessions(status = null, limit = null) {
+    let url = API_ENDPOINTS.sessions;
+    const params = [];
+    if (status) params.push(`status=${status}`);
+    if (limit) params.push(`limit=${limit}`);
+    if (params.length > 0) url += `?${params.join("&")}`;
+    return this.get(url);
+  }
+
+  async getSession(sessionId) {
+    return this.get(`${API_ENDPOINTS.sessions}/${sessionId}`);
+  }
+
+  async updateSession(sessionId, data) {
+    return this.put(`${API_ENDPOINTS.sessions}/${sessionId}`, data);
+  }
+
+  async deleteSession(sessionId) {
+    return this.delete(`${API_ENDPOINTS.sessions}/${sessionId}`);
+  }
+
+  async addMessageToSession(sessionId, role, content, metadata = null) {
+    return this.post(`${API_ENDPOINTS.sessions}/${sessionId}/messages`, {
+      role,
+      content,
+      metadata,
+    });
+  }
+
+  async addPipelineToSession(sessionId, nodes, connections) {
+    return this.post(`${API_ENDPOINTS.sessions}/${sessionId}/pipelines`, {
+      nodes,
+      connections,
+    });
+  }
+
+  async clearSessionMessages(sessionId) {
+    return this.delete(`${API_ENDPOINTS.sessions}/${sessionId}/messages`);
   }
 
   // Health check

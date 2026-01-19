@@ -19,8 +19,24 @@
       <!-- Header -->
       <header class="app-header">
         <div class="header-content">
-          <h1 class="app-title">AMALIA</h1>
+          <div class="header-left">
+            <button
+              id="toggle-sessions-btn"
+              class="header-icon-btn"
+              title="Sessions"
+            >
+              <span>☰</span>
+            </button>
+            <h1 class="app-title">AMALIA</h1>
+          </div>
           <div class="header-actions">
+            <button
+              id="theme-toggle-btn"
+              class="btn btn-secondary"
+              title="Toggle Theme (Ctrl+Shift+T)"
+            >
+              <span id="theme-text">Dark</span>
+            </button>
             <button id="run-btn" class="btn btn-primary" title="Run Pipeline">
               <span>Run</span>
             </button>
@@ -38,7 +54,7 @@
       <!-- Main Content -->
       <main class="app-main">
         <!-- Sidebar (Hidden by Default) -->
-        <aside class="sidebar" id="sidebar">
+        <aside class="sidebar" id="sidebar" aria-label="Active Agents">
           <div class="sidebar-header">
             <h2>Active Agents</h2>
             <button
@@ -57,15 +73,7 @@
 
         <!-- Chat Interface -->
         <section class="chat-container">
-          <div class="chat-messages" id="chat-messages">
-            <div class="welcome-message">
-              <h2>Welcome</h2>
-              <p>
-                Describe what you want to build. The interaction agent will help
-                refine your requirements.
-              </p>
-            </div>
-          </div>
+          <div class="chat-messages" id="chat-messages"></div>
 
           <div class="chat-input-container">
             <div class="file-preview" id="file-preview" style="display: none">
@@ -87,14 +95,14 @@
               >
                 <span>⚙</span>
               </button>
-              <input
-                type="text"
+              <textarea
                 id="chat-input"
                 class="chat-input"
                 placeholder="Describe your requirements..."
                 autocomplete="off"
+                rows="1"
                 required
-              />
+              ></textarea>
               <button
                 type="button"
                 class="chat-action-btn"
@@ -114,7 +122,11 @@
       <!-- Canvas Mode Overlay -->
       <div class="canvas-overlay" id="canvas-overlay">
         <!-- Canvas Sidebar -->
-        <aside class="canvas-sidebar" id="canvas-sidebar">
+        <aside
+          class="canvas-sidebar"
+          id="canvas-sidebar"
+          aria-label="Canvas Sidebar"
+        >
           <div class="canvas-sidebar-header">
             <h3>AGENTS</h3>
           </div>
@@ -217,21 +229,35 @@
                 </div>
                 <div class="form-group">
                   <label for="agent-model">Model</label>
-                  <select id="agent-model">
-                    <option value="gemini/gemini-2.5-flash" selected>
-                      Gemini 2.5 Flash
-                    </option>
-                    <option value="gemini/gemini-2.5-pro">
-                      Gemini 2.5 Pro
-                    </option>
-                    <option value="gemini/gemini-2.5-flash">
-                      Gemini 2.5 Flash
-                    </option>
-                    <option value="gpt-4o">GPT-4o</option>
-                    <option value="gpt-4-turbo">GPT-4 Turbo</option>
-                    <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-                    <option value="ollama/llama2">Ollama - Llama 2</option>
-                  </select>
+                  <div class="model-selector-group">
+                    <select id="agent-model">
+                      <!-- Models will be loaded dynamically from API -->
+                    </select>
+                    <button
+                      type="button"
+                      class="add-model-btn"
+                      id="add-model-btn"
+                      title="Add new model"
+                    >
+                      <i data-lucide="plus"></i>
+                    </button>
+                    <button
+                      type="button"
+                      class="add-model-btn"
+                      id="edit-model-btn"
+                      title="Edit selected model"
+                    >
+                      <i data-lucide="edit"></i>
+                    </button>
+                    <button
+                      type="button"
+                      class="add-model-btn delete"
+                      id="delete-model-btn"
+                      title="Delete selected model"
+                    >
+                      <i data-lucide="trash-2"></i>
+                    </button>
+                  </div>
                 </div>
                 <div class="form-group">
                   <label for="agent-prompt">System Prompt</label>
@@ -302,6 +328,16 @@
                   />
                 </div>
                 <div class="form-group">
+                  <label for="mcp-server-description"
+                    >Description (Optional)</label
+                  >
+                  <input
+                    type="text"
+                    id="mcp-server-description"
+                    placeholder="Brief description of what this server does"
+                  />
+                </div>
+                <div class="form-group">
                   <label for="mcp-server-args">Arguments</label>
                   <textarea
                     id="mcp-server-args"
@@ -345,6 +381,140 @@
                   </button>
                   <button type="submit" class="btn btn-primary">
                     Add Server
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <!-- Model Configuration Panel -->
+          <div class="model-config-panel" id="model-config-panel">
+            <div class="modal-header">
+              <h2>Add New Model</h2>
+              <button class="modal-close" id="close-model-config">✕</button>
+            </div>
+            <div class="modal-body">
+              <form id="model-config-form">
+                <div class="form-group">
+                  <label for="model-display-name"
+                    >Display Name
+                    <span style="color: var(--error-color)">*</span></label
+                  >
+                  <input
+                    type="text"
+                    id="model-display-name"
+                    name="display_name"
+                    placeholder="e.g., Groq Llama 3.3 70B"
+                    required
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label for="model-provider"
+                    >Provider
+                    <span style="color: var(--error-color)">*</span></label
+                  >
+                  <select id="model-provider" name="provider" required>
+                    <option value="">Select a provider</option>
+                    <option value="openai">OpenAI</option>
+                    <option value="anthropic">Anthropic</option>
+                    <option value="groq">Groq</option>
+                    <option value="gemini">Gemini</option>
+                    <option value="ollama">Ollama</option>
+                    <option value="openrouter">Openrouter</option>
+                    <option value="custom">Custom</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="model-name"
+                    >Model Name
+                    <span style="color: var(--error-color)">*</span></label
+                  >
+                  <input
+                    type="text"
+                    id="model-name"
+                    name="model_name"
+                    placeholder="e.g., groq/llama-3.3-70b-versatile"
+                    required
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label for="model-api-key-name"
+                    >API Key Environment Variable Name</label
+                  >
+                  <input
+                    type="text"
+                    id="model-api-key-name"
+                    name="api_key_name"
+                    placeholder="e.g., GOOGLE_API_KEY, OPENAI_API_KEY"
+                  />
+                  <small class="form-help"
+                    >Optional: Custom environment variable name. If empty and
+                    you provide an API key below, a name will be
+                    auto-generated.</small
+                  >
+                </div>
+
+                <div class="form-group">
+                  <label for="model-api-key-value">API Key Value</label>
+                  <input
+                    type="password"
+                    id="model-api-key-value"
+                    name="api_key_value"
+                    placeholder="Enter your API key"
+                  />
+                  <small class="form-help"
+                    >Your API key will be securely stored in the .env file and
+                    never exposed in the UI. Leave empty if no API key is
+                    required.</small
+                  >
+                </div>
+
+                <div class="form-group">
+                  <label>
+                    <input
+                      type="checkbox"
+                      id="model-supports-functions"
+                      name="supports_function_calling"
+                      checked
+                    />
+                    Supports Function Calling
+                  </label>
+                </div>
+
+                <div class="form-group">
+                  <label for="model-max-tokens">Max Tokens</label>
+                  <input
+                    type="number"
+                    id="model-max-tokens"
+                    name="max_tokens"
+                    placeholder="e.g., 8000"
+                    min="1"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label for="model-description">Description</label>
+                  <textarea
+                    id="model-description"
+                    name="description"
+                    placeholder="Brief description of the model"
+                    rows="3"
+                  ></textarea>
+                </div>
+
+                <div class="form-actions">
+                  <button
+                    type="button"
+                    class="btn btn-secondary"
+                    id="cancel-model-btn"
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" class="btn btn-primary">
+                    Add Model
                   </button>
                 </div>
               </form>

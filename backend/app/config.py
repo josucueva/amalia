@@ -27,6 +27,8 @@ class Settings(BaseSettings):
     openai_api_key: str = ""
     anthropic_api_key: str = ""
     google_api_key: str = ""
+    groq_api_key: str = ""
+    openrouter_api_key: str = ""
 
     # Local Models
     ollama_base_url: str = "http://localhost:11434"
@@ -43,8 +45,9 @@ class Settings(BaseSettings):
     upload_dir: str = "./data/uploads"
     allowed_file_types: str = ".csv"
 
-    # Database
-    database_url: str = "sqlite:///./data/agentic_platform.db"
+    # MongoDB
+    mongodb_url: str = "mongodb://mongodb:27017"
+    mongodb_db_name: str = "amalia"
 
     # Agent Configuration
     agent_config_dir: str = "./config/agents"
@@ -70,7 +73,10 @@ class Settings(BaseSettings):
     rate_limit_period: int = 60
 
     model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", case_sensitive=False
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+        extra="allow",  # Allow extra fields for dynamically added API keys
     )
 
     @property
