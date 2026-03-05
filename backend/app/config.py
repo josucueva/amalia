@@ -34,12 +34,6 @@ class Settings(BaseSettings):
     ollama_base_url: str = "http://localhost:11434"
     default_model: str = "gemini/gemini-2.5-flash"
 
-    # Redis
-    redis_host: str = "localhost"
-    redis_port: int = 6379
-    redis_db: int = 0
-    redis_password: str = ""
-
     # File Upload
     max_upload_size_mb: int = 50
     upload_dir: str = "./data/uploads"
@@ -83,12 +77,6 @@ class Settings(BaseSettings):
     def allowed_origins_list(self) -> List[str]:
         """Get allowed origins as a list."""
         return [origin.strip() for origin in self.allowed_origins.split(",")]
-
-    @property
-    def redis_url(self) -> str:
-        """Get Redis URL."""
-        auth = f":{self.redis_password}@" if self.redis_password else ""
-        return f"redis://{auth}{self.redis_host}:{self.redis_port}/{self.redis_db}"
 
 
 @lru_cache()

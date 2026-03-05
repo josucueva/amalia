@@ -14,6 +14,7 @@ from app.models.mcp_server import (
     MCPServerCreateRequest,
     MCPServerListResponse,
 )
+from app.services.mcp_tool_catalog import get_mcp_tool_catalog
 
 router = APIRouter(prefix="/api/mcp-servers", tags=["mcp-servers"])
 logger = structlog.get_logger()
@@ -64,6 +65,71 @@ async def get_mcp_server(request: Request, server_id: str):
         raise
     except Exception as e:
         logger.error("Error getting MCP server", server_id=server_id, error=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/{server_id}/tools")
+async def get_mcp_server_tools(request: Request, server_id: str):
+    """
+    Get available tools from an MCP server.
+
+    Args:
+        server_id: The server ID
+
+    Returns:
+        List of tools with their schemas
+    """
+    try:
+        catalog = get_mcp_tool_catalog()
+        tools = catalog.get_tools_for_server(server_id)
+        
+        tools_data = []
+        for tool in tools:
+            tools_data.append({
+                "name": tool.name,
+                "description": tool.description,
+                "parameters": [
+                    {
+                        "name": p.name,
+                        "type": p.type,
+                        "description": p.description,
+                        "required": p.required,
+                        "default": p.default
+                    }
+                    for p in tool.parameters
+                ],
+                "returnType": tool.return_type,
+                "category": tool.category
+            })
+        
+        logger.info("MCP tools retrieved", server_id=server_id, tool_count=len(tools))
+        return {
+            "server_id": server_id,
+            "server_name": tools[0].server_name if tools else server_id,
+            "tools": tools_data,
+            "count": len(tools_data)
+        }
+    except Exception as e:
+        logger.error("Error getting MCP server tools", server_id=server_id, error=str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/catalog/all")
+async def get_tool_catalog(request: Request):
+    """
+    Get the complete tool catalog across all MCP servers.
+    
+    Returns:
+        Complete tool catalog with categorized tools
+    """
+    try:
+        catalog = get_mcp_tool_catalog()
+        summary = catalog.get_tools_summary()
+        
+        logger.info("Tool catalog retrieved", total_tools=summary["total_tools"])
+        return summary
+    except Exception as e:
+        logger.error("Error getting tool catalog", error=str(e))
         raise HTTPException(status_code=500, detail=str(e))
 
 

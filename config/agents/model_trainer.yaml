@@ -40,7 +40,6 @@ system_prompt:
 
   "
 icon: brain
-a2a_enabled: true
 a2a_mode: autonomous
 tools:
   - model_trainer

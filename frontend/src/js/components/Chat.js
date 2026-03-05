@@ -79,7 +79,7 @@ class Chat {
       // Move cursor to end
       this.chatInput.setSelectionRange(
         this.chatInput.value.length,
-        this.chatInput.value.length
+        this.chatInput.value.length,
       );
       return;
     }
@@ -102,7 +102,7 @@ class Chat {
       // Move cursor to end
       this.chatInput.setSelectionRange(
         this.chatInput.value.length,
-        this.chatInput.value.length
+        this.chatInput.value.length,
       );
       return;
     }
@@ -179,7 +179,7 @@ class Chat {
         };
         console.log(
           "[DEBUG] Attaching file to request:",
-          requestData.attached_file
+          requestData.attached_file,
         );
       } else {
         console.log("[DEBUG] No file attached to this message");
@@ -190,7 +190,7 @@ class Chat {
       // Update session in state
       if (response.message.metadata?.session_id) {
         const updatedSession = await api.getSession(
-          response.message.metadata.session_id
+          response.message.metadata.session_id,
         );
         state.setState({ currentSession: updatedSession });
       }
@@ -205,7 +205,7 @@ class Chat {
         // Pipeline was created by the three-agent system
         await this.handlePipelineCreation(
           response.message.content,
-          orchestration.orchestration
+          orchestration.orchestration,
         );
       } else {
         // Normal response from interaction agent
@@ -236,7 +236,7 @@ class Chat {
         state.setState({ currentSession: updatedSession });
         console.log(
           "✓ Session refreshed with new pipeline:",
-          currentSession.id
+          currentSession.id,
         );
       } catch (error) {
         console.error("Error refreshing session:", error);
@@ -244,21 +244,211 @@ class Chat {
       }
     }
 
-    // Trigger canvas update if in canvas mode
-    if (globalThis.app?.canvasMode) {
-      globalThis.app.createPipelineFromData(
-        orchestrationData.nodes,
-        orchestrationData.connections
+    // Convert Sim AI workflow format to canvas format if needed
+    let canvasData = orchestrationData;
+    if (
+      orchestrationData.type === "sim_ai_workflow" &&
+      orchestrationData.workflow
+    ) {
+      canvasData = this.convertSimAIToCanvas(orchestrationData);
+    }
+
+    // Persist the converted canvas data to localStorage, keyed by session ID.
+    // This ensures the pipeline survives page refresh (sessionStorage is cleared on tab close).
+    const sessionId = state.getState().currentSession?.id;
+    if (sessionId && canvasData.nodes && canvasData.nodes.length > 0) {
+      localStorage.setItem(
+        `amalia_canvas_${sessionId}`,
+        JSON.stringify(canvasData),
       );
-    } else {
-      // Store pipeline data for when user switches to canvas mode
-      sessionStorage.setItem(
-        "pendingPipeline",
-        JSON.stringify(orchestrationData)
+      console.log(
+        "[Canvas] Pipeline persisted to localStorage for session:",
+        sessionId,
       );
     }
 
-    showToast("Pipeline created successfully!", "success");
+    // Trigger canvas update if in canvas mode
+    if (globalThis.app?.canvasMode && canvasData.nodes) {
+      globalThis.app.createPipelineFromData(
+        canvasData.nodes,
+        canvasData.connections || [],
+      );
+    } else if (canvasData.nodes) {
+      // Store pipeline data for when user switches to canvas mode
+      sessionStorage.setItem("pendingPipeline", JSON.stringify(canvasData));
+    }
+
+    showToast(
+      "✅ Workflow generated! Switch to Canvas Mode to visualize.",
+      "success",
+    );
+  }
+
+  /**
+   * Convert Sim AI workflow format to canvas visualization format
+   */
+  convertSimAIToCanvas(simWorkflow) {
+    console.log(
+      "[Canvas] Converting Sim AI workflow to canvas format",
+      simWorkflow,
+    );
+
+    const nodes = [];
+    const connections = [];
+    const blocks = simWorkflow.workflow?.blocks || {};
+    const edges = simWorkflow.workflow?.edges || [];
+
+    // Track block IDs to instance IDs mapping
+    const blockToInstance = new Map();
+    let yPosition = 100;
+    let nodeIndex = 0;
+    const timestamp = Date.now();
+
+    // Name to agent ID mapping (handles both formats)
+    const nameToAgentId = {
+      "data loader": "data_loader",
+      "data preprocessor": "data_preprocessor",
+      data_preprocessor: "data_preprocessor",
+      "statistics analyzer": "statistics_analyzer",
+      statistics_analyzer: "statistics_analyzer",
+      "model trainer": "model_trainer",
+      model_trainer: "model_trainer",
+      "model evaluator": "model_evaluator",
+      model_evaluator: "model_evaluator",
+      "missing values detector": "missing_values_detector",
+      missing_values_detector: "missing_values_detector",
+      "data visualizer": "data_visualizer",
+      data_visualizer: "data_visualizer",
+    };
+
+    console.log("[Canvas] Processing blocks:", Object.keys(blocks).length);
+
+    // Convert blocks to nodes (including start_trigger)
+    Object.entries(blocks).forEach(([blockId, block]) => {
+      const instanceId = `instance_${timestamp}_${nodeIndex}`;
+      blockToInstance.set(blockId, instanceId);
+
+      if (block.type === "start_trigger") {
+        // Create start node
+        console.log("[Canvas] Creating start node", { blockId, instanceId });
+        nodes.push({
+          instanceId,
+          agentId: "start_trigger",
+          type: "start",
+          position: {
+            x: 100,
+            y: yPosition,
+          },
+          filePath: this.extractFilePathFromStartBlock(block),
+          mcpTools: [],
+        });
+      } else {
+        // Create agent node - map name to proper agent ID
+        const blockName = block.name?.toLowerCase() || "";
+        const agentId =
+          nameToAgentId[blockName] || blockName.replace(/ /g, "_");
+
+        console.log("[Canvas] Creating agent node", {
+          blockId,
+          blockName: block.name,
+          mappedAgentId: agentId,
+          instanceId,
+        });
+
+        nodes.push({
+          instanceId,
+          agentId,
+          type: "agent",
+          position: {
+            x: 100 + nodeIndex * 300,
+            y: yPosition,
+          },
+          mcpTools: this.extractMcpTools(block),
+          mcpServerIds: this.extractMcpServerIds(block),
+          filePath: null,
+        });
+      }
+
+      nodeIndex++;
+    });
+
+    // Convert edges to connections (including start_trigger edges)
+    console.log("[Canvas] Processing edges:", edges.length);
+    edges.forEach((edge, index) => {
+      const sourceInstance = blockToInstance.get(edge.source);
+      const targetInstance = blockToInstance.get(edge.target);
+
+      console.log("[Canvas] Creating connection", {
+        edge: `${edge.source} -> ${edge.target}`,
+        sourceInstance,
+        targetInstance,
+      });
+
+      // Skip if either instance not found
+      if (!sourceInstance || !targetInstance) {
+        console.warn("[Canvas] Skipping edge - instance not found", edge);
+        return;
+      }
+
+      connections.push({
+        id: `conn_${timestamp}_${index}`,
+        fromInstanceId: sourceInstance,
+        toInstanceId: targetInstance,
+        from: { instanceId: sourceInstance },
+        to: { instanceId: targetInstance },
+      });
+    });
+
+    console.log("[Canvas] Conversion complete", {
+      nodes: nodes.length,
+      connections: connections.length,
+    });
+
+    return { nodes, connections };
+  }
+
+  /**
+   * Extract MCP server IDs from a Sim AI block's tools
+   */
+  extractMcpServerIds(block) {
+    const serverIds = new Set();
+    const tools = block.subBlocks?.tools?.value || [];
+
+    tools.forEach((tool) => {
+      if (tool.type === "mcp" && tool.params?.serverId) {
+        serverIds.add(tool.params.serverId);
+      }
+    });
+
+    return Array.from(serverIds);
+  }
+
+  /**
+   * Extract complete MCP tool details from a Sim AI block
+   */
+  extractMcpTools(block) {
+    const tools = block.subBlocks?.tools?.value || [];
+
+    return tools
+      .filter((tool) => tool.type === "mcp")
+      .map((tool) => ({
+        title: tool.title || tool.params?.toolName || "Unknown Tool",
+        toolName: tool.params?.toolName || "",
+        serverId: tool.params?.serverId || "",
+        serverName: tool.params?.serverName || "",
+        toolId: tool.toolId || "",
+      }));
+  }
+
+  /**
+   * Extract file path from start_trigger block
+   */
+  extractFilePathFromStartBlock(block) {
+    const inputFormat = block.subBlocks?.inputFormat?.value || [];
+    const filePathInput = inputFormat.find(
+      (input) => input.name === "filePath",
+    );
+    return filePathInput?.value || null;
   }
 
   addMessage(message) {
@@ -280,7 +470,7 @@ class Chat {
       role,
       message.agent_id,
       sanitizeHTML(message.content),
-      formatTimestamp(message.timestamp)
+      formatTimestamp(message.timestamp),
     );
 
     this.messagesContainer.appendChild(messageEl);

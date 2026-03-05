@@ -347,7 +347,7 @@ class AgentPipelineService:
             Tuple of (final_response, orchestration_data)
         """
         # Step 1: Interaction Agent - Refine the prompt
-        interaction_agent = self.agent_registry.get_agent_by_name("interaction_agent")
+        interaction_agent = self.agent_registry.get_agent("interaction_agent")
         if not interaction_agent:
             logger.error("Interaction agent not found")
             return "Interaction agent is not available.", None
@@ -383,7 +383,7 @@ class AgentPipelineService:
         )
 
         # Step 2: Planner Agent - Create execution plan
-        planner_agent = self.agent_registry.get_agent_by_name("planner_agent")
+        planner_agent = self.agent_registry.get_agent("planner_agent")
         if not planner_agent:
             logger.error("Planner agent not found")
             return "Pipeline planning is not available.", None
@@ -413,7 +413,7 @@ class AgentPipelineService:
         )
 
         # Step 3: Orchestrator Agent - Create canvas configuration
-        orchestrator_agent = self.agent_registry.get_agent_by_name("orchestrator_agent")
+        orchestrator_agent = self.agent_registry.get_agent("orchestrator_agent")
         if not orchestrator_agent:
             logger.error("Orchestrator agent not found")
             return "Pipeline orchestration is not available.", None
@@ -431,42 +431,54 @@ class AgentPipelineService:
         orchestration_data = self._extract_json_from_response(orchestrator_response)
 
         if not orchestration_data or "orchestration" not in orchestration_data:
-            logger.error("Orchestrator failed to create valid configuration")
+            logger.error("Orchestrator failed to create valid configuration",
+                        response_preview=orchestrator_response[:500] if orchestrator_response else None)
             return "Failed to create pipeline configuration.", None
 
         orchestration = orchestration_data["orchestration"]
-
-        # Map agent types to agent IDs
-        orchestration = self._resolve_agent_types(orchestration)
         
-        # Add file path to first node if file was attached
-        if file_path and orchestration.get("nodes"):
-            first_node = orchestration["nodes"][0]
-            first_node["filePath"] = file_path
-            logger.info("File path added to first node", instance_id=first_node.get("instanceId"), file_path=file_path)
-
-        logger.info(
-            "Step 6: Orchestrator created configuration",
-            nodes=len(orchestration.get("nodes", [])),
-            connections=len(orchestration.get("connections", [])),
-            has_file=bool(file_path),
-        )
-
-        # Create final user-facing message
-        objective = plan.get("objective", "your pipeline")
-        phases_count = len(plan.get("phases", []))
-        nodes_count = len(orchestration.get("nodes", []))
-
-        final_message = f"""✅ Pipeline created successfully!
+        # Check if this is Sim AI native format
+        if orchestration.get("type") == "sim_ai_workflow":
+            # New format: orchestrator outputs Sim AI workflow directly
+            logger.info(
+                "Orchestrator created Sim AI workflow",
+                blocks=len(orchestration.get("workflow", {}).get("blocks", {})),
+                edges=len(orchestration.get("workflow", {}).get("edges", [])),
+            )
+            
+            # Add file path to start_trigger if file was attached
+            if file_path and orchestration.get("workflow", {}).get("blocks"):
+                for block_id, block in orchestration["workflow"]["blocks"].items():
+                    if block.get("type") == "start_trigger":
+                        # Update filePath input value
+                        input_format = block.get("subBlocks", {}).get("inputFormat", {})
+                        if input_format.get("value"):
+                            for input_field in input_format["value"]:
+                                if input_field.get("name") == "filePath":
+                                    input_field["value"] = file_path
+                                    logger.info("File path added to start_trigger", file_path=file_path)
+                                    break
+                        break
+            
+            # Create user-facing message
+            objective = orchestration.get("workflow", {}).get("metadata", {}).get("objective", "your pipeline")
+            blocks_count = len(orchestration.get("workflow", {}).get("blocks", {}))
+            
+            final_message = f"""✅ Complete Sim AI workflow generated!
 
 **Objective:** {objective}
 
-**Plan:**
-- {phases_count} phases identified
-- {nodes_count} agents instantiated
-- Complexity: {plan.get("complexity", "unknown")}
+**Generated:**
+- {blocks_count} workflow blocks (including start trigger)
+- Complete MCP tool configurations
+- Ready for Sim AI export
 
-Switch to Canvas Mode to see your pipeline in action!"""
+**Next Steps:**
+1. Switch to Canvas Mode to visualize the pipeline
+2. Use the export button to download the Sim AI workflow JSON
+3. Import into Sim AI and execute
+
+This workflow is fully self-contained and executable!"""
 
         return final_message, {"orchestration": orchestration}
 
@@ -485,8 +497,11 @@ Switch to Canvas Mode to see your pipeline in action!"""
         for node in nodes:
             agent_type = node.get("agentType")
             if agent_type and "agentId" not in node:
-                # Find agent by name
-                agent = self.agent_registry.get_agent_by_name(agent_type)
+                # Try to find agent by ID first, then by name
+                agent = self.agent_registry.get_agent(agent_type)
+                if not agent:
+                    agent = self.agent_registry.get_agent_by_name(agent_type)
+                
                 if agent:
                     node["agentId"] = agent.id
                 else:
