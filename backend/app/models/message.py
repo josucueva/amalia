@@ -107,16 +107,3 @@ class ChatResponse(BaseModel):
                 "agents_involved": ["data_preprocessor"],
             }
         }
-
-
-class A2AMessage(BaseModel):
-    """Agent-to-agent message model."""
-
-    from_agent: str = Field(..., description="Source agent ID")
-    to_agent: str = Field(..., description="Target agent ID")
-    message_type: str = Field(..., description="Type of message")
-    content: Dict[str, Any] = Field(..., description="Message content")
-    timestamp: datetime = Field(default_factory=datetime.utcnow)
-    correlation_id: Optional[str] = Field(
-        default=None, description="Correlation ID for tracking"
-    )

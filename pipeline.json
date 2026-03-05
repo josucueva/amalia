@@ -1,0 +1,1024 @@
+{
+  "version": "1.0",
+  "exportedAt": "2026-02-12T00:17:53.582Z",
+  "state": {
+    "blocks": {
+      "1b506d23-44e9-4f57-8e21-429460ded66d": {
+        "id": "1b506d23-44e9-4f57-8e21-429460ded66d",
+        "type": "start_trigger",
+        "name": "Start",
+        "position": {
+          "x": -140,
+          "y": -370
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "advancedMode": false,
+        "triggerMode": false,
+        "height": 0,
+        "subBlocks": {
+          "inputFormat": {
+            "id": "inputFormat",
+            "type": "input-format",
+            "value": [
+              {
+                "id": "a1ad187d-78dc-49ed-95e7-f7788ae48fa8",
+                "name": "filePath",
+                "type": "string",
+                "value": "iris.data.csv",
+                "collapsed": false
+              },
+              {
+                "id": "e7fc83cf-4eda-4602-a5cc-b75f06c6bb3c",
+                "name": "inputText",
+                "type": "string",
+                "value": "",
+                "collapsed": false,
+                "description": ""
+              }
+            ]
+          }
+        },
+        "outputs": {
+          "files": {
+            "type": "file[]",
+            "description": "User uploaded files"
+          },
+          "input": {
+            "type": "string",
+            "description": "Primary user input or message"
+          },
+          "conversationId": {
+            "type": "string",
+            "description": "Conversation thread identifier"
+          }
+        },
+        "data": {},
+        "locked": false
+      },
+      "c950196c-d305-44ff-847f-e83530ac017d": {
+        "id": "c950196c-d305-44ff-847f-e83530ac017d",
+        "type": "agent",
+        "name": "Model Trainer",
+        "position": {
+          "x": 610,
+          "y": -260
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "advancedMode": false,
+        "triggerMode": false,
+        "height": 0,
+        "subBlocks": {
+          "model": {
+            "id": "model",
+            "type": "combobox",
+            "value": "openrouter/openrouter/pony-alpha"
+          },
+          "tools": {
+            "id": "tools",
+            "type": "tool-input",
+            "value": [
+              {
+                "type": "mcp",
+                "title": "read_file_head",
+                "params": {
+                  "filepath": "<start.filePath>",
+                  "serverId": "mcp-cf5bdc86",
+                  "toolName": "read_file_head",
+                  "serverUrl": "http://host.docker.internal:8002/mcp",
+                  "serverName": "Data Loading Server"
+                },
+                "schema": {
+                  "type": "object",
+                  "required": ["filepath"],
+                  "properties": {
+                    "n_rows": {
+                      "type": "integer",
+                      "default": 10
+                    },
+                    "filepath": {
+                      "type": "string"
+                    }
+                  },
+                  "description": "Read first N rows of a CSV file.\n\nArgs:\n    filepath: Path to CSV file (absolute or relative to data directory)\n    n_rows: Number of rows to read (default: 10)\n\nReturns:\n    Dictionary with first N rows",
+                  "additionalProperties": false
+                },
+                "toolId": "mcp-cf5bdc86-read_file_head",
+                "isExpanded": false,
+                "usageControl": "auto"
+              },
+              {
+                "type": "mcp",
+                "title": "train_classification_model",
+                "params": {
+                  "filepath": "<start.filePath>",
+                  "serverId": "mcp-cf800d88",
+                  "toolName": "train_classification_model",
+                  "serverUrl": "http://host.docker.internal:8004/mcp",
+                  "test_size": "0.3",
+                  "model_type": "svm",
+                  "serverName": "Model Training Server",
+                  "random_state": "",
+                  "target_column": "",
+                  "model_save_path": ""
+                },
+                "schema": {
+                  "type": "object",
+                  "required": ["filepath", "target_column"],
+                  "properties": {
+                    "filepath": {
+                      "type": "string"
+                    },
+                    "test_size": {
+                      "type": "number",
+                      "default": 0.2
+                    },
+                    "model_type": {
+                      "type": "string",
+                      "default": "random_forest"
+                    },
+                    "random_state": {
+                      "type": "integer",
+                      "default": 42
+                    },
+                    "target_column": {
+                      "type": "string"
+                    },
+                    "model_save_path": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    }
+                  },
+                  "description": "Train a classification model.\n\nArgs:\n    filepath: Path to CSV file\n    target_column: Name of the target column\n    model_type: Type of model ('logistic', 'decision_tree', 'random_forest', 'svm', 'knn', 'naive_bayes', 'gradient_boosting')\n    test_size: Proportion of test set (0.0 to 1.0)\n    random_state: Random seed for reproducibility\n    model_save_path: Optional path to save trained model\n\nReturns:\n    Dictionary with training results and metrics",
+                  "additionalProperties": false
+                },
+                "toolId": "mcp-cf800d88-train_classification_model",
+                "isExpanded": true,
+                "usageControl": "auto"
+              }
+            ]
+          },
+          "apiKey": {
+            "id": "apiKey",
+            "type": "short-input",
+            "value": "{{OPENROUTER_API_KEY}}"
+          },
+          "skills": {
+            "id": "skills",
+            "type": "skill-input",
+            "value": []
+          },
+          "messages": {
+            "id": "messages",
+            "type": "messages-input",
+            "value": [
+              {
+                "role": "user",
+                "content": "Train a classification model with iris.data.csv. Use last column as target, and define the other properties yourself. Save the model inside the same folder that has the datasets. Write the response as a plain json"
+              }
+            ]
+          },
+          "maxTokens": {
+            "id": "maxTokens",
+            "type": "short-input",
+            "value": null
+          },
+          "verbosity": {
+            "id": "verbosity",
+            "type": "dropdown",
+            "value": ""
+          },
+          "memoryType": {
+            "id": "memoryType",
+            "type": "dropdown",
+            "value": "none"
+          },
+          "temperature": {
+            "id": "temperature",
+            "type": "slider",
+            "value": 0.3
+          },
+          "azureEndpoint": {
+            "id": "azureEndpoint",
+            "type": "short-input",
+            "value": null
+          },
+          "bedrockRegion": {
+            "id": "bedrockRegion",
+            "type": "short-input",
+            "value": null
+          },
+          "thinkingLevel": {
+            "id": "thinkingLevel",
+            "type": "dropdown",
+            "value": ""
+          },
+          "vertexProject": {
+            "id": "vertexProject",
+            "type": "short-input",
+            "value": null
+          },
+          "conversationId": {
+            "id": "conversationId",
+            "type": "short-input",
+            "value": null
+          },
+          "responseFormat": {
+            "id": "responseFormat",
+            "type": "code",
+            "value": null
+          },
+          "vertexLocation": {
+            "id": "vertexLocation",
+            "type": "short-input",
+            "value": null
+          },
+          "azureApiVersion": {
+            "id": "azureApiVersion",
+            "type": "short-input",
+            "value": null
+          },
+          "reasoningEffort": {
+            "id": "reasoningEffort",
+            "type": "dropdown",
+            "value": ""
+          },
+          "bedrockSecretKey": {
+            "id": "bedrockSecretKey",
+            "type": "short-input",
+            "value": null
+          },
+          "vertexCredential": {
+            "id": "vertexCredential",
+            "type": "oauth-input",
+            "value": null
+          },
+          "slidingWindowSize": {
+            "id": "slidingWindowSize",
+            "type": "short-input",
+            "value": null
+          },
+          "bedrockAccessKeyId": {
+            "id": "bedrockAccessKeyId",
+            "type": "short-input",
+            "value": null
+          },
+          "slidingWindowTokens": {
+            "id": "slidingWindowTokens",
+            "type": "short-input",
+            "value": null
+          }
+        },
+        "outputs": {
+          "cost": {
+            "type": "json",
+            "description": "Cost of the API call"
+          },
+          "model": {
+            "type": "string",
+            "description": "Model used for generation"
+          },
+          "tokens": {
+            "type": "json",
+            "description": "Token usage statistics"
+          },
+          "content": {
+            "type": "string",
+            "description": "Generated response content"
+          },
+          "toolCalls": {
+            "type": "json",
+            "description": "Tool calls made"
+          },
+          "providerTiming": {
+            "type": "json",
+            "description": "Provider timing information"
+          }
+        },
+        "data": {},
+        "locked": false
+      },
+      "9c575c96-f4fd-468a-a3b8-e1ca2d65b26f": {
+        "id": "9c575c96-f4fd-468a-a3b8-e1ca2d65b26f",
+        "type": "agent",
+        "name": "Data Cleaner",
+        "position": {
+          "x": 270,
+          "y": -190
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "advancedMode": false,
+        "triggerMode": false,
+        "height": 0,
+        "subBlocks": {
+          "model": {
+            "id": "model",
+            "type": "combobox",
+            "value": "openrouter/openrouter/pony-alpha"
+          },
+          "tools": {
+            "id": "tools",
+            "type": "tool-input",
+            "value": [
+              {
+                "type": "mcp",
+                "title": "handle_missing_values",
+                "params": {
+                  "serverId": "mcp-cf6df507",
+                  "toolName": "handle_missing_values",
+                  "serverUrl": "http://host.docker.internal:8003/mcp",
+                  "serverName": "Data Preparation Server"
+                },
+                "schema": {
+                  "type": "object",
+                  "required": ["filepath"],
+                  "properties": {
+                    "columns": {
+                      "anyOf": [
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    },
+                    "filepath": {
+                      "type": "string"
+                    },
+                    "strategy": {
+                      "type": "string",
+                      "default": "mean"
+                    },
+                    "output_filepath": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    }
+                  },
+                  "description": "Handle missing values using various strategies.\n\nArgs:\n    filepath: Path to CSV file\n    strategy: Imputation strategy ('mean', 'median', 'mode', 'constant', 'drop')\n    columns: Specific columns to handle (None = all columns with missing values)\n    output_filepath: Optional path to save cleaned data\n\nReturns:\n    Dictionary with operation results",
+                  "additionalProperties": false
+                },
+                "toolId": "mcp-cf6df507-handle_missing_values",
+                "isExpanded": false,
+                "usageControl": "auto"
+              },
+              {
+                "type": "mcp",
+                "title": "remove_duplicates",
+                "params": {
+                  "serverId": "mcp-cf6df507",
+                  "toolName": "remove_duplicates",
+                  "serverUrl": "http://host.docker.internal:8003/mcp",
+                  "serverName": "Data Preparation Server"
+                },
+                "schema": {
+                  "type": "object",
+                  "required": ["filepath"],
+                  "properties": {
+                    "keep": {
+                      "type": "string",
+                      "default": "first"
+                    },
+                    "subset": {
+                      "anyOf": [
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    },
+                    "filepath": {
+                      "type": "string"
+                    },
+                    "output_filepath": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    }
+                  },
+                  "description": "Remove duplicate rows from dataset.\n\nArgs:\n    filepath: Path to CSV file\n    subset: Columns to consider for duplicates (None = all columns)\n    keep: Which duplicates to keep ('first', 'last', False=remove all)\n    output_filepath: Optional path to save cleaned data\n\nReturns:\n    Dictionary with operation results",
+                  "additionalProperties": false
+                },
+                "toolId": "mcp-cf6df507-remove_duplicates",
+                "isExpanded": false,
+                "usageControl": "auto"
+              },
+              {
+                "type": "mcp",
+                "title": "scale_features",
+                "params": {
+                  "serverId": "mcp-cf6df507",
+                  "toolName": "scale_features",
+                  "serverUrl": "http://host.docker.internal:8003/mcp",
+                  "serverName": "Data Preparation Server"
+                },
+                "schema": {
+                  "type": "object",
+                  "required": ["filepath", "columns"],
+                  "properties": {
+                    "method": {
+                      "type": "string",
+                      "default": "standard"
+                    },
+                    "columns": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "filepath": {
+                      "type": "string"
+                    },
+                    "output_filepath": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    }
+                  },
+                  "description": "Scale numerical features using standardization or normalization.\n\nArgs:\n    filepath: Path to CSV file\n    columns: List of column names to scale\n    method: Scaling method ('standard' or 'minmax')\n    output_filepath: Optional path to save scaled data\n\nReturns:\n    Dictionary with scaling results",
+                  "additionalProperties": false
+                },
+                "toolId": "mcp-cf6df507-scale_features",
+                "isExpanded": false,
+                "usageControl": "auto"
+              },
+              {
+                "type": "mcp",
+                "title": "filter_rows",
+                "params": {
+                  "serverId": "mcp-cf6df507",
+                  "toolName": "filter_rows",
+                  "serverUrl": "http://host.docker.internal:8003/mcp",
+                  "serverName": "Data Preparation Server"
+                },
+                "schema": {
+                  "type": "object",
+                  "required": ["filepath", "column", "condition", "value"],
+                  "properties": {
+                    "value": {
+                      "title": "Value"
+                    },
+                    "column": {
+                      "type": "string"
+                    },
+                    "filepath": {
+                      "type": "string"
+                    },
+                    "condition": {
+                      "type": "string"
+                    },
+                    "output_filepath": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    }
+                  },
+                  "description": "Filter rows based on a condition.\n\nArgs:\n    filepath: Path to CSV file\n    column: Column name to filter on\n    condition: Condition operator ('eq', 'ne', 'gt', 'lt', 'gte', 'lte', 'contains')\n    value: Value to compare against\n    output_filepath: Optional path to save filtered data\n\nReturns:\n    Dictionary with filtering results",
+                  "additionalProperties": false
+                },
+                "toolId": "mcp-cf6df507-filter_rows",
+                "isExpanded": false,
+                "usageControl": "auto"
+              },
+              {
+                "type": "mcp",
+                "title": "detect_outliers",
+                "params": {
+                  "serverId": "mcp-cf6df507",
+                  "toolName": "detect_outliers",
+                  "serverUrl": "http://host.docker.internal:8003/mcp",
+                  "serverName": "Data Preparation Server"
+                },
+                "schema": {
+                  "type": "object",
+                  "required": ["filepath", "column"],
+                  "properties": {
+                    "column": {
+                      "type": "string"
+                    },
+                    "method": {
+                      "type": "string",
+                      "default": "iqr"
+                    },
+                    "filepath": {
+                      "type": "string"
+                    },
+                    "threshold": {
+                      "type": "number",
+                      "default": 1.5
+                    }
+                  },
+                  "description": "Detect outliers in a numerical column.\n\nArgs:\n    filepath: Path to CSV file\n    column: Column name to check for outliers\n    method: Detection method ('iqr' or 'zscore')\n    threshold: Threshold for outlier detection (IQR multiplier or z-score)\n\nReturns:\n    Dictionary with outlier information",
+                  "additionalProperties": false
+                },
+                "toolId": "mcp-cf6df507-detect_outliers",
+                "isExpanded": true,
+                "usageControl": "auto"
+              }
+            ]
+          },
+          "apiKey": {
+            "id": "apiKey",
+            "type": "short-input",
+            "value": "{{OPENROUTER_API_KEY}}"
+          },
+          "skills": {
+            "id": "skills",
+            "type": "skill-input",
+            "value": []
+          },
+          "messages": {
+            "id": "messages",
+            "type": "messages-input",
+            "value": [
+              {
+                "role": "user",
+                "content": "<dataloader>"
+              }
+            ]
+          },
+          "maxTokens": {
+            "id": "maxTokens",
+            "type": "short-input",
+            "value": null
+          },
+          "verbosity": {
+            "id": "verbosity",
+            "type": "dropdown",
+            "value": ""
+          },
+          "memoryType": {
+            "id": "memoryType",
+            "type": "dropdown",
+            "value": "none"
+          },
+          "temperature": {
+            "id": "temperature",
+            "type": "slider",
+            "value": 0.3
+          },
+          "azureEndpoint": {
+            "id": "azureEndpoint",
+            "type": "short-input",
+            "value": null
+          },
+          "bedrockRegion": {
+            "id": "bedrockRegion",
+            "type": "short-input",
+            "value": null
+          },
+          "thinkingLevel": {
+            "id": "thinkingLevel",
+            "type": "dropdown",
+            "value": ""
+          },
+          "vertexProject": {
+            "id": "vertexProject",
+            "type": "short-input",
+            "value": null
+          },
+          "conversationId": {
+            "id": "conversationId",
+            "type": "short-input",
+            "value": null
+          },
+          "responseFormat": {
+            "id": "responseFormat",
+            "type": "code",
+            "value": null
+          },
+          "vertexLocation": {
+            "id": "vertexLocation",
+            "type": "short-input",
+            "value": null
+          },
+          "azureApiVersion": {
+            "id": "azureApiVersion",
+            "type": "short-input",
+            "value": null
+          },
+          "reasoningEffort": {
+            "id": "reasoningEffort",
+            "type": "dropdown",
+            "value": ""
+          },
+          "bedrockSecretKey": {
+            "id": "bedrockSecretKey",
+            "type": "short-input",
+            "value": null
+          },
+          "vertexCredential": {
+            "id": "vertexCredential",
+            "type": "oauth-input",
+            "value": null
+          },
+          "slidingWindowSize": {
+            "id": "slidingWindowSize",
+            "type": "short-input",
+            "value": null
+          },
+          "bedrockAccessKeyId": {
+            "id": "bedrockAccessKeyId",
+            "type": "short-input",
+            "value": null
+          },
+          "slidingWindowTokens": {
+            "id": "slidingWindowTokens",
+            "type": "short-input",
+            "value": null
+          }
+        },
+        "outputs": {
+          "cost": {
+            "type": "json",
+            "description": "Cost of the API call"
+          },
+          "model": {
+            "type": "string",
+            "description": "Model used for generation"
+          },
+          "tokens": {
+            "type": "json",
+            "description": "Token usage statistics"
+          },
+          "content": {
+            "type": "string",
+            "description": "Generated response content"
+          },
+          "toolCalls": {
+            "type": "json",
+            "description": "Tool calls made"
+          },
+          "providerTiming": {
+            "type": "json",
+            "description": "Provider timing information"
+          }
+        },
+        "data": {},
+        "locked": false
+      },
+      "9f1bac02-2461-4b21-a212-01ce841b7e09": {
+        "id": "9f1bac02-2461-4b21-a212-01ce841b7e09",
+        "type": "agent",
+        "name": "Data Loader",
+        "position": {
+          "x": -70,
+          "y": -190
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "advancedMode": false,
+        "triggerMode": false,
+        "height": 0,
+        "subBlocks": {
+          "model": {
+            "id": "model",
+            "type": "combobox",
+            "value": "openrouter/openrouter/pony-alpha"
+          },
+          "tools": {
+            "id": "tools",
+            "type": "tool-input",
+            "value": [
+              {
+                "type": "mcp",
+                "title": "analyze_csv",
+                "params": {
+                  "filename": "<start.filePath>",
+                  "serverId": "mcp-cf49c405",
+                  "toolName": "analyze_csv",
+                  "serverUrl": "http://host.docker.internal:8001/mcp",
+                  "serverName": "Mathematics Server"
+                },
+                "schema": {
+                  "type": "object",
+                  "required": ["filename"],
+                  "properties": {
+                    "filename": {
+                      "type": "string"
+                    }
+                  },
+                  "description": "Analyze uploaded CSV file.",
+                  "additionalProperties": false
+                },
+                "toolId": "mcp-cf49c405-analyze_csv",
+                "isExpanded": true,
+                "usageControl": "auto"
+              },
+              {
+                "type": "mcp",
+                "title": "load_csv",
+                "params": {
+                  "encoding": "<start.filePath>",
+                  "serverId": "mcp-cf5bdc86",
+                  "toolName": "load_csv",
+                  "serverUrl": "http://host.docker.internal:8002/mcp",
+                  "serverName": "Data Loading Server"
+                },
+                "schema": {
+                  "type": "object",
+                  "required": ["filepath"],
+                  "properties": {
+                    "encoding": {
+                      "type": "string",
+                      "default": "utf-8"
+                    },
+                    "filepath": {
+                      "type": "string"
+                    },
+                    "delimiter": {
+                      "type": "string",
+                      "default": ","
+                    }
+                  },
+                  "description": "Load a CSV file and return metadata.\n\nArgs:\n    filepath: Path to CSV file (absolute or relative to data directory)\n    encoding: File encoding (default: utf-8)\n    delimiter: Column delimiter (default: comma)\n\nReturns:\n    Dictionary with file metadata including rows, columns, dtypes, and sample data",
+                  "additionalProperties": false
+                },
+                "toolId": "mcp-cf5bdc86-load_csv",
+                "isExpanded": true,
+                "usageControl": "auto"
+              },
+              {
+                "type": "mcp",
+                "title": "get_column_info",
+                "params": {
+                  "filepath": "<start.filePath>",
+                  "serverId": "mcp-cf5bdc86",
+                  "toolName": "get_column_info",
+                  "serverUrl": "http://host.docker.internal:8002/mcp",
+                  "serverName": "Data Loading Server"
+                },
+                "schema": {
+                  "type": "object",
+                  "required": ["filepath", "column_name"],
+                  "properties": {
+                    "filepath": {
+                      "type": "string"
+                    },
+                    "column_name": {
+                      "type": "string"
+                    }
+                  },
+                  "description": "Get detailed information about a specific column.\n\nArgs:\n    filepath: Path to CSV file (absolute or relative to data directory)\n    column_name: Name of the column to analyze\n\nReturns:\n    Dictionary with column statistics and info",
+                  "additionalProperties": false
+                },
+                "toolId": "mcp-cf5bdc86-get_column_info",
+                "isExpanded": true,
+                "usageControl": "auto"
+              },
+              {
+                "type": "mcp",
+                "title": "read_file_head",
+                "params": {
+                  "filepath": "<start.filePath>",
+                  "serverId": "mcp-cf5bdc86",
+                  "toolName": "read_file_head",
+                  "serverUrl": "http://host.docker.internal:8002/mcp",
+                  "serverName": "Data Loading Server"
+                },
+                "schema": {
+                  "type": "object",
+                  "required": ["filepath"],
+                  "properties": {
+                    "n_rows": {
+                      "type": "integer",
+                      "default": 10
+                    },
+                    "filepath": {
+                      "type": "string"
+                    }
+                  },
+                  "description": "Read first N rows of a CSV file.\n\nArgs:\n    filepath: Path to CSV file (absolute or relative to data directory)\n    n_rows: Number of rows to read (default: 10)\n\nReturns:\n    Dictionary with first N rows",
+                  "additionalProperties": false
+                },
+                "toolId": "mcp-cf5bdc86-read_file_head",
+                "isExpanded": true,
+                "usageControl": "auto"
+              }
+            ]
+          },
+          "apiKey": {
+            "id": "apiKey",
+            "type": "short-input",
+            "value": "{{OPENROUTER_API_KEY}}"
+          },
+          "skills": {
+            "id": "skills",
+            "type": "skill-input",
+            "value": []
+          },
+          "messages": {
+            "id": "messages",
+            "type": "messages-input",
+            "value": [
+              {
+                "role": "user",
+                "content": "<start>"
+              }
+            ]
+          },
+          "maxTokens": {
+            "id": "maxTokens",
+            "type": "short-input",
+            "value": null
+          },
+          "verbosity": {
+            "id": "verbosity",
+            "type": "dropdown",
+            "value": ""
+          },
+          "memoryType": {
+            "id": "memoryType",
+            "type": "dropdown",
+            "value": "none"
+          },
+          "temperature": {
+            "id": "temperature",
+            "type": "slider",
+            "value": 0.3
+          },
+          "azureEndpoint": {
+            "id": "azureEndpoint",
+            "type": "short-input",
+            "value": null
+          },
+          "bedrockRegion": {
+            "id": "bedrockRegion",
+            "type": "short-input",
+            "value": null
+          },
+          "thinkingLevel": {
+            "id": "thinkingLevel",
+            "type": "dropdown",
+            "value": ""
+          },
+          "vertexProject": {
+            "id": "vertexProject",
+            "type": "short-input",
+            "value": null
+          },
+          "conversationId": {
+            "id": "conversationId",
+            "type": "short-input",
+            "value": null
+          },
+          "responseFormat": {
+            "id": "responseFormat",
+            "type": "code",
+            "value": null
+          },
+          "vertexLocation": {
+            "id": "vertexLocation",
+            "type": "short-input",
+            "value": null
+          },
+          "azureApiVersion": {
+            "id": "azureApiVersion",
+            "type": "short-input",
+            "value": null
+          },
+          "reasoningEffort": {
+            "id": "reasoningEffort",
+            "type": "dropdown",
+            "value": ""
+          },
+          "bedrockSecretKey": {
+            "id": "bedrockSecretKey",
+            "type": "short-input",
+            "value": null
+          },
+          "vertexCredential": {
+            "id": "vertexCredential",
+            "type": "oauth-input",
+            "value": null
+          },
+          "slidingWindowSize": {
+            "id": "slidingWindowSize",
+            "type": "short-input",
+            "value": null
+          },
+          "bedrockAccessKeyId": {
+            "id": "bedrockAccessKeyId",
+            "type": "short-input",
+            "value": null
+          },
+          "slidingWindowTokens": {
+            "id": "slidingWindowTokens",
+            "type": "short-input",
+            "value": null
+          }
+        },
+        "outputs": {
+          "cost": {
+            "type": "json",
+            "description": "Cost of the API call"
+          },
+          "model": {
+            "type": "string",
+            "description": "Model used for generation"
+          },
+          "tokens": {
+            "type": "json",
+            "description": "Token usage statistics"
+          },
+          "content": {
+            "type": "string",
+            "description": "Generated response content"
+          },
+          "toolCalls": {
+            "type": "json",
+            "description": "Tool calls made"
+          },
+          "providerTiming": {
+            "type": "json",
+            "description": "Provider timing information"
+          }
+        },
+        "data": {},
+        "locked": false
+      }
+    },
+    "edges": [
+      {
+        "id": "c5f02c66-61c4-4517-8692-6c69c6630c7c",
+        "source": "1b506d23-44e9-4f57-8e21-429460ded66d",
+        "target": "9f1bac02-2461-4b21-a212-01ce841b7e09",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "5a8c5245-8588-42af-bee0-10c116bd0efb",
+        "source": "9f1bac02-2461-4b21-a212-01ce841b7e09",
+        "target": "9c575c96-f4fd-468a-a3b8-e1ca2d65b26f",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "90d613f0-8fe2-46b2-a085-c04e198891a0",
+        "source": "9c575c96-f4fd-468a-a3b8-e1ca2d65b26f",
+        "target": "c950196c-d305-44ff-847f-e83530ac017d",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      }
+    ],
+    "loops": {},
+    "parallels": {},
+    "metadata": {
+      "name": "pipeline",
+      "description": "New workflow",
+      "color": "#22c55e",
+      "exportedAt": "2026-02-12T00:17:53.581Z"
+    },
+    "variables": {}
+  }
+}

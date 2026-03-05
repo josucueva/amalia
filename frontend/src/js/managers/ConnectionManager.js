@@ -15,6 +15,15 @@ class ConnectionManager {
   }
 
   /**
+   * Get color from CSS custom properties
+   */
+  getCSSColor(varName) {
+    return getComputedStyle(document.documentElement)
+      .getPropertyValue(varName)
+      .trim();
+  }
+
+  /**
    * Initialize the SVG overlay for drawing connections
    */
   initialize(canvasElement) {
@@ -66,17 +75,14 @@ class ConnectionManager {
   startConnection(sourceNode, portType, port) {
     const sourceInstanceId = sourceNode.dataset.instanceId;
 
-    // Get node position in original canvas coordinates
-    const nodeX = Number.parseFloat(
-      sourceNode.dataset.originalX || sourceNode.style.left || 0
-    );
-    const nodeY = Number.parseFloat(
-      sourceNode.dataset.originalY || sourceNode.style.top || 0
-    );
+    // With the viewport approach, node.style.left/top ARE the canvas-space coordinates.
+    // No originalX/Y dataset attributes needed.
+    const nodeX = Number.parseFloat(sourceNode.style.left) || 0;
+    const nodeY = Number.parseFloat(sourceNode.style.top) || 0;
     const nodeWidth = sourceNode.offsetWidth;
     const nodeHeight = sourceNode.offsetHeight;
 
-    // Calculate port center in canvas coordinates
+    // Port centre in canvas coordinates
     const startX = portType === "output" ? nodeX + nodeWidth : nodeX;
     const startY = nodeY + nodeHeight / 2;
 
@@ -111,7 +117,7 @@ class ConnectionManager {
       "✓ Connection started from",
       portType,
       "port of node",
-      sourceInstanceId
+      sourceInstanceId,
     );
   }
 
@@ -121,33 +127,34 @@ class ConnectionManager {
   updateTempLine(event) {
     if (!this.activeConnection) return;
 
-    // Get canvas element and its bounding rect
-    const canvasContent = this.svgOverlay.parentElement;
+    // SVG is inside #canvas-viewport. The viewport is inside #canvas-content.
+    // #canvas-content is the stable (non-transformed) clipping boundary — use its
+    // getBoundingClientRect() to get the screen origin of the canvas area.
+    // The viewport's style.transform carries the current pan/zoom state.
+    const canvasViewport = this.svgOverlay.parentElement;
+    const canvasContent = canvasViewport.parentElement;
     const canvasRect = canvasContent.getBoundingClientRect();
 
-    // Get current pan/zoom state from the SVG overlay transform
-    // The transform is set by main.js in format: translate(x, y) scale(s)
-    const transform = this.svgOverlay.style.transform || "";
+    // Parse translate and scale from #canvas-viewport's transform
+    const transform = canvasViewport.style.transform || "";
     let panX = 0,
       panY = 0,
       scale = 1;
 
-    // Parse translate values
     const translateMatch = transform.match(
-      /translate\(([^,]+)px,\s*([^)]+)px\)/
+      /translate\(([^,]+)px,\s*([^)]+)px\)/,
     );
     if (translateMatch) {
       panX = Number.parseFloat(translateMatch[1]) || 0;
       panY = Number.parseFloat(translateMatch[2]) || 0;
     }
 
-    // Parse scale value
     const scaleMatch = transform.match(/scale\(([^)]+)\)/);
     if (scaleMatch) {
       scale = Number.parseFloat(scaleMatch[1]) || 1;
     }
 
-    // Convert screen coordinates to canvas coordinates
+    // Convert screen coordinates to canvas (viewport) coordinates
     const screenX = event.clientX - canvasRect.left;
     const screenY = event.clientY - canvasRect.top;
     const currentX = (screenX - panX) / scale;
@@ -164,7 +171,7 @@ class ConnectionManager {
       this.activeConnection.startY,
       currentX,
       currentY,
-      true
+      true,
     );
 
     this.svgOverlay.appendChild(this.activeConnection.tempLine);
@@ -191,14 +198,14 @@ class ConnectionManager {
         this.activeConnection.sourceInstanceId,
         this.activeConnection.sourcePortType,
         targetInstanceId,
-        targetPortType
+        targetPortType,
       )
     ) {
       this.createConnection(
         this.activeConnection.sourceInstanceId,
         this.activeConnection.sourcePortType,
         targetInstanceId,
-        targetPortType
+        targetPortType,
       );
       this.cancelConnection();
     } else {
@@ -244,7 +251,7 @@ class ConnectionManager {
     sourceInstanceId,
     sourcePortType,
     targetInstanceId,
-    targetPortType
+    targetPortType,
   ) {
     // Can't connect to self
     if (sourceInstanceId === targetInstanceId) {
@@ -281,7 +288,7 @@ class ConnectionManager {
     sourceInstanceId,
     sourcePortType,
     targetInstanceId,
-    targetPortType
+    targetPortType,
   ) {
     // Normalize connection direction (output -> input)
     const fromInstanceId =
@@ -293,10 +300,10 @@ class ConnectionManager {
 
     // Get node elements
     const sourceNode = document.querySelector(
-      `[data-instance-id="${fromInstanceId}"]`
+      `[data-instance-id="${fromInstanceId}"]`,
     );
     const targetNode = document.querySelector(
-      `[data-instance-id="${toInstanceId}"]`
+      `[data-instance-id="${toInstanceId}"]`,
     );
 
     if (!sourceNode || !targetNode) {
@@ -322,7 +329,7 @@ class ConnectionManager {
     connection.element = this.drawConnection(
       sourceNode,
       targetNode,
-      connectionId
+      connectionId,
     );
     this.connections.set(connectionId, connection);
 
@@ -339,29 +346,16 @@ class ConnectionManager {
    * Draw a connection line between two nodes
    */
   drawConnection(sourceNode, targetNode, connectionId = null) {
-    // Get node positions in original canvas coordinates (not transformed)
-    const sourceX = Number.parseFloat(
-      sourceNode.dataset.originalX || sourceNode.style.left || 0
-    );
-    const sourceY = Number.parseFloat(
-      sourceNode.dataset.originalY || sourceNode.style.top || 0
-    );
-    const targetX = Number.parseFloat(
-      targetNode.dataset.originalX || targetNode.style.left || 0
-    );
-    const targetY = Number.parseFloat(
-      targetNode.dataset.originalY || targetNode.style.top || 0
-    );
-
-    // Get port offsets within the node (approximate - ports are at edges)
-    const nodeWidth = sourceNode.offsetWidth;
-    const nodeHeight = sourceNode.offsetHeight;
-
-    // Output port is on the right edge, input port is on the left edge
-    const startX = sourceX + nodeWidth; // Right edge
-    const startY = sourceY + nodeHeight / 2; // Middle height
-    const endX = targetX; // Left edge
-    const endY = targetY + nodeHeight / 2; // Middle height
+    // Both nodes and this SVG overlay live inside #canvas-viewport, so they share
+    // the same canvas coordinate system. Read positions directly from style.left/top
+    // and use offsetWidth/Height for dimensions — no screen-space math needed.
+    const startX =
+      (parseFloat(sourceNode.style.left) || 0) + sourceNode.offsetWidth;
+    const startY =
+      (parseFloat(sourceNode.style.top) || 0) + sourceNode.offsetHeight / 2;
+    const endX = parseFloat(targetNode.style.left) || 0;
+    const endY =
+      (parseFloat(targetNode.style.top) || 0) + targetNode.offsetHeight / 2;
 
     const path = this.createConnectionPath(
       startX,
@@ -369,7 +363,7 @@ class ConnectionManager {
       endX,
       endY,
       false,
-      connectionId
+      connectionId,
     );
     this.svgOverlay.appendChild(path);
 
@@ -385,19 +379,22 @@ class ConnectionManager {
     x2,
     y2,
     isTemporary = false,
-    connectionId = null
+    connectionId = null,
   ) {
     const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
     const d = this.calculateBezierPath(x1, y1, x2, y2);
 
+    const accentColor = this.getCSSColor("--accent-color");
+    const textSecondary = this.getCSSColor("--text-secondary");
+
     path.setAttribute("d", d);
     path.setAttribute("fill", "none");
-    path.setAttribute("stroke", isTemporary ? "#888888" : "#6366f1");
+    path.setAttribute("stroke", isTemporary ? textSecondary : accentColor);
     path.setAttribute("stroke-width", "2");
     path.setAttribute("stroke-dasharray", isTemporary ? "5,5" : "none");
     path.setAttribute(
       "opacity",
-      this.enabled ? (isTemporary ? "0.5" : "1") : "0.3"
+      this.enabled ? (isTemporary ? "0.5" : "1") : "0.3",
     );
     path.style.pointerEvents = isTemporary ? "none" : "stroke";
     path.style.cursor = isTemporary ? "default" : "pointer";
@@ -407,19 +404,22 @@ class ConnectionManager {
     // Create visible path on top
     const visiblePath = document.createElementNS(
       "http://www.w3.org/2000/svg",
-      "path"
+      "path",
     );
     visiblePath.setAttribute("d", d);
     visiblePath.setAttribute("fill", "none");
-    visiblePath.setAttribute("stroke", isTemporary ? "#888888" : "#6366f1");
+    visiblePath.setAttribute(
+      "stroke",
+      isTemporary ? textSecondary : accentColor,
+    );
     visiblePath.setAttribute("stroke-width", "2");
     visiblePath.setAttribute(
       "stroke-dasharray",
-      isTemporary ? "5,5" : this.enabled ? "none" : "5,5"
+      isTemporary ? "5,5" : this.enabled ? "none" : "5,5",
     );
     visiblePath.setAttribute(
       "opacity",
-      this.enabled ? (isTemporary ? "0.5" : "1") : "0.3"
+      this.enabled ? (isTemporary ? "0.5" : "1") : "0.3",
     );
     visiblePath.style.pointerEvents = "none";
 
@@ -441,7 +441,12 @@ class ConnectionManager {
       path.addEventListener("mouseenter", () => {
         const connection = this.connections.get(connectionId);
         const isEnabled = connection && connection.enabled !== false;
-        visiblePath.setAttribute("stroke", isEnabled ? "#818cf8" : "#9ca3af");
+        const accentHover = this.getCSSColor("--accent-hover");
+        const textTertiary = this.getCSSColor("--text-tertiary");
+        visiblePath.setAttribute(
+          "stroke",
+          isEnabled ? accentHover : textTertiary,
+        );
         visiblePath.setAttribute("stroke-width", "3");
       });
 
@@ -452,7 +457,12 @@ class ConnectionManager {
         }
         const connection = this.connections.get(connectionId);
         const isEnabled = connection && connection.enabled !== false;
-        visiblePath.setAttribute("stroke", isEnabled ? "#6366f1" : "#9ca3af");
+        const accentColor = this.getCSSColor("--accent-color");
+        const textTertiary = this.getCSSColor("--text-tertiary");
+        visiblePath.setAttribute(
+          "stroke",
+          isEnabled ? accentColor : textTertiary,
+        );
         visiblePath.setAttribute("stroke-width", "2");
       });
     }
@@ -472,18 +482,11 @@ class ConnectionManager {
   }
 
   /**
-   * Calculate a smooth bezier curve path
+   * Calculate a straight line path
    */
   calculateBezierPath(x1, y1, x2, y2) {
-    const dx = Math.abs(x2 - x1);
-    const controlPointOffset = Math.min(dx * 0.5, 100);
-
-    const cx1 = x1 + controlPointOffset;
-    const cy1 = y1;
-    const cx2 = x2 - controlPointOffset;
-    const cy2 = y2;
-
-    return `M ${x1} ${y1} C ${cx1} ${cy1}, ${cx2} ${cy2}, ${x2} ${y2}`;
+    // Use simple straight line for better rendering
+    return `M ${x1} ${y1} L ${x2} ${y2}`;
   }
 
   /**
@@ -567,13 +570,19 @@ class ConnectionManager {
 
     if (highlight) {
       // Use CSS variable highlight color
-      visiblePath.setAttribute("stroke", "#818cf8");
+      const accentHover = this.getCSSColor("--accent-hover");
+      visiblePath.setAttribute("stroke", accentHover);
       visiblePath.setAttribute("stroke-width", "3");
       visiblePath.setAttribute("opacity", "1");
     } else {
       // Restore normal state
       const isEnabled = connection.enabled !== false;
-      visiblePath.setAttribute("stroke", isEnabled ? "#6366f1" : "#9ca3af");
+      const accentColor = this.getCSSColor("--accent-color");
+      const textTertiary = this.getCSSColor("--text-tertiary");
+      visiblePath.setAttribute(
+        "stroke",
+        isEnabled ? accentColor : textTertiary,
+      );
       visiblePath.setAttribute("stroke-width", "2");
       this.updateConnectionVisualState(connection);
     }
@@ -585,15 +594,16 @@ class ConnectionManager {
   updateConnectionPositions(instanceId) {
     const connectionsToUpdate = Array.from(this.connections.values()).filter(
       (conn) =>
-        conn.from.instanceId === instanceId || conn.to.instanceId === instanceId
+        conn.from.instanceId === instanceId ||
+        conn.to.instanceId === instanceId,
     );
 
     connectionsToUpdate.forEach((connection) => {
       const sourceNode = document.querySelector(
-        `[data-instance-id="${connection.from.instanceId}"]`
+        `[data-instance-id="${connection.from.instanceId}"]`,
       );
       const targetNode = document.querySelector(
-        `[data-instance-id="${connection.to.instanceId}"]`
+        `[data-instance-id="${connection.to.instanceId}"]`,
       );
 
       if (sourceNode && targetNode && connection.element) {
@@ -603,7 +613,7 @@ class ConnectionManager {
         connection.element = this.drawConnection(
           sourceNode,
           targetNode,
-          connection.id
+          connection.id,
         );
       }
     });
@@ -629,7 +639,8 @@ class ConnectionManager {
   removeNodeConnections(instanceId) {
     const connectionsToRemove = Array.from(this.connections.entries()).filter(
       ([_, conn]) =>
-        conn.from.instanceId === instanceId || conn.to.instanceId === instanceId
+        conn.from.instanceId === instanceId ||
+        conn.to.instanceId === instanceId,
     );
 
     connectionsToRemove.forEach(([connectionId, _]) => {
@@ -637,7 +648,7 @@ class ConnectionManager {
     });
 
     console.log(
-      `✓ Removed ${connectionsToRemove.length} connections for node ${instanceId}`
+      `✓ Removed ${connectionsToRemove.length} connections for node ${instanceId}`,
     );
   }
 
@@ -666,7 +677,8 @@ class ConnectionManager {
   getNodeConnections(instanceId) {
     return Array.from(this.connections.values()).filter(
       (conn) =>
-        conn.from.instanceId === instanceId || conn.to.instanceId === instanceId
+        conn.from.instanceId === instanceId ||
+        conn.to.instanceId === instanceId,
     );
   }
 
@@ -734,14 +746,16 @@ class ConnectionManager {
     visiblePath.setAttribute("opacity", isVisuallyEnabled ? "1" : "0.3");
     visiblePath.setAttribute(
       "stroke-dasharray",
-      isVisuallyEnabled ? "none" : "5,5"
+      isVisuallyEnabled ? "none" : "5,5",
     );
 
     // Change color if individually disabled (even if globally enabled)
+    const textTertiary = this.getCSSColor("--text-tertiary");
+    const accentColor = this.getCSSColor("--accent-color");
     if (this.enabled && !connection.enabled) {
-      visiblePath.setAttribute("stroke", "#9ca3af"); // Gray for disabled
+      visiblePath.setAttribute("stroke", textTertiary); // Gray for disabled
     } else {
-      visiblePath.setAttribute("stroke", "#6366f1"); // Accent color for normal
+      visiblePath.setAttribute("stroke", accentColor); // Accent color for normal
     }
   }
 
@@ -797,7 +811,7 @@ class ConnectionManager {
       const newNode = createNodeCallback(
         nodeData,
         nodeData.position.x,
-        nodeData.position.y
+        nodeData.position.y,
       );
       const newInstanceId = newNode.dataset.instanceId;
       instanceMap.set(oldInstanceId, newInstanceId);
@@ -812,10 +826,10 @@ class ConnectionManager {
 
           if (newFromId && newToId) {
             const fromNode = document.querySelector(
-              `[data-instance-id="${newFromId}"]`
+              `[data-instance-id="${newFromId}"]`,
             );
             const toNode = document.querySelector(
-              `[data-instance-id="${newToId}"]`
+              `[data-instance-id="${newToId}"]`,
             );
 
             if (fromNode && toNode) {
@@ -823,7 +837,7 @@ class ConnectionManager {
                 newFromId,
                 "output",
                 newToId,
-                "input"
+                "input",
               );
               // Restore individual enabled state
               if (connection && connData.enabled !== undefined) {
@@ -839,6 +853,560 @@ class ConnectionManager {
 
     console.log(`✓ Canvas state imported: ${state.nodes.length} nodes`);
     return true;
+  }
+
+  /**
+   * Export canvas state to Sim AI workflow format
+   */
+  async exportToSimAI(mcpServers = []) {
+    const nodes = [];
+    const nodeElements = document.querySelectorAll(".agent-node");
+
+    // Parse all nodes
+    nodeElements.forEach((nodeEl) => {
+      try {
+        const instanceData = JSON.parse(nodeEl.dataset.agentData);
+        const position = {
+          x: parseFloat(nodeEl.style.left) || 0,
+          y: parseFloat(nodeEl.style.top) || 0,
+        };
+        nodes.push({
+          ...instanceData,
+          position,
+        });
+      } catch (error) {
+        console.error("Error parsing node data:", error);
+      }
+    });
+
+    const connections = this.getConnectionsData();
+
+    // Perform topological sort to determine execution order
+    const sortedNodes = this.topologicalSort(nodes, connections);
+
+    // Generate Sim AI format
+    const simWorkflow = {
+      version: "1.0",
+      exportedAt: new Date().toISOString(),
+      state: {
+        blocks: {},
+        edges: [],
+        loops: {},
+        parallels: {},
+        metadata: {
+          name: "amalia_workflow",
+          description: "Workflow exported from AMALIA",
+          color: "#22c55e",
+          exportedAt: new Date().toISOString(),
+        },
+        variables: {},
+      },
+    };
+
+    // Create start_trigger block
+    const startTriggerId = this.generateUUID();
+    const filePathInputId = this.generateUUID();
+    const inputTextId = this.generateUUID();
+
+    simWorkflow.state.blocks[startTriggerId] = {
+      id: startTriggerId,
+      type: "start_trigger",
+      name: "Start",
+      position: {
+        x: sortedNodes.length > 0 ? sortedNodes[0].position.x - 200 : -140,
+        y: sortedNodes.length > 0 ? sortedNodes[0].position.y : -370,
+      },
+      enabled: true,
+      horizontalHandles: true,
+      advancedMode: false,
+      triggerMode: false,
+      height: 0,
+      subBlocks: {
+        inputFormat: {
+          id: "inputFormat",
+          type: "input-format",
+          value: [
+            {
+              id: filePathInputId,
+              name: "filePath",
+              type: "string",
+              value: "",
+              collapsed: false,
+            },
+            {
+              id: inputTextId,
+              name: "input",
+              type: "string",
+              value: "",
+              collapsed: false,
+              description: "User input or instructions",
+            },
+          ],
+        },
+      },
+      outputs: {
+        files: {
+          type: "file[]",
+          description: "User uploaded files",
+        },
+        input: {
+          type: "string",
+          description: "Primary user input or message",
+        },
+        filePath: {
+          type: "string",
+          description: "File path for processing",
+        },
+        conversationId: {
+          type: "string",
+          description: "Conversation ID",
+        },
+      },
+      data: {},
+      locked: false,
+    };
+
+    // Convert each agent node to Sim AI agent block
+    sortedNodes.forEach((node, index) => {
+      const blockId = this.generateUUID();
+      const agentBlock = this.convertToSimAgentBlock(blockId, node, mcpServers);
+      simWorkflow.state.blocks[blockId] = agentBlock;
+
+      // If this is the first node, connect it to start_trigger
+      if (index === 0) {
+        const edgeId = this.generateUUID();
+        simWorkflow.state.edges.push({
+          id: edgeId,
+          source: startTriggerId,
+          target: blockId,
+          sourceHandle: "source",
+          targetHandle: "target",
+          type: "default",
+          data: {},
+        });
+      }
+
+      // Store block ID for connection mapping
+      node._simBlockId = blockId;
+    });
+
+    // Create edges based on connections
+    connections.forEach((conn) => {
+      const sourceNode = nodes.find(
+        (n) => n.instanceId === conn.from.instanceId,
+      );
+      const targetNode = nodes.find((n) => n.instanceId === conn.to.instanceId);
+
+      if (
+        sourceNode &&
+        targetNode &&
+        sourceNode._simBlockId &&
+        targetNode._simBlockId
+      ) {
+        const edgeId = this.generateUUID();
+        simWorkflow.state.edges.push({
+          id: edgeId,
+          source: sourceNode._simBlockId,
+          target: targetNode._simBlockId,
+          sourceHandle: "source",
+          targetHandle: "target",
+          type: "default",
+          data: {},
+        });
+      }
+    });
+
+    return simWorkflow;
+  }
+
+  /**
+   * Convert Amalia agent to Sim AI agent block
+   */
+  convertToSimAgentBlock(blockId, node, mcpServers) {
+    // Get MCP tools for this agent
+    const agentMcpTools = this.getAgentMcpTools(node, mcpServers);
+
+    // Build system prompt
+    let systemPrompt =
+      node.system_prompt ||
+      node.description ||
+      "You are a helpful AI assistant.";
+
+    // Enhance system prompt with MCP tool descriptions if available
+    if (agentMcpTools.length > 0) {
+      systemPrompt += "\n\nAvailable MCP Tools:\n";
+      agentMcpTools.forEach((tool) => {
+        systemPrompt += `- ${tool.title}: ${tool.schema?.description || "No description"}\n`;
+      });
+    }
+
+    // Create messages array with system prompt
+    const messages = [
+      {
+        id: this.generateUUID(),
+        role: "system",
+        content: systemPrompt,
+        collapsed: false,
+      },
+    ];
+
+    return {
+      id: blockId,
+      type: "agent",
+      name: node.name || "Agent",
+      position: {
+        x: node.position.x,
+        y: node.position.y,
+      },
+      enabled: true,
+      horizontalHandles: true,
+      advancedMode: false,
+      triggerMode: false,
+      height: 0,
+      subBlocks: {
+        model: {
+          id: "model",
+          type: "model-selector",
+          value: this.convertModelName(node.model),
+        },
+        tools: {
+          id: "tools",
+          type: "tool-input",
+          value: agentMcpTools,
+        },
+        apiKey: {
+          id: "apiKey",
+          type: "short-input",
+          value: "{{OPENROUTER_API_KEY}}",
+        },
+        skills: {
+          id: "skills",
+          type: "skills-selector",
+          value: [],
+        },
+        messages: {
+          id: "messages",
+          type: "messages",
+          value: messages,
+        },
+        maxTokens: {
+          id: "maxTokens",
+          type: "short-input",
+          value: node.max_tokens || 2000,
+        },
+        verbosity: {
+          id: "verbosity",
+          type: "verbosity-selector",
+          value: "",
+        },
+        memoryType: {
+          id: "memoryType",
+          type: "memory-selector",
+          value: "none",
+        },
+        temperature: {
+          id: "temperature",
+          type: "short-input",
+          value: node.temperature || 0.7,
+        },
+        azureEndpoint: {
+          id: "azureEndpoint",
+          type: "short-input",
+          value: null,
+        },
+        bedrockRegion: {
+          id: "bedrockRegion",
+          type: "short-input",
+          value: null,
+        },
+        thinkingLevel: {
+          id: "thinkingLevel",
+          type: "thinking-level-selector",
+          value: "",
+        },
+        vertexProject: {
+          id: "vertexProject",
+          type: "short-input",
+          value: null,
+        },
+        conversationId: {
+          id: "conversationId",
+          type: "short-input",
+          value: null,
+        },
+        responseFormat: {
+          id: "responseFormat",
+          type: "response-format",
+          value: null,
+        },
+        vertexLocation: {
+          id: "vertexLocation",
+          type: "short-input",
+          value: null,
+        },
+        azureApiVersion: {
+          id: "azureApiVersion",
+          type: "short-input",
+          value: null,
+        },
+        reasoningEffort: {
+          id: "reasoningEffort",
+          type: "reasoning-effort-selector",
+          value: "",
+        },
+        bedrockSecretKey: {
+          id: "bedrockSecretKey",
+          type: "short-input",
+          value: null,
+        },
+        vertexCredential: {
+          id: "vertexCredential",
+          type: "short-input",
+          value: null,
+        },
+        slidingWindowSize: {
+          id: "slidingWindowSize",
+          type: "short-input",
+          value: null,
+        },
+        bedrockAccessKeyId: {
+          id: "bedrockAccessKeyId",
+          type: "short-input",
+          value: null,
+        },
+        slidingWindowTokens: {
+          id: "slidingWindowTokens",
+          type: "short-input",
+          value: null,
+        },
+      },
+      outputs: {
+        cost: {
+          type: "json",
+          description: "Cost of the API call",
+        },
+        model: {
+          type: "string",
+          description: "Model used for generation",
+        },
+        tokens: {
+          type: "json",
+          description: "Token usage statistics",
+        },
+        content: {
+          type: "string",
+          description: "Generated response content",
+        },
+        toolCalls: {
+          type: "json",
+          description: "Tool calls made",
+        },
+        providerTiming: {
+          type: "json",
+          description: "Provider timing information",
+        },
+      },
+      data: {},
+      locked: false,
+    };
+  }
+
+  /**
+   * Get MCP tools for an agent in Sim AI format
+   */
+  getAgentMcpTools(node, mcpServers) {
+    const tools = [];
+
+    // If agent has mcp_server_ids, get those servers and format tools
+    if (node.mcp_server_ids && Array.isArray(node.mcp_server_ids)) {
+      node.mcp_server_ids.forEach((serverId) => {
+        const server = mcpServers.find((s) => s.id === serverId);
+        if (server) {
+          // If server has tools data, use it; otherwise create placeholder
+          if (server.tools && Array.isArray(server.tools)) {
+            server.tools.forEach((tool) => {
+              tools.push(this.formatMcpTool(tool, server));
+            });
+          } else {
+            // Create placeholder tool for server
+            tools.push(this.createPlaceholderMcpTool(server));
+          }
+        }
+      });
+    }
+
+    // Also check if agent has a tools array (for legacy compatibility)
+    if (node.tools && Array.isArray(node.tools)) {
+      node.tools.forEach((toolName) => {
+        if (!tools.some((t) => t.title === toolName)) {
+          tools.push({
+            type: "mcp",
+            title: toolName,
+            params: {},
+            schema: {
+              type: "object",
+              properties: {},
+              description: `Tool: ${toolName}`,
+            },
+            toolId: `custom-${toolName}`,
+            isExpanded: false,
+            usageControl: "auto",
+          });
+        }
+      });
+    }
+
+    return tools;
+  }
+
+  /**
+   * Format MCP tool in Sim AI structure
+   */
+  formatMcpTool(tool, server) {
+    return {
+      type: "mcp",
+      title: tool.name || "unnamed_tool",
+      params: {
+        serverId: server.id,
+        toolName: tool.name,
+        serverUrl: server.url || `http://localhost:${server.port || 8000}/mcp`,
+        serverName: server.name,
+        ...tool.defaultParams,
+      },
+      schema: tool.inputSchema || {
+        type: "object",
+        properties: {},
+        description: tool.description || "No description available",
+      },
+      toolId: `${server.id}-${tool.name}`,
+      isExpanded: false,
+      usageControl: "auto",
+    };
+  }
+
+  /**
+   * Create placeholder MCP tool when tool details aren't available
+   */
+  createPlaceholderMcpTool(server) {
+    return {
+      type: "mcp",
+      title: server.name,
+      params: {
+        serverId: server.id,
+        toolName: "placeholder",
+        serverUrl: server.url || `http://localhost:8000/mcp`,
+        serverName: server.name,
+      },
+      schema: {
+        type: "object",
+        properties: {},
+        description: server.description || `MCP Server: ${server.name}`,
+        additionalProperties: false,
+      },
+      toolId: `${server.id}-placeholder`,
+      isExpanded: false,
+      usageControl: "auto",
+    };
+  }
+
+  /**
+   * Convert Amalia model name to Sim AI format
+   */
+  convertModelName(modelName) {
+    if (!modelName) return "openrouter/openrouter/auto";
+
+    // If already in openrouter format, return as is
+    if (modelName.startsWith("openrouter/")) {
+      return modelName;
+    }
+
+    // Convert common model names
+    const modelMap = {
+      "gpt-4o": "openai/gpt-4o",
+      "gpt-4": "openai/gpt-4",
+      "gpt-3.5-turbo": "openai/gpt-3.5-turbo",
+      "claude-3-opus": "anthropic/claude-3-opus",
+      "claude-3-sonnet": "anthropic/claude-3-sonnet",
+      "claude-3-haiku": "anthropic/claude-3-haiku",
+      "gemini-pro": "google/gemini-pro",
+      "gemini-2.5-flash": "google/gemini-2.5-flash",
+    };
+
+    return modelMap[modelName] || `openrouter/${modelName}`;
+  }
+
+  /**
+   * Topological sort for determining execution order
+   */
+  topologicalSort(nodes, connections) {
+    const graph = new Map();
+    const inDegree = new Map();
+    const nodeMap = new Map();
+
+    // Build graph
+    nodes.forEach((node) => {
+      const id = node.instanceId;
+      nodeMap.set(id, node);
+      graph.set(id, []);
+      inDegree.set(id, 0);
+    });
+
+    connections.forEach((conn) => {
+      const from = conn.from.instanceId;
+      const to = conn.to.instanceId;
+      if (graph.has(from) && graph.has(to)) {
+        graph.get(from).push(to);
+        inDegree.set(to, inDegree.get(to) + 1);
+      }
+    });
+
+    // Find nodes with no incoming edges
+    const queue = [];
+    inDegree.forEach((degree, nodeId) => {
+      if (degree === 0) {
+        queue.push(nodeId);
+      }
+    });
+
+    // If no starting nodes, sort by position (left to right)
+    if (queue.length === 0 && nodes.length > 0) {
+      return [...nodes].sort((a, b) => a.position.x - b.position.x);
+    }
+
+    // Perform topological sort
+    const sorted = [];
+    while (queue.length > 0) {
+      const nodeId = queue.shift();
+      sorted.push(nodeMap.get(nodeId));
+
+      const neighbors = graph.get(nodeId) || [];
+      neighbors.forEach((neighbor) => {
+        inDegree.set(neighbor, inDegree.get(neighbor) - 1);
+        if (inDegree.get(neighbor) === 0) {
+          queue.push(neighbor);
+        }
+      });
+    }
+
+    // If sorted length doesn't match, there might be cycles
+    // Fall back to position-based sorting
+    if (sorted.length !== nodes.length) {
+      console.warn("Cycle detected in workflow, falling back to position sort");
+      return [...nodes].sort((a, b) => a.position.x - b.position.x);
+    }
+
+    return sorted;
+  }
+
+  /**
+   * Generate UUID for Sim AI blocks
+   */
+  generateUUID() {
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+      const r = (Math.random() * 16) | 0;
+      const v = c === "x" ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
   }
 
   /**
@@ -864,7 +1432,7 @@ class ConnectionManager {
       node1.dataset.instanceId,
       "output",
       node2.dataset.instanceId,
-      "input"
+      "input",
     );
 
     if (result) {

@@ -26,17 +26,6 @@ class MCPServerConfig(BaseModel):
     )
 
 
-class CommunicationConfig(BaseModel):
-    """Agent communication configuration."""
-
-    can_receive_from: List[str] = Field(
-        default_factory=lambda: ["*"], description="List of agent IDs or '*' for all"
-    )
-    can_send_to: List[str] = Field(
-        default_factory=list, description="List of agent IDs this agent can send to"
-    )
-
-
 class AgentConfig(BaseModel):
     """Agent configuration model."""
 
@@ -55,11 +44,6 @@ class AgentConfig(BaseModel):
     icon: Optional[str] = Field(
         default=None, description="Icon emoji for visual representation"
     )
-    a2a_enabled: bool = Field(default=False, description="Enable A2A communication")
-    a2a_mode: str = Field(
-        default="messaging",
-        description="A2A mode: 'messaging' (send only) or 'autonomous' (listen and auto-execute)"
-    )
     tools: List[str] = Field(
         default_factory=list, description="List of tool names this agent can use"
     )
@@ -69,7 +53,6 @@ class AgentConfig(BaseModel):
     mcp_server_ids: List[str] = Field(
         default_factory=list, description="IDs of MCP servers this agent uses"
     )
-    communication: CommunicationConfig = Field(default_factory=CommunicationConfig)
     temperature: float = Field(
         default=0.7, ge=0.0, le=2.0, description="LLM temperature"
     )
@@ -89,12 +72,7 @@ class AgentConfig(BaseModel):
                 "system_prompt": "You are a data preprocessing expert...",
                 "provider": "internal",
                 "remote_endpoint": None,
-                "a2a_enabled": True,
                 "tools": ["csv_reader", "data_transformer"],
-                "communication": {
-                    "can_receive_from": ["*"],
-                    "can_send_to": ["model_trainer"],
-                },
             }
         }
 
@@ -123,7 +101,6 @@ class Agent(BaseModel):
                     "description": "Handles data cleaning",
                     "model": "gpt-4o",
                     "system_prompt": "You are a data expert",
-                    "a2a_enabled": True,
                     "tools": ["csv_reader"],
                 },
                 "status": "active",

@@ -7,7 +7,6 @@ from app.models.agent import (
     AgentStatus,
     AgentCreateRequest,
     AgentListResponse,
-    CommunicationConfig,
     MCPServerConfig
 )
 from app.models.message import (
@@ -16,7 +15,6 @@ from app.models.message import (
     MessageStatus,
     ChatRequest,
     ChatResponse,
-    A2AMessage
 )
 from app.models.mcp_server import (
     MCPServer,
@@ -41,14 +39,12 @@ __all__ = [
     "AgentStatus",
     "AgentCreateRequest",
     "AgentListResponse",
-    "CommunicationConfig",
     "MCPServerConfig",
     "Message",
     "MessageRole",
     "MessageStatus",
     "ChatRequest",
     "ChatResponse",
-    "A2AMessage",
     "MCPServer",
     "MCPServerCreateRequest",
     "MCPServerListResponse",

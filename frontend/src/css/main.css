@@ -373,30 +373,107 @@ body {
   padding: var(--spacing-md);
   border-top: var(--border-width) solid var(--border-color);
   display: flex;
-  gap: var(--spacing-xs);
+  flex-direction: column;
+  gap: var(--spacing-sm);
   background-color: var(--bg-primary);
 }
 
-.canvas-control-btn {
+.canvas-controls-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-xs);
+}
+
+.controls-label {
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-tertiary);
+  letter-spacing: 0.1em;
+}
+
+.canvas-control-group {
+  display: flex;
+  gap: var(--spacing-xs);
+  align-items: stretch;
+}
+
+.canvas-control-select {
   flex: 1;
-  background: transparent;
-  border: none;
+  background: var(--bg-secondary);
+  border: var(--border-width) solid var(--border-color);
   color: var(--text-secondary);
-  padding: 0;
+  padding: var(--spacing-sm) var(--spacing-md);
   cursor: pointer;
   transition: all 0.2s ease;
   font-family: var(--font-family-display);
   font-size: var(--font-size-xs);
   letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-radius: 2px;
+}
+
+.canvas-control-select:hover {
+  color: var(--text-primary);
+  border-color: var(--text-secondary);
+  background: var(--overlay-light);
+}
+
+.canvas-control-select:focus {
+  outline: none;
+  border-color: var(--text-primary);
+  background: var(--overlay-light);
+}
+
+.canvas-control-btn {
+  flex: 1;
+  background: var(--bg-secondary);
+  border: var(--border-width) solid var(--border-color);
+  color: var(--text-secondary);
+  padding: var(--spacing-sm) var(--spacing-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-xs);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: var(--font-weight-medium);
+  border-radius: 2px;
 }
 
 .canvas-control-btn:hover {
   color: var(--text-primary);
   background: var(--overlay-light);
+  border-color: var(--text-secondary);
 }
 
 .canvas-control-btn:active {
   background: var(--overlay-strong);
+  transform: translateY(1px);
+}
+
+.canvas-control-btn-primary {
+  background: var(--primary-color);
+  color: var(--bg-primary);
+  border-color: var(--primary-color);
+}
+
+.canvas-control-btn-primary:hover {
+  background: var(--primary-dark);
+  color: var(--bg-primary);
+  border-color: var(--primary-dark);
+}
+
+.canvas-control-btn-danger {
+  border-color: rgba(239, 68, 68, 0.3);
+  color: rgba(239, 68, 68, 0.8);
+}
+
+.canvas-control-btn-danger:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.6);
+  color: rgb(239, 68, 68);
 }
 
 .btn-sm {
@@ -512,6 +589,21 @@ body {
   cursor: grabbing;
 }
 
+/*
+ * Canvas Viewport — single-transform container (React Flow / Figma / Excalidraw pattern).
+ * ONLY this div receives CSS transforms for pan and zoom.
+ * Every node and the SVG overlay live inside here, so they move for free.
+ */
+.canvas-viewport {
+  position: absolute;
+  top: 0;
+  left: 0;
+  /* No width/height needed — children use absolute positioning */
+  transform-origin: 0 0;
+  /* Avoid any browser repaints on transform changes */
+  will-change: transform;
+}
+
 .canvas-welcome {
   position: absolute;
   top: 50%;
@@ -573,27 +665,33 @@ body {
   min-width: 80px;
   max-width: 120px;
   padding: var(--spacing-md);
-  background: var(--bg-primary);
+  background: var(--bg-secondary);
   border: var(--border-width) solid var(--border-color);
   user-select: none;
   z-index: 2;
-  /* Smooth transition only for properties that don't interfere with dragging */
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
+  /* Do NOT include transform in transitions — the viewport handles pan/zoom via transform.
+     Animating transform on individual nodes would fight the viewport's coordinate space. */
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   cursor: move;
+  box-shadow: var(--shadow-small);
 }
 
 .agent-node:hover {
-  border-color: var(--text-primary);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transform: translateY(-1px);
+  border-color: var(--accent-color);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18);
+  background: var(--bg-hover);
 }
 
 .agent-node:active {
-  transform: scale(0.98);
+  box-shadow: var(--shadow-small);
+  background: var(--bg-tertiary);
 }
 
 .agent-node-header {
@@ -744,46 +842,136 @@ body {
   position: absolute;
   top: 4px;
   right: 4px;
-  background: var(--bg-dark);
-  color: var(--text-primary);
-  font-size: 10px;
+  background: var(--accent-color) !important;
+  color: #ffffff !important;
+  font-size: 11px;
   font-weight: var(--font-weight-bold);
-  padding: 2px 6px;
+  padding: 3px 7px;
   border-radius: 10px;
-  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-small);
+  line-height: 1;
+  z-index: 10;
 }
 
-/* File Indicator Badge - Brutalist Corner Notch */
+/* Start Node Styling */
+.start-node {
+  /* Force the same fixed width as regular agent nodes */
+  width: 120px;
+  min-width: 120px;
+  max-width: 120px;
+}
+
+.start-node .agent-node-icon {
+  /* Inherits 40x40 from .agent-node-icon — same size as regular nodes */
+  color: var(--accent-color);
+}
+
+/* Tools Display in Data Viewer Modal */
+.tools-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: var(--spacing-xs);
+}
+
+.tool-item {
+  padding: 10px 12px;
+  background: var(--bg-hover);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  border-left: 3px solid var(--accent-color);
+  transition: all var(--transition-base);
+}
+
+.tool-item:hover {
+  background: var(--overlay-light);
+  border-left-color: var(--accent-hover);
+  transform: translateX(2px);
+  box-shadow: var(--shadow-small);
+}
+
+.tool-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.tool-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--accent-color);
+  flex-shrink: 0;
+}
+
+.tool-title {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+}
+
+.tool-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-left: 24px;
+  font-size: var(--font-size-xs);
+}
+
+.tool-server {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.tool-id {
+  color: var(--text-tertiary);
+  font-family: var(--font-family);
+  font-size: var(--font-size-xs);
+  opacity: 0.8;
+}
+
+/* File Indicator Badge - icon-only corner notch */
 .node-file-indicator {
   position: absolute;
   top: 0;
   left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: var(--accent-color);
   color: var(--text-white);
-  padding: 2px 4px;
-  font-family: var(--font-family);
-  font-size: var(--font-size-xxs);
-  font-weight: var(--font-weight-bold);
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+  padding: 3px;
   z-index: 10;
   border-right: 1px solid var(--border-color);
   border-bottom: 1px solid var(--border-color);
   line-height: 1;
 }
 
+.node-file-indicator svg {
+  width: 10px;
+  height: 10px;
+  stroke: var(--text-white);
+}
+
 .agent-node-model {
-  font-size: 9px;
-  color: var(--text-secondary);
+  font-size: 10px;
+  color: var(--text-primary);
+  opacity: 0.7;
   margin-top: 4px;
   text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   max-width: 100%;
+  font-weight: 500;
 }
 
-/* Connection Overlay */
+/* Connection Overlay — lives inside canvas-viewport, shares the same coordinate space as nodes.
+   overflow: visible lets SVG paths extend outside the element boundaries when panned/zoomed.
+   pointer-events are enabled on the group container (clickable connections) but the SVG itself
+   doesn't block canvas panning — panning targets canvas-viewport or canvas-content. */
 .connection-overlay {
   position: absolute;
   top: 0;
@@ -791,7 +979,15 @@ body {
   width: 100%;
   height: 100%;
   pointer-events: none;
+  overflow: visible;
   z-index: 1;
+}
+
+.connection-overlay path {
+  transition:
+    stroke 0.2s ease,
+    stroke-width 0.2s ease,
+    opacity 0.2s ease;
 }
 
 .canvas-agent-item.dragging {
@@ -819,14 +1015,16 @@ body {
 
 /* Agent Node Action Menu */
 .agent-node-menu {
-  position: absolute;
+  position: fixed; /* screen-space positioning, not affected by canvas transform */
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xs);
   background: var(--bg-secondary);
   border: var(--border-width) solid var(--border-color);
   padding: var(--spacing-xs);
-  z-index: 10;
+  /* Must be above canvas-overlay (--z-canvas: 50) and header (--z-header: 100),
+     but below modals (--z-modal: 1000) */
+  z-index: 500;
   animation: menuFadeIn 0.15s ease;
   min-width: 120px;
 }
@@ -952,6 +1150,18 @@ body {
 @keyframes spin {
   to {
     transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+/* Workflow generation animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 

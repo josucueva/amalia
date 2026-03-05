@@ -104,14 +104,6 @@ class App {
       });
     }
 
-    // Setup run button
-    const runBtn = document.getElementById("run-btn");
-    if (runBtn) {
-      runBtn.addEventListener("click", () => {
-        this.runPipeline();
-      });
-    }
-
     // Setup agents button (opens agent modal)
     const agentsBtn = document.getElementById("agents-btn");
     if (agentsBtn) {
@@ -158,14 +150,14 @@ class App {
         }
         console.log(
           "[DEBUG] File removed, state.currentFile:",
-          state.getState().currentFile
+          state.getState().currentFile,
         );
       });
     }
 
     // Setup configure interaction agent button
     const configureInteractionAgentBtn = document.getElementById(
-      "configure-interaction-agent-btn"
+      "configure-interaction-agent-btn",
     );
     if (configureInteractionAgentBtn) {
       configureInteractionAgentBtn.addEventListener("click", async () => {
@@ -175,9 +167,15 @@ class App {
 
     // Setup canvas control buttons
     const saveCanvasBtn = document.getElementById("save-canvas-btn");
+    const exportFormatSelect = document.getElementById("export-format-select");
     if (saveCanvasBtn) {
       saveCanvasBtn.addEventListener("click", () => {
-        this.saveCanvasState();
+        const format = exportFormatSelect?.value || "amalia";
+        if (format === "sim-ai") {
+          this.exportToSimAI();
+        } else {
+          this.saveCanvasState();
+        }
       });
     }
 
@@ -193,10 +191,15 @@ class App {
       clearCanvasBtn.addEventListener("click", () => {
         if (
           confirm(
-            "Are you sure you want to clear the canvas? This cannot be undone."
+            "Are you sure you want to clear the canvas? This cannot be undone.",
           )
         ) {
           this.clearCanvas();
+          // Also remove session-specific persisted canvas so it doesn't re-appear on refresh
+          const sessionId = globalThis.state?.getState().currentSession?.id;
+          if (sessionId) {
+            localStorage.removeItem(`amalia_canvas_${sessionId}`);
+          }
         }
       });
     }
@@ -250,6 +253,21 @@ class App {
         // Update state with full session
         state.setState({ currentSession: fullSession });
 
+        // Queue canvas pipeline for restore from localStorage.
+        // When a pipeline is created, Chat.js saves it to localStorage with key
+        // `amalia_canvas_${sessionId}`. sessionStorage is cleared on tab close, so we
+        // re-populate it here so loadPendingPipeline() can pick it up when canvas opens.
+        const savedCanvasData = localStorage.getItem(
+          `amalia_canvas_${fullSession.id}`,
+        );
+        if (savedCanvasData) {
+          sessionStorage.setItem("pendingPipeline", savedCanvasData);
+          console.log(
+            "✓ Canvas pipeline queued for restore, session:",
+            fullSession.id,
+          );
+        }
+
         // Restore messages to chat
         if (fullSession.messages && fullSession.messages.length > 0) {
           fullSession.messages.forEach((msg) => {
@@ -268,7 +286,7 @@ class App {
           "✓ Restored session:",
           fullSession.id,
           "-",
-          fullSession.title
+          fullSession.title,
         );
       } else {
         // No sessions available
@@ -313,7 +331,7 @@ class App {
       const currentState = state.getState();
       console.log(
         "[DEBUG] Verified state.currentFile:",
-        currentState.currentFile
+        currentState.currentFile,
       );
 
       // Show file preview in chat
@@ -331,10 +349,10 @@ class App {
 
   async openInteractionAgentConfig() {
     try {
-      // Fetch agents including hidden ones since interaction_agent is hidden
+      // Fetch all agents (interaction agent is now visible)
       const agents = await api.getAgents(true);
       const interactionAgent = agents.find(
-        (agent) => agent.config.name === "interaction_agent"
+        (agent) => agent.id === "interaction_agent",
       );
 
       if (interactionAgent) {
@@ -382,65 +400,19 @@ class App {
         this.updateThemeIcon();
         showToast(
           `Switched to ${themeManager.isDark() ? "dark" : "light"} mode`,
-          "info"
+          "info",
         );
       }
     });
   }
 
   async runPipeline() {
-    if (this.isExecuting) {
-      console.warn("Pipeline already executing");
-      return;
-    }
-
-    // Get all nodes and connections
-    const nodes = Array.from(document.querySelectorAll(".agent-node"));
-    const allConnections = this.connectionManager.getConnectionsData();
-
-    // Filter to only include enabled connections
-    const connections = allConnections.filter((conn) => conn.enabled !== false);
-
-    // Show info about disabled connections
-    const disabledCount = allConnections.length - connections.length;
-    if (disabledCount > 0) {
-      console.log(`ℹ️ Skipping ${disabledCount} disabled connection(s)`);
-    }
-
-    // Validation
-    if (nodes.length === 0) {
-      showToast("No agents on canvas to execute", "warning");
-      return;
-    }
-
-    // Calculate execution order (topological sort)
-    this.executionOrder = this.calculateExecutionOrder(nodes, connections);
-
-    if (!this.executionOrder) {
-      showToast("Cannot execute: Circular dependencies detected", "error");
-      return;
-    }
-
-    // Reset state
-    this.isExecuting = true;
-    this.executionPaused = false;
-    this.executionCancelled = false;
-    this.executionResults.clear();
-
-    showToast(`Executing ${this.executionOrder.length} agents...`, "info");
-
-    // Execute sequentially
-    await this.executeSequentialPipeline();
-
-    // Cleanup
-    this.isExecuting = false;
-    this.currentExecutingNode = null;
-
-    if (this.executionCancelled) {
-      showToast("Pipeline execution cancelled", "warning");
-    } else {
-      showToast("Pipeline execution completed", "success");
-    }
+    // Pipeline execution has been removed.
+    // This system generates workflows for export to Sim AI, not for execution in Amalia.
+    showToast(
+      "Pipeline execution is disabled. Export to Sim AI to run workflows.",
+      "info",
+    );
   }
 
   calculateExecutionOrder(nodes, connections) {
@@ -532,7 +504,7 @@ class App {
       } catch (error) {
         console.error(
           `Error executing node ${node.dataset.instanceId}:`,
-          error
+          error,
         );
         this.executionResults.set(node.dataset.instanceId, {
           error: error.message,
@@ -557,31 +529,13 @@ class App {
     // Get input from connected nodes (only enabled connections)
     const allConnections = this.connectionManager.getConnectionsData();
     const enabledConnections = allConnections.filter(
-      (conn) => conn.enabled !== false
+      (conn) => conn.enabled !== false,
     );
 
     const inputs = enabledConnections
       .filter((conn) => conn.to.instanceId === instanceId)
       .map((conn) => this.executionResults.get(conn.from.instanceId))
       .filter((result) => result !== undefined);
-
-    // Find next agent for A2A communication
-    const outgoingConnection = enabledConnections.find(
-      (conn) => conn.from.instanceId === instanceId
-    );
-    const nextAgentId = outgoingConnection
-      ? document.querySelector(
-          `[data-instance-id="${outgoingConnection.to.instanceId}"]`
-        )?.dataset.agentId
-      : null;
-
-    console.log("🔍 A2A Debug:", {
-      instanceId,
-      agentId,
-      outgoingConnection,
-      nextAgentId,
-      willUseA2A: nextAgentId !== null,
-    });
 
     // Call backend API to execute agent
     try {
@@ -592,8 +546,6 @@ class App {
         config: instanceConfig, // Send instance-specific config
         mcpServerIds: agentData.mcpServerIds || [], // Send MCP server IDs
         filePath: agentData.filePath || null, // Send file path if attached
-        useA2A: true, // Enable A2A for all pipeline executions
-        nextAgentId: nextAgentId, // Target agent for A2A messaging
       };
 
       console.log("📤 Sending execute request:", payload);
@@ -630,7 +582,7 @@ class App {
       "node-completed",
       "node-error",
       "node-cancelled",
-      "node-loading"
+      "node-loading",
     );
 
     // Add new state class
@@ -723,12 +675,12 @@ class App {
       // Check if there are any input connections
       const connections = this.connectionManager.getConnectionsData();
       const inputConnections = connections.filter(
-        (conn) => conn.to.instanceId === instanceId
+        (conn) => conn.to.instanceId === instanceId,
       );
       if (inputConnections.length === 0) {
         showToast(
           "No data available - agent not executed and no inputs connected",
-          "info"
+          "info",
         );
         return;
       }
@@ -737,7 +689,7 @@ class App {
     // Get input data from connected nodes
     const connections = this.connectionManager.getConnectionsData();
     const inputConnections = connections.filter(
-      (conn) => conn.to.instanceId === instanceId
+      (conn) => conn.to.instanceId === instanceId,
     );
     const inputData = inputConnections.map((conn) => {
       const inputResult = this.executionResults.get(conn.from.instanceId);
@@ -769,7 +721,7 @@ class App {
         <div class="modal-body data-viewer-body">
           <!-- Metadata Section -->
           <div class="data-section">
-            <h3>Execution Metadata</h3>
+            <h3>Agent Information</h3>
             <div class="data-grid">
               <div class="data-field">
                 <label>Instance ID:</label>
@@ -785,13 +737,17 @@ class App {
                     : agentInstance.config?.name || agentInstance.id
                 }</span>
               </div>
+              <div class="data-field">
+                <label>Model:</label>
+                <span class="data-value">${agentInstance.config?.model || "N/A"}</span>
+              </div>
               ${
                 hasExecutionData
                   ? `
               <div class="data-field">
                 <label>Timestamp:</label>
                 <span class="data-value">${new Date(
-                  result.timestamp
+                  result.timestamp,
                 ).toLocaleString()}</span>
               </div>
               <div class="data-field">
@@ -817,11 +773,40 @@ class App {
             </div>
           </div>
 
+          <!-- MCP Tools Section -->
+          ${
+            agentInstance.mcpTools && agentInstance.mcpTools.length > 0
+              ? `
+          <div class="data-section">
+            <h3>MCP Tools (${agentInstance.mcpTools.length})</h3>
+            <div class="tools-list">
+              ${agentInstance.mcpTools
+                .map(
+                  (tool) => `
+                <div class="tool-item">
+                  <div class="tool-header">
+                    <i data-lucide="wrench" class="tool-icon"></i>
+                    <span class="tool-title">${tool.title}</span>
+                  </div>
+                  <div class="tool-details">
+                    <span class="tool-server">${tool.serverName}</span>
+                    <span class="tool-id monospace">${tool.toolId}</span>
+                  </div>
+                </div>
+              `,
+                )
+                .join("")}
+            </div>
+          </div>
+          `
+              : ""
+          }
+
           <!-- Input Data Section -->
           <div class="data-section">
             <h3>Input Data (${totalInputs} source${
-      totalInputs === 1 ? "" : "s"
-    })</h3>
+              totalInputs === 1 ? "" : "s"
+            })</h3>
             ${
               hasFileInput
                 ? `
@@ -862,20 +847,20 @@ The file path has been passed to the agent's execution context.
                       input.data
                         ? `
                       <pre class="data-preview">${this.formatDataForDisplay(
-                        input.data.output
+                        input.data.output,
                       )}</pre>
                     `
                         : '<p class="no-data">No data available</p>'
                     }
                   </div>
-                `
+                `,
                   )
                   .join("")}
               </div>
             `
                 : !hasFileInput
-                ? '<p class="no-data">No input connections</p>'
-                : ""
+                  ? '<p class="no-data">No input connections</p>'
+                  : ""
             }
           </div>
 
@@ -886,14 +871,14 @@ The file path has been passed to the agent's execution context.
               !hasExecutionData
                 ? '<p class="no-data">Agent has not been executed yet</p>'
                 : result.error
-                ? `
+                  ? `
               <div class="error-display">
                 <span>ERROR: ${result.error}</span>
               </div>
             `
-                : `
+                  : `
               <pre class="data-preview output-preview">${this.formatDataForDisplay(
-                result.output
+                result.output,
               )}</pre>
             `
             }
@@ -908,7 +893,7 @@ The file path has been passed to the agent's execution context.
               COPY OUTPUT
             </button>
             <button class="btn btn-secondary" onclick="${this.getDownloadDataHandler(
-              result
+              result,
             )}">
               DOWNLOAD JSON
             </button>
@@ -1067,8 +1052,8 @@ The file path has been passed to the agent's execution context.
                       <div class="file-details">
                         <span class="file-name">${file.filename}</span>
                         <span class="file-meta">${file.size_mb} MB • ${new Date(
-                      file.created_at * 1000
-                    ).toLocaleDateString()}</span>
+                          file.created_at * 1000,
+                        ).toLocaleDateString()}</span>
                       </div>
                     </div>
                     <button class="btn btn-primary btn-sm attach-file-btn" data-filename="${
@@ -1077,7 +1062,7 @@ The file path has been passed to the agent's execution context.
                       ATTACH
                     </button>
                   </div>
-                `
+                `,
                   )
                   .join("")}
               </div>
@@ -1167,7 +1152,11 @@ The file path has been passed to the agent's execution context.
     }
 
     fileIndicator.setAttribute("title", `File attached: ${filename}`);
-    fileIndicator.textContent = "CSV";
+    fileIndicator.innerHTML =
+      '<i data-lucide="paperclip" style="width:10px;height:10px;"></i>';
+    if (globalThis.lucide) {
+      globalThis.lucide.createIcons();
+    }
 
     // Update data badges
     this.updateNodeDataBadges(node.dataset.instanceId, {
@@ -1288,29 +1277,22 @@ The file path has been passed to the agent's execution context.
 
     if (this.canvasMode) {
       this.initializeCanvasMode();
-
-      // Check if current session has pipelines to load
-      const currentSession = globalThis.state?.getState().currentSession;
-      if (
-        currentSession &&
-        currentSession.pipelines &&
-        currentSession.pipelines.length > 0
-      ) {
-        // Load the most recent pipeline
-        const lastPipeline =
-          currentSession.pipelines[currentSession.pipelines.length - 1];
-        console.log("Loading pipeline from session:", currentSession.id);
-
-        setTimeout(() => {
-          this.createPipelineFromData(
-            lastPipeline.nodes,
-            lastPipeline.connections
-          );
-        }, 300); // Small delay to ensure canvas is ready
-      } else {
-        // No pipelines in current session
-        this.showCanvasWelcome();
-      }
+      // Pipeline loading is handled by loadPendingPipeline() inside initializeCanvasMode().
+      // It reads sessionStorage.pendingPipeline which is populated from two sources:
+      //   1. restoreSession() on page load – reads from localStorage (amalia_canvas_${id})
+      //   2. Chat.js handlePipelineCreation() – set when a pipeline is first created
+      //
+      // Show the welcome message only if no pipeline nodes appear within 400ms
+      // (loadPendingPipeline uses a 200ms internal setTimeout).
+      setTimeout(() => {
+        const canvasContent = document.getElementById("canvas-content");
+        const hasNodes =
+          canvasContent &&
+          canvasContent.querySelectorAll(".agent-node").length > 0;
+        if (!hasNodes) {
+          this.showCanvasWelcome();
+        }
+      }, 400);
     }
   }
 
@@ -1346,11 +1328,15 @@ The file path has been passed to the agent's execution context.
 
     console.log("🔧 Initializing ConnectionManager...");
     this.connectionManager = new ConnectionManager();
-    const canvasContent = document.getElementById("canvas-content");
+    // Always mount SVG overlay inside the viewport so it shares the same coordinate
+    // system as the nodes — no separate transform needed on the SVG itself.
+    const canvasViewport = document.getElementById("canvas-viewport");
+    const mountTarget =
+      canvasViewport || document.getElementById("canvas-content");
 
-    if (canvasContent) {
-      this.connectionManager.initialize(canvasContent);
-      console.log("✅ ConnectionManager initialized");
+    if (mountTarget) {
+      this.connectionManager.initialize(mountTarget);
+      console.log("ConnectionManager initialized (mounted in viewport)");
       globalThis.connectionManager = this.connectionManager;
     }
   }
@@ -1365,7 +1351,7 @@ The file path has been passed to the agent's execution context.
       setTimeout(() => {
         this.createPipelineFromData(
           pipelineData.nodes,
-          pipelineData.connections
+          pipelineData.connections,
         );
       }, 500);
     } catch (error) {
@@ -1414,7 +1400,7 @@ The file path has been passed to the agent's execution context.
           const delta = e.deltaY > 0 ? 0.95 : 1.05;
           const newScale = Math.max(
             0.1,
-            Math.min(3, this.canvasPan.scale * delta)
+            Math.min(3, this.canvasPan.scale * delta),
           );
 
           // Zoom towards mouse position
@@ -1442,15 +1428,22 @@ The file path has been passed to the agent's execution context.
           this.updateCanvasTransform();
         }
       },
-      { passive: false }
+      { passive: false },
     );
+
+    const canvasViewport = document.getElementById("canvas-viewport");
 
     // Spacebar + drag for panning (or middle mouse button)
     canvasContent.addEventListener("mousedown", (e) => {
-      // Only pan if clicking directly on canvas (not on nodes)
+      // Pan when clicking on the canvas background (not on nodes or controls).
+      // Valid background targets: the clip container, the viewport div, the SVG overlay,
+      // or the welcome message — anything that isn't an interactive element.
       const isCanvasBackground =
         e.target === canvasContent ||
-        e.target.classList.contains("canvas-welcome");
+        e.target === canvasViewport ||
+        e.target.classList.contains("canvas-welcome") ||
+        (e.target.tagName === "svg" &&
+          e.target.classList.contains("connection-overlay"));
 
       // Middle mouse button or spacebar + left click on canvas background
       if (
@@ -1534,45 +1527,17 @@ The file path has been passed to the agent's execution context.
   }
 
   /**
-   * Update canvas transform based on pan and zoom state
+   * Update canvas viewport transform for pan/zoom.
+   *
+   * Single-transform pattern (React Flow / Figma / Excalidraw):
+   *   ONE div (#canvas-viewport) holds ALL nodes + the SVG overlay.
+   *   Pan/zoom = single CSS transform on that div. Nodes never need their own transforms.
    */
   updateCanvasTransform() {
-    const canvasContent = document.getElementById("canvas-content");
-    if (!canvasContent) return;
-
-    const nodes = canvasContent.querySelectorAll(".agent-node");
-    const welcome = canvasContent.querySelector(".canvas-welcome");
-
-    // Apply transform to all nodes
-    nodes.forEach((node) => {
-      const originalX = parseFloat(node.dataset.originalX || node.style.left);
-      const originalY = parseFloat(node.dataset.originalY || node.style.top);
-
-      if (!node.dataset.originalX) {
-        node.dataset.originalX = originalX;
-        node.dataset.originalY = originalY;
-      }
-
-      const newX = this.canvasPan.x + originalX * this.canvasPan.scale;
-      const newY = this.canvasPan.y + originalY * this.canvasPan.scale;
-
-      node.style.transform = `translate(${newX - originalX}px, ${
-        newY - originalY
-      }px) scale(${this.canvasPan.scale})`;
-      node.style.transformOrigin = "0 0";
-    });
-
-    // Apply transform to welcome message
-    if (welcome) {
-      welcome.style.transform = `translate(-50%, -50%) scale(${this.canvasPan.scale})`;
-    }
-
-    // Apply transform to SVG overlay (no need to redraw connections)
-    if (this.connectionManager && this.connectionManager.svgOverlay) {
-      const svg = this.connectionManager.svgOverlay;
-      svg.style.transform = `translate(${this.canvasPan.x}px, ${this.canvasPan.y}px) scale(${this.canvasPan.scale})`;
-      svg.style.transformOrigin = "0 0";
-    }
+    const viewport = document.getElementById("canvas-viewport");
+    if (!viewport) return;
+    const { x, y, scale } = this.canvasPan;
+    viewport.style.transform = `translate(${x}px, ${y}px) scale(${scale})`;
   }
 
   /**
@@ -1672,11 +1637,10 @@ The file path has been passed to the agent's execution context.
     node.dataset.instanceId = instanceId;
     node.dataset.agentId = agent.id; // Keep reference to template agent
     node.dataset.agentData = JSON.stringify(agentInstance);
+    // Canvas-space position. With the viewport approach these are permanent coordinates —
+    // no originalX/Y bookkeeping needed; the viewport's transform handles pan/zoom.
     node.style.left = `${snappedX}px`;
     node.style.top = `${snappedY}px`;
-    // Store original position for pan/zoom transform
-    node.dataset.originalX = snappedX;
-    node.dataset.originalY = snappedY;
 
     // Count MCP tools
     const mcpServers = agent.config.mcp_servers || {};
@@ -1696,8 +1660,8 @@ The file path has been passed to the agent's execution context.
         }
       </div>
       <div class="agent-node-model" title="Model: ${agent.config.model}">${
-      agent.config.model
-    }</div>
+        agent.config.model
+      }</div>
       <div class="agent-node-input" data-port="input" title="Input connection"></div>
       <div class="agent-node-output" data-port="output" title="Output connection"></div>
       <div class="agent-node-data-badges">
@@ -1896,50 +1860,41 @@ The file path has been passed to the agent's execution context.
 
       e.preventDefault();
 
-      // Calculate movement delta
-      const deltaX = e.clientX - startX;
-      const deltaY = e.clientY - startY;
+      // Screen-space deltas for threshold detection
+      const deltaXScreen = e.clientX - startX;
+      const deltaYScreen = e.clientY - startY;
 
-      // Check if we've moved beyond threshold
+      // Threshold is in screen pixels (feels natural regardless of zoom)
       if (
         !hasMoved &&
-        (Math.abs(deltaX) > dragThreshold || Math.abs(deltaY) > dragThreshold)
+        (Math.abs(deltaXScreen) > dragThreshold ||
+          Math.abs(deltaYScreen) > dragThreshold)
       ) {
         hasMoved = true;
       }
 
       if (hasMoved) {
-        // Calculate new position
-        let newX = initialLeft + deltaX;
-        let newY = initialTop + deltaY;
+        // Convert screen-space delta → canvas-space delta by dividing by current zoom.
+        // This keeps drag speed consistent at all zoom levels.
+        const scale = this.canvasPan.scale;
+        let newX = initialLeft + deltaXScreen / scale;
+        let newY = initialTop + deltaYScreen / scale;
 
-        // Apply grid snapping
+        // Snap to grid (grid is in canvas space)
         if (snapToGrid) {
           newX = this.snapToGrid(newX, gridSize);
           newY = this.snapToGrid(newY, gridSize);
         }
 
-        // Ensure node stays within canvas bounds
-        const parent = element.parentElement;
-        if (parent) {
-          const maxX = parent.clientWidth - element.offsetWidth;
-          const maxY = parent.clientHeight - element.offsetHeight;
+        // Canvas is infinite — no bounds clamping needed
+        element.style.left = `${newX}px`;
+        element.style.top = `${newY}px`;
 
-          newX = Math.max(0, Math.min(newX, maxX));
-          newY = Math.max(0, Math.min(newY, maxY));
-        }
-
-        // Apply new position
-        element.style.left = newX + "px";
-        element.style.top = newY + "px";
-        // Update original position for pan/zoom transform
-        element.dataset.originalX = newX;
-        element.dataset.originalY = newY;
-
-        // Update connections in real-time
+        // Redraw any connections attached to this node
         if (this.connectionManager) {
-          const instanceId = element.dataset.instanceId;
-          this.connectionManager.updateConnectionPositions(instanceId);
+          this.connectionManager.updateConnectionPositions(
+            element.dataset.instanceId,
+          );
         }
       }
     };
@@ -1976,7 +1931,7 @@ The file path has been passed to the agent's execution context.
     if (this.canvasDropListeners.dragover) {
       canvasContent.removeEventListener(
         "dragover",
-        this.canvasDropListeners.dragover
+        this.canvasDropListeners.dragover,
       );
     }
     if (this.canvasDropListeners.drop) {
@@ -1995,38 +1950,30 @@ The file path has been passed to the agent's execution context.
 
       const agentData = JSON.parse(e.dataTransfer.getData("application/json"));
 
-      // Get drop position relative to canvas
+      // Get drop position relative to canvas-content (the stable, non-transformed boundary)
       const rect = canvasContent.getBoundingClientRect();
-      let screenX = e.clientX - rect.left;
-      let screenY = e.clientY - rect.top;
+      const screenX = e.clientX - rect.left;
+      const screenY = e.clientY - rect.top;
 
-      // Convert screen coordinates to canvas coordinates (accounting for pan/zoom)
-      let x = (screenX - this.canvasPan.x) / this.canvasPan.scale;
-      let y = (screenY - this.canvasPan.y) / this.canvasPan.scale;
+      // Convert screen coordinates to canvas-space (divide by scale, subtract pan offset)
+      const x = (screenX - this.canvasPan.x) / this.canvasPan.scale - 50;
+      const y = (screenY - this.canvasPan.y) / this.canvasPan.scale - 40;
 
-      // Offset to center the node on cursor (approximate node size)
-      const nodeHalfWidth = 50; // Half of typical node width
-      const nodeHalfHeight = 40; // Half of typical node height
-      x = Math.max(0, x - nodeHalfWidth);
-      y = Math.max(0, y - nodeHalfHeight);
-
-      // Create node at drop position (will be snapped to grid inside createAgentNode)
+      // Append to viewport so the node inherits the pan/zoom transform automatically
+      const viewport = document.getElementById("canvas-viewport");
       const node = this.createAgentNode(agentData, x, y);
-      canvasContent.appendChild(node);
+      (viewport || canvasContent).appendChild(node);
 
       // Initialize Lucide icons after appending to DOM
       if (globalThis.lucide) {
         globalThis.lucide.createIcons();
       }
-
-      // Apply current pan/zoom transform to the new node
-      this.updateCanvasTransform();
     };
 
     // Add listeners
     canvasContent.addEventListener(
       "dragover",
-      this.canvasDropListeners.dragover
+      this.canvasDropListeners.dragover,
     );
     canvasContent.addEventListener("drop", this.canvasDropListeners.drop);
   }
@@ -2097,13 +2044,14 @@ The file path has been passed to the agent's execution context.
       `;
     }
 
-    // Position menu to the right of the node
+    // Menu uses fixed positioning relative to the screen so it is not affected
+    // by the canvas-viewport CSS transform.
     const nodeRect = node.getBoundingClientRect();
-    const parentRect = node.parentElement.getBoundingClientRect();
-    menu.style.left = nodeRect.right - parentRect.left + 8 + "px";
-    menu.style.top = nodeRect.top - parentRect.top + "px";
+    menu.style.position = "fixed";
+    menu.style.left = nodeRect.right + 8 + "px";
+    menu.style.top = nodeRect.top + "px";
 
-    node.parentElement.appendChild(menu);
+    document.body.appendChild(menu);
 
     // Add event listeners based on menu type
     if (isExecuting) {
@@ -2140,7 +2088,7 @@ The file path has been passed to the agent's execution context.
     } else {
       // Normal menu event listeners
       const executePromptBtn = menu.querySelector(
-        '[data-action="execute-prompt"]'
+        '[data-action="execute-prompt"]',
       );
       if (executePromptBtn) {
         executePromptBtn.addEventListener("click", (e) => {
@@ -2436,14 +2384,11 @@ The file path has been passed to the agent's execution context.
   }
 
   duplicateAgentNode(originalNode, agentInstance) {
-    const rect = originalNode.getBoundingClientRect();
-    const parentRect = originalNode.parentElement.getBoundingClientRect();
-
-    // Position duplicate offset from original (will be snapped to grid)
-    // Use 2 grid cells offset for clear visual separation
+    // Use canvas-space coordinates (style.left/top) directly — getBoundingClientRect
+    // would return screen-space values affected by the viewport transform.
     const offset = this.canvasConfig.gridSize * 2;
-    const x = rect.left - parentRect.left + offset;
-    const y = rect.top - parentRect.top + offset;
+    const x = (parseFloat(originalNode.style.left) || 0) + offset;
+    const y = (parseFloat(originalNode.style.top) || 0) + offset;
 
     // Create a new independent instance (removes instanceId so a new one is generated)
     const templateAgent = {
@@ -2479,6 +2424,92 @@ The file path has been passed to the agent's execution context.
   }
 
   /**
+   * Export canvas to Sim AI workflow format
+   */
+  async exportToSimAI() {
+    if (!this.connectionManager) {
+      console.warn("Connection manager not initialized");
+      return;
+    }
+
+    try {
+      // Fetch MCP servers for tool integration
+      const mcpServers = await this.fetchMCPServers();
+
+      // Generate Sim AI workflow
+      const simWorkflow =
+        await this.connectionManager.exportToSimAI(mcpServers);
+
+      // Download as JSON file
+      const blob = new Blob([JSON.stringify(simWorkflow, null, 2)], {
+        type: "application/json",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `amalia_workflow_${Date.now()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+
+      console.log("✓ Sim AI workflow exported", simWorkflow);
+      showToast("Workflow exported to Sim AI format", "success");
+      return simWorkflow;
+    } catch (error) {
+      console.error("Error exporting to Sim AI:", error);
+      showToast("Failed to export workflow", "error");
+    }
+  }
+
+  /**
+   * Fetch MCP servers with their tools for export
+   */
+  async fetchMCPServers() {
+    try {
+      const response = await fetch("/api/mcp-servers");
+      if (!response.ok) {
+        throw new Error("Failed to fetch MCP servers");
+      }
+      const data = await response.json();
+      const servers = data.servers || [];
+
+      // Enhance servers with tool information if available
+      // For now, return servers as-is. Tools will be fetched separately if needed
+      // or created as placeholders during export
+      return servers.map((server) => ({
+        ...server,
+        // Add URL based on common patterns (can be overridden if server has explicit URL)
+        url: server.url || this.inferMcpServerUrl(server),
+      }));
+    } catch (error) {
+      console.error("Error fetching MCP servers:", error);
+      return [];
+    }
+  }
+
+  /**
+   * Infer MCP server URL from server configuration
+   */
+  inferMcpServerUrl(server) {
+    // Common MCP server URL patterns used in docker-compose
+    const serverIdToPort = {
+      mathematics: 8001,
+      data_loading: 8002,
+      data_loader: 8002,
+      data_preparation: 8003,
+      model_training: 8004,
+      model_evaluation: 8005,
+    };
+
+    // Try to find port from server ID or name
+    const serverId = server.id.toLowerCase().replaceAll(/[^a-z_]/g, "");
+    const port = serverIdToPort[serverId] || 8000;
+
+    return `http://host.docker.internal:${port}/mcp`;
+  }
+
+  /**
    * Load canvas state from localStorage
    */
   loadCanvasState() {
@@ -2490,9 +2521,11 @@ The file path has been passed to the agent's execution context.
 
     try {
       const state = JSON.parse(stateJson);
+      const canvasViewport = document.getElementById("canvas-viewport");
       const canvasContent = document.getElementById("canvas-content");
+      const nodeContainer = canvasViewport || canvasContent;
 
-      if (!canvasContent || !this.connectionManager) {
+      if (!nodeContainer || !this.connectionManager) {
         console.error("Canvas not ready");
         return false;
       }
@@ -2502,9 +2535,9 @@ The file path has been passed to the agent's execution context.
         state,
         (agent, x, y) => {
           const node = this.createAgentNode(agent, x, y);
-          canvasContent.appendChild(node);
+          nodeContainer.appendChild(node);
           return node;
-        }
+        },
       );
 
       if (success) {
@@ -2565,16 +2598,25 @@ The file path has been passed to the agent's execution context.
    * Create pipeline from BUILD command response
    */
   async createPipelineFromData(nodes, connections) {
+    console.log("[Pipeline] Creating pipeline from data", {
+      nodes: nodes.length,
+      connections: connections.length,
+    });
+
     if (!this.canvasMode) {
       console.warn("Not in canvas mode, storing pipeline for later");
       return;
     }
 
     const canvasContent = document.getElementById("canvas-content");
+    const canvasViewport = document.getElementById("canvas-viewport");
     if (!canvasContent) {
       console.error("Canvas content not found");
       return;
     }
+    // Nodes go into the viewport so they inherit the pan/zoom transform for free.
+    // Fall back to canvasContent if for some reason the viewport isn't present yet.
+    const nodeContainer = canvasViewport || canvasContent;
 
     // Remove welcome message if present
     const welcomeMsg = canvasContent.querySelector(".canvas-welcome");
@@ -2586,13 +2628,48 @@ The file path has been passed to the agent's execution context.
     const agents = await api.getAgents();
     const agentMap = new Map(agents.map((a) => [a.id, a]));
 
+    console.log("[Pipeline] Available agents:", Array.from(agentMap.keys()));
+
     // Create nodes
+    let nodeIndex = 0;
     for (const nodeData of nodes) {
-      const agent = agentMap.get(nodeData.agentId);
-      if (!agent) {
-        console.error("Agent not found:", nodeData.agentId);
+      console.log("[Pipeline] Processing node", {
+        index: nodeIndex,
+        type: nodeData.type,
+        agentId: nodeData.agentId,
+        position: nodeData.position,
+      });
+
+      // Handle start trigger node
+      if (nodeData.type === "start" || nodeData.agentId === "start_trigger") {
+        const node = this.createStartNode(nodeData);
+        node.style.animation = "fadeInUp 0.3s ease forwards";
+        node.style.animationDelay = `${nodeIndex * 0.05}s`;
+        nodeContainer.appendChild(node);
+        console.log("[Pipeline] Start node created");
+        nodeIndex++;
         continue;
       }
+
+      // Handle regular agent nodes
+      const agent = agentMap.get(nodeData.agentId);
+      if (!agent) {
+        console.error(
+          "[Pipeline] Agent not found in registry:",
+          nodeData.agentId,
+        );
+        console.error(
+          "[Pipeline] Available agent IDs:",
+          Array.from(agentMap.keys()),
+        );
+        continue;
+      }
+
+      console.log("[Pipeline] Creating agent node", {
+        agentId: nodeData.agentId,
+        agentName: agent.config.name,
+        position: nodeData.position,
+      });
 
       // Create node with specific instance ID and position
       const node = document.createElement("div");
@@ -2605,16 +2682,19 @@ The file path has been passed to the agent's execution context.
         instanceId: nodeData.instanceId,
         position: nodeData.position,
         mcpServerIds: nodeData.mcpServerIds || [],
+        mcpTools: nodeData.mcpTools || [],
         filePath: nodeData.filePath || null,
       };
 
       node.dataset.agentData = JSON.stringify(agentInstance);
+      // Canvas-space position — the viewport's transform handles pan/zoom, no originalX/Y needed.
       node.style.left = `${nodeData.position.x}px`;
       node.style.top = `${nodeData.position.y}px`;
 
-      // Count MCP tools for consistency with manually created nodes
-      const mcpServers = agent.config.mcp_servers || {};
-      const toolCount = Object.keys(mcpServers).length;
+      // Use MCP tools from nodeData if available
+      const mcpTools = nodeData.mcpTools || [];
+      const toolCount =
+        mcpTools.length || Object.keys(agent.config.mcp_servers || {}).length;
 
       node.innerHTML = `
         <div class="agent-node-header">
@@ -2630,13 +2710,13 @@ The file path has been passed to the agent's execution context.
           }
         </div>
         <div class="agent-node-model" title="Model: ${agent.config.model}">${
-        agent.config.model
-      }</div>
+          agent.config.model
+        }</div>
         ${
           nodeData.filePath
             ? '<div class="node-file-indicator" title="File attached: ' +
               nodeData.filePath.split("/").pop() +
-              '">CSV</div>'
+              '"><i data-lucide="paperclip" style="width:10px;height:10px;"></i></div>'
             : ""
         }
         <div class="agent-node-input" data-port="input" title="Input connection"></div>
@@ -2664,7 +2744,13 @@ The file path has been passed to the agent's execution context.
         this.showNodeActionMenu(node, currentInstance);
       });
 
-      canvasContent.appendChild(node);
+      // Add fade-in animation
+      node.style.animation = "fadeInUp 0.3s ease forwards";
+      node.style.animationDelay = `${nodeIndex * 0.05}s`;
+
+      nodeContainer.appendChild(node);
+
+      nodeIndex++;
     }
 
     // Initialize Lucide icons once after all nodes are added
@@ -2672,25 +2758,72 @@ The file path has been passed to the agent's execution context.
       globalThis.lucide.createIcons();
     }
 
-    // Create connections
+    // Create connections in order
     if (this.connectionManager && connections.length > 0) {
+      console.log("[Pipeline] Creating connections:", connections.length);
       setTimeout(() => {
-        for (const conn of connections) {
+        connections.forEach((conn, index) => {
+          console.log(`[Pipeline] Connection ${index + 1}:`, {
+            from: conn.fromInstanceId,
+            to: conn.toInstanceId,
+          });
           this.connectionManager.createConnection(
             conn.fromInstanceId,
             "output",
             conn.toInstanceId,
-            "input"
+            "input",
           );
-        }
+        });
         console.log(`✓ Created ${connections.length} connections`);
-      }, 100);
+      }, 200);
     }
 
     console.log(
-      `✓ Pipeline created: ${nodes.length} nodes, ${connections.length} connections`
+      `✓ Pipeline created: ${nodes.length} nodes, ${connections.length} connections`,
     );
     showToast(`Pipeline created with ${nodes.length} agents`, "success");
+  }
+
+  /**
+   * Create a start trigger node
+   */
+  createStartNode(nodeData) {
+    const node = document.createElement("div");
+    node.className = "agent-node start-node";
+    node.dataset.instanceId = nodeData.instanceId;
+    node.dataset.agentId = "start_trigger";
+    node.dataset.agentData = JSON.stringify(nodeData);
+    // Canvas-space position — viewport transform handles pan/zoom, no originalX/Y needed.
+    node.style.left = `${nodeData.position.x}px`;
+    node.style.top = `${nodeData.position.y}px`;
+
+    const fileInfo = nodeData.filePath
+      ? `<div class="node-file-indicator" title="File: ${nodeData.filePath.split("/").pop()}">
+           <i data-lucide="paperclip" style="width:10px;height:10px;"></i>
+         </div>`
+      : "";
+
+    node.innerHTML = `
+      ${fileInfo}
+      <div class="agent-node-header">
+        <i data-lucide="play-circle" class="agent-node-icon"></i>
+      </div>
+      <div class="agent-node-model">START</div>
+      <div class="agent-node-output" data-port="output" title="Output connection"></div>
+    `;
+
+    // Initialize Lucide icons
+    if (globalThis.lucide) {
+      globalThis.lucide.createIcons();
+    }
+
+    // Make draggable
+    this.makeDraggableNode(node);
+
+    // Add connection port handlers
+    this.setupConnectionPorts(node);
+
+    return node;
   }
 }
 

@@ -23,7 +23,6 @@ system_prompt:
   \ so the next agent can access the file.\n\nProvide clear, actionable statistical\
   \ insights with proper numerical precision.\n"
 icon: bar-chart-3
-a2a_enabled: true
 a2a_mode: autonomous
 tools: []
 mcp_servers: {}

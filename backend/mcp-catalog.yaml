@@ -1,0 +1,516 @@
+servers:
+  - name: "Data Loading Server"
+    description: "Provides tools for loading CSV/Excel files and basic preprocessing operations."
+    tools:
+      - name: "get_server_info"
+        description: "Get information about the data loading server configuration and available files."
+        inputs:
+          - tool: "Optional[str]"
+          - server: "Optional[str]"
+          - arguments: "Optional[Any]"
+          - filepath: "Optional[str]"
+        outputs:
+          - success: "bool"
+          - data_directory: "str"
+          - data_dir_exists: "bool"
+          - available_files: "List[Dict]"
+          - file_count: "int"
+          - working_directory: "str"
+      - name: "load_csv"
+        description: "Load a CSV file and return metadata."
+        inputs:
+          - filepath: "str"
+          - encoding: "str (default: 'utf-8')"
+          - delimiter: "str (default: ',')"
+        outputs:
+          - success: "bool"
+          - data: "DataFrame"
+          - metadata: "Dict"
+      - name: "get_column_info"
+        description: "Retrieve information about a specific column in a dataset."
+        inputs:
+          - filepath: "str"
+          - column_name: "str"
+        outputs:
+          - column_info: "Dict"
+      - name: "detect_missing_values"
+        description: "Detect missing values in a dataset."
+        inputs:
+          - filepath: "str"
+        outputs:
+          - missing_values: "Dict"
+      - name: "detect_duplicates"
+        description: "Detect duplicate rows in a dataset."
+        inputs:
+          - filepath: "str"
+          - subset: "Optional[List[str]]"
+        outputs:
+          - duplicates: "Dict"
+      - name: "infer_data_types"
+        description: "Infer data types of columns in a dataset."
+        inputs:
+          - filepath: "str"
+        outputs:
+          - data_types: "Dict"
+      - name: "get_basic_stats"
+        description: "Get basic statistics for a dataset."
+        inputs:
+          - filepath: "str"
+        outputs:
+          - statistics: "Dict"
+      - name: "read_file_head"
+        description: "Read the first n rows of a dataset."
+        inputs:
+          - filepath: "str"
+          - n_rows: "int (default: 10)"
+        outputs:
+          - head: "DataFrame"
+      - name: "validate_csv_structure"
+        description: "Validate the structure of a CSV file against expected columns."
+        inputs:
+          - filepath: "str"
+          - expected_columns: "Optional[List[str]]"
+        outputs:
+          - validation_result: "Dict"
+
+  - name: "Data Preparation Server"
+    description: "Provides advanced data transformation, feature engineering, and preparation tools."
+    tools:
+      - name: "handle_missing_values"
+        description: "Handle missing values using various strategies."
+        inputs:
+          - filepath: "str"
+          - strategy: "str (default: 'mean')"
+          - columns: "Optional[List[str]]"
+          - output_filepath: "Optional[str]"
+        outputs:
+          - success: "bool"
+          - rows_removed: "int"
+          - remaining_rows: "int"
+      - name: "remove_duplicates"
+        description: "Remove duplicate rows from a dataset."
+        inputs:
+          - filepath: "str"
+          - subset: "Optional[List[str]]"
+          - keep: "str (default: 'first')"
+          - output_filepath: "Optional[str]"
+        outputs:
+          - success: "bool"
+          - rows_removed: "int"
+      - name: "scale_features"
+        description: "Scale numerical features using various scaling methods."
+        inputs:
+          - filepath: "str"
+          - columns: "List[str]"
+          - method: "str (default: 'standard')"
+          - output_filepath: "Optional[str]"
+        outputs:
+          - success: "bool"
+          - scaled_data: "DataFrame"
+      - name: "encode_categorical"
+        description: "Encode categorical features using label or one-hot encoding."
+        inputs:
+          - filepath: "str"
+          - columns: "List[str]"
+          - method: "str (default: 'onehot')"
+          - output_filepath: "Optional[str]"
+        outputs:
+          - success: "bool"
+          - encoded_data: "DataFrame"
+      - name: "detect_outliers"
+        description: "Detect outliers in a dataset using statistical methods."
+        inputs:
+          - filepath: "str"
+          - column: "str"
+          - method: "str (default: 'iqr')"
+          - threshold: "float (default: 1.5)"
+        outputs:
+          - outliers: "List[int]"
+      - name: "create_feature_bins"
+        description: "Create bins for a numerical feature."
+        inputs:
+          - filepath: "str"
+          - column: "str"
+          - bins: "int (default: 5)"
+          - labels: "Optional[List[str]]"
+          - output_filepath: "Optional[str]"
+        outputs:
+          - success: "bool"
+          - binned_data: "DataFrame"
+      - name: "split_dataset"
+        description: "Split a dataset into training and testing sets."
+        inputs:
+          - filepath: "str"
+          - train_ratio: "float (default: 0.8)"
+          - random_state: "int (default: 42)"
+          - shuffle: "bool (default: True)"
+        outputs:
+          - train_set: "DataFrame"
+          - test_set: "DataFrame"
+      - name: "filter_rows"
+        description: "Filter rows in a dataset based on a condition."
+        inputs:
+          - filepath: "str"
+          - column: "str"
+          - condition: "str"
+          - value: "Any"
+          - output_filepath: "Optional[str]"
+        outputs:
+          - success: "bool"
+          - filtered_data: "DataFrame"
+      - name: "rename_columns"
+        description: "Rename columns in a dataset."
+        inputs:
+          - filepath: "str"
+          - column_mapping: "Dict[str, str]"
+          - output_filepath: "Optional[str]"
+        outputs:
+          - success: "bool"
+          - renamed_data: "DataFrame"
+      - name: "add_column_headers"
+        description: "Add or replace column headers in a dataset."
+        inputs:
+          - filepath: "str"
+          - column_names: "List[str]"
+          - output_filepath: "Optional[str]"
+          - has_header: "bool (default: False)"
+        outputs:
+          - success: "bool"
+          - updated_data: "DataFrame"
+
+  - name: "Mathematics Server"
+    description: "Provides mathematical operations and calculations through the Model Context Protocol."
+    tools:
+      - name: "analyze_csv"
+        description: "Analyze uploaded CSV file."
+        inputs:
+          - filename: "str"
+        outputs:
+          - rows: "int"
+          - columns: "List[str]"
+          - stats: "Dict"
+      - name: "add"
+        description: "Add two numbers."
+        inputs:
+          - a: "float"
+          - b: "float"
+        outputs:
+          - result: "float"
+      - name: "subtract"
+        description: "Subtract one number from another."
+        inputs:
+          - a: "float"
+          - b: "float"
+        outputs:
+          - result: "float"
+      - name: "multiply"
+        description: "Multiply two numbers."
+        inputs:
+          - a: "float"
+          - b: "float"
+        outputs:
+          - result: "float"
+      - name: "divide"
+        description: "Divide one number by another."
+        inputs:
+          - a: "float"
+          - b: "float"
+        outputs:
+          - result: "float"
+      - name: "power"
+        description: "Raise a number to the power of another."
+        inputs:
+          - base: "float"
+          - exponent: "float"
+        outputs:
+          - result: "float"
+      - name: "square_root"
+        description: "Calculate the square root of a number."
+        inputs:
+          - number: "float"
+        outputs:
+          - result: "float"
+      - name: "factorial"
+        description: "Calculate the factorial of a number."
+        inputs:
+          - n: "int"
+        outputs:
+          - result: "int"
+      - name: "mean"
+        description: "Calculate the mean of a list of numbers."
+        inputs:
+          - numbers: "List[float]"
+        outputs:
+          - result: "float"
+      - name: "median"
+        description: "Calculate the median of a list of numbers."
+        inputs:
+          - numbers: "List[float]"
+        outputs:
+          - result: "float"
+      - name: "standard_deviation"
+        description: "Calculate the standard deviation of a list of numbers."
+        inputs:
+          - numbers: "List[float]"
+        outputs:
+          - result: "float"
+      - name: "percentage"
+        description: "Calculate the percentage of a part relative to a whole."
+        inputs:
+          - part: "float"
+          - whole: "float"
+        outputs:
+          - result: "float"
+      - name: "gcd"
+        description: "Calculate the greatest common divisor of two numbers."
+        inputs:
+          - a: "int"
+          - b: "int"
+        outputs:
+          - result: "int"
+      - name: "lcm"
+        description: "Calculate the least common multiple of two numbers."
+        inputs:
+          - a: "int"
+          - b: "int"
+        outputs:
+          - result: "int"
+
+  - name: "Model Evaluation Server"
+    description: "Provides comprehensive model evaluation, metrics calculation, and visualization tools."
+    tools:
+      - name: "evaluate_classification_model"
+        description: "Evaluate a trained classification model."
+        inputs:
+          - model_path: "str"
+          - test_data_path: "str"
+          - target_column: "str"
+        outputs:
+          - metrics: "Dict"
+      - name: "evaluate_regression_model"
+        description: "Evaluate a trained regression model."
+        inputs:
+          - model_path: "str"
+          - test_data_path: "str"
+          - target_column: "str"
+        outputs:
+          - metrics: "Dict"
+      - name: "get_classification_report"
+        description: "Generate a classification report for a model."
+        inputs:
+          - model_path: "str"
+          - test_data_path: "str"
+          - target_column: "str"
+        outputs:
+          - report: "Dict"
+      - name: "calculate_confusion_matrix"
+        description: "Calculate the confusion matrix for a classification model."
+        inputs:
+          - model_path: "str"
+          - test_data_path: "str"
+          - target_column: "str"
+          - normalize: "Optional[str]"
+        outputs:
+          - confusion_matrix: "List[List[int]]"
+      - name: "predict_with_model"
+        description: "Make predictions using a trained model."
+        inputs:
+          - model_path: "str"
+          - input_data_path: "str"
+          - output_path: "Optional[str]"
+        outputs:
+          - predictions: "List[Any]"
+      - name: "calculate_residuals"
+        description: "Calculate residuals for a regression model."
+        inputs:
+          - model_path: "str"
+          - test_data_path: "str"
+          - target_column: "str"
+        outputs:
+          - residuals: "List[float]"
+      - name: "compare_model_predictions"
+        description: "Compare predictions from two models."
+        inputs:
+          - model1_path: "str"
+          - model2_path: "str"
+          - test_data_path: "str"
+          - target_column: "str"
+          - task: "str (default: 'classification')"
+        outputs:
+          - comparison: "Dict"
+      - name: "error_analysis"
+        description: "Perform error analysis for a model."
+        inputs:
+          - model_path: "str"
+          - test_data_path: "str"
+          - target_column: "str"
+          - task: "str (default: 'classification')"
+        outputs:
+          - error_analysis: "Dict"
+      - name: "save_evaluation_results"
+        description: |
+          Persist evaluation metrics and the pipeline that produced them to a
+          cumulative JSON registry file (default: <DATA_DIR>/evaluation_results.json).
+          Call this after evaluate_classification_model or evaluate_regression_model
+          to build a permanent, queryable record of every experiment run.
+          Accepts an optional 'pipeline' dict that captures the full agent graph:
+          pipeline_id, pipeline_name, and an ordered list of steps (each with
+          agent_type, agent_id, and config). If no pipeline_id is supplied one is
+          auto-generated (UUID). Records are appended so the file grows as a log
+          and nothing is ever overwritten.
+        inputs:
+          - metrics: "Dict[str, Any] — metrics dict returned by any evaluation tool"
+          - task_type: "str — 'classification' or 'regression'"
+          - model_name: "str — human-readable model identifier (e.g. 'random_forest_v1')"
+          - dataset_name: "str — name or path of the dataset used for evaluation"
+          - notes: "Optional[str] — free-text notes about this run"
+          - tags: "Optional[List[str]] — labels for filtering (e.g. ['baseline', 'tuned'])"
+          - pipeline: |
+              Optional[Dict[str, Any]] — pipeline definition, recommended shape:
+                pipeline_id:   str  (auto-generated if omitted)
+                pipeline_name: str
+                steps:
+                  - order:      int
+                    agent_type: str  (data_loader | data_cleaner | normalizer |
+                                      model_trainer | model_evaluator)
+                    agent_id:   str
+                    config:     Dict
+              Any extra keys from sim-ai are stored as-is.
+          - registry_path: "Optional[str] — custom registry file path; defaults to <DATA_DIR>/evaluation_results.json"
+        outputs:
+          - saved: "bool"
+          - entry_id: "int — sequential id of the new record"
+          - registry_file: "str — absolute path to the registry file"
+          - total_records: "int — total records in the registry after saving"
+          - entry: "Dict — the full record that was saved"
+      - name: "list_evaluation_results"
+        description: |
+          Read and filter the evaluation registry. Returns all matching records
+          plus a per-model summary (run count, latest metrics, latest timestamp).
+          Use pipeline_id to retrieve every result produced by a specific sim-ai
+          pipeline run, enabling direct traceability between an agent graph and
+          its model performance.
+        inputs:
+          - task_type: "Optional[str] — filter by 'classification' or 'regression'; None returns both"
+          - model_name: "Optional[str] — filter by exact model name; None returns all"
+          - tag: "Optional[str] — return only records that contain this tag"
+          - pipeline_id: "Optional[str] — return only records produced by this pipeline id"
+          - last_n: "Optional[int] — return only the most recent N records"
+          - registry_path: "Optional[str] — custom registry file path; defaults to <DATA_DIR>/evaluation_results.json"
+        outputs:
+          - total_in_registry: "int — total records in the file before filtering"
+          - returned: "int — number of records returned after filtering"
+          - registry_file: "str — absolute path to the registry file"
+          - records: "List[Dict] — matching evaluation records"
+          - model_summary: "Dict — per-model summary with run count, latest metrics, and latest timestamp"
+
+  - name: "Model Training Server"
+    description: "Provides machine learning model training, hyperparameter tuning, and optimization tools."
+    tools:
+      - name: "train_classification_model"
+        description: "Train a classification model."
+        inputs:
+          - filepath: "str"
+          - target_column: "str"
+          - model_type: "str (default: 'random_forest')"
+          - test_size: "float (default: 0.2)"
+          - random_state: "int (default: 42)"
+          - model_save_path: "Optional[str]"
+        outputs:
+          - success: "bool"
+          - model_path: "str"
+          - metrics: "Dict"
+      - name: "train_regression_model"
+        description: "Train a regression model."
+        inputs:
+          - filepath: "str"
+          - target_column: "str"
+          - model_type: "str (default: 'random_forest')"
+          - test_size: "float (default: 0.2)"
+          - random_state: "int (default: 42)"
+          - model_save_path: "Optional[str]"
+        outputs:
+          - success: "bool"
+          - model_path: "str"
+          - metrics: "Dict"
+      - name: "cross_validate_model"
+        description: "Perform cross-validation for a model."
+        inputs:
+          - filepath: "str"
+          - target_column: "str"
+          - model_type: "str (default: 'random_forest')"
+          - task: "str (default: 'classification')"
+          - cv_folds: "int (default: 5)"
+          - random_state: "int (default: 42)"
+        outputs:
+          - cross_validation_scores: "List[float]"
+      - name: "hyperparameter_tuning"
+        description: "Perform hyperparameter tuning for a model."
+        inputs:
+          - filepath: "str"
+          - target_column: "str"
+          - model_type: "str (default: 'random_forest')"
+          - task: "str (default: 'classification')"
+          - param_grid: "Optional[Dict[str, List]]"
+          - cv_folds: "int (default: 3)"
+          - random_state: "int (default: 42)"
+        outputs:
+          - best_params: "Dict"
+          - best_score: "float"
+      - name: "get_feature_importance"
+        description: "Get feature importance for a trained model."
+        inputs:
+          - filepath: "str"
+          - target_column: "str"
+          - model_type: "str (default: 'random_forest')"
+          - task: "str (default: 'classification')"
+          - top_n: "int (default: 10)"
+        outputs:
+          - feature_importance: "Dict"
+      - name: "compare_models"
+        description: "Compare the performance of multiple models."
+        inputs:
+          - filepath: "str"
+          - target_column: "str"
+          - task: "str (default: 'classification')"
+          - test_size: "float (default: 0.2)"
+          - random_state: "int (default: 42)"
+        outputs:
+          - comparison_results: "Dict"
+
+  - name: "Feature Engineering Server"
+    description: "Provides tools for feature selection, dimensionality reduction, and data augmentation."
+    tools:
+      - name: "feature_selection"
+        description: "Select top-k features based on statistical methods."
+        inputs:
+          - filepath: "str"
+          - target_column: "str"
+          - method: "str (default: 'f_classif')"
+          - k: "int (default: 10)"
+        outputs:
+          - selected_features: "List[str]"
+      - name: "dimensionality_reduction"
+        description: "Reduce dimensionality of the dataset using PCA."
+        inputs:
+          - filepath: "str"
+          - n_components: "int (default: 2)"
+        outputs:
+          - explained_variance_ratio: "List[float]"
+          - reduced_data: "List[List[float]]"
+      - name: "generate_synthetic_data"
+        description: "Generate synthetic data using SMOTE."
+        inputs:
+          - filepath: "str"
+          - target_column: "str"
+        outputs:
+          - output_path: "str"
+          - rows_generated: "int"
+      - name: "add_noise"
+        description: "Add random noise to numerical features."
+        inputs:
+          - filepath: "str"
+          - columns: "List[str]"
+          - noise_level: "float (default: 0.01)"
+        outputs:
+          - output_path: "str"

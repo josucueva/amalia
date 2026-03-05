@@ -20,10 +20,6 @@ langchain-core>=0.1.10
 pandas>=2.1.4
 numpy>=1.26.3
 
-# Message Queue
-redis>=5.0.1
-aioredis>=2.0.1
-
 # File Handling
 aiofiles>=23.2.1
 python-magic>=0.4.27

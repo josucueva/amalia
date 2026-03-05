@@ -40,7 +40,6 @@ system_prompt:
 
   "
 icon: check-circle
-a2a_enabled: true
 a2a_mode: autonomous
 tools:
   - model_evaluator

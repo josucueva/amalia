@@ -104,7 +104,7 @@ class SessionSidebar {
           }" title="Delete">[ DELETE ]</button>
         </div>
       </div>
-    `
+    `,
       )
       .join("");
 
@@ -216,21 +216,49 @@ class SessionSidebar {
         // Clear existing canvas first
         globalThis.app.clearCanvas();
 
-        // Load last pipeline if session has any
-        if (session.pipelines && session.pipelines.length > 0) {
+        // Primary: check localStorage for this session's canvas data.
+        // Chat.js saves converted canvas data here whenever a pipeline is created.
+        // This survives page refreshes and has the correct Sim AI -> canvas format.
+        const savedCanvasData = localStorage.getItem(
+          `amalia_canvas_${session.id}`,
+        );
+
+        if (savedCanvasData) {
+          try {
+            const canvasData = JSON.parse(savedCanvasData);
+            await globalThis.app.createPipelineFromData(
+              canvasData.nodes,
+              canvasData.connections || [],
+            );
+            console.log(
+              "✓ Loaded canvas from localStorage for session:",
+              session.id,
+              "nodes:",
+              canvasData.nodes.length,
+            );
+          } catch (error) {
+            console.error("Error loading canvas from localStorage:", error);
+            globalThis.app.showCanvasWelcome();
+          }
+        } else if (
+          session.pipelines &&
+          session.pipelines.length > 0 &&
+          session.pipelines[session.pipelines.length - 1].nodes.length > 0
+        ) {
+          // Fallback: use session.pipelines (only has data for old non-SimAI format)
           const lastPipeline = session.pipelines[session.pipelines.length - 1];
           try {
             await globalThis.app.createPipelineFromData(
               lastPipeline.nodes,
-              lastPipeline.connections
+              lastPipeline.connections,
             );
             console.log(
-              "✓ Loaded pipeline with",
+              "✓ Loaded pipeline from session with",
               lastPipeline.nodes.length,
-              "nodes"
+              "nodes",
             );
           } catch (error) {
-            console.error("Error loading pipeline:", error);
+            console.error("Error loading pipeline from session:", error);
             globalThis.app.showCanvasWelcome();
           }
         } else {
