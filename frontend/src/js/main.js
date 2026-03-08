@@ -40,14 +40,6 @@ class App {
     drop: null,
   };
 
-  // Pipeline execution state
-  isExecuting = false;
-  executionPaused = false;
-  executionCancelled = false;
-  currentExecutingNode = null;
-  executionResults = new Map();
-  executionOrder = [];
-
   // Canvas grid configuration
   canvasConfig = {
     gridSize: 20,
@@ -406,305 +398,23 @@ class App {
     });
   }
 
-  async runPipeline() {
-    // Pipeline execution has been removed.
-    // This system generates workflows for export to Sim AI, not for execution in Amalia.
-    showToast(
-      "Pipeline execution is disabled. Export to Sim AI to run workflows.",
-      "info",
-    );
-  }
-
-  calculateExecutionOrder(nodes, connections) {
-    // Build adjacency list and in-degree map
-    const graph = new Map(); // instanceId -> [dependent instanceIds]
-    const inDegree = new Map(); // instanceId -> number of dependencies
-    const nodeMap = new Map(); // instanceId -> node element
-
-    // Initialize
-    for (const node of nodes) {
-      const instanceId = node.dataset.instanceId;
-      graph.set(instanceId, []);
-      inDegree.set(instanceId, 0);
-      nodeMap.set(instanceId, node);
-    }
-
-    // Build graph from connections
-    for (const conn of connections) {
-      const fromId = conn.from.instanceId;
-      const toId = conn.to.instanceId;
-
-      if (graph.has(fromId) && graph.has(toId)) {
-        graph.get(fromId).push(toId);
-        inDegree.set(toId, inDegree.get(toId) + 1);
-      }
-    }
-
-    // Topological sort (Kahn's algorithm)
-    const queue = [];
-    const order = [];
-
-    // Start with nodes that have no dependencies
-    for (const [instanceId, degree] of inDegree) {
-      if (degree === 0) {
-        queue.push(instanceId);
-      }
-    }
-
-    while (queue.length > 0) {
-      const current = queue.shift();
-      order.push(nodeMap.get(current));
-
-      // Process dependents
-      for (const dependent of graph.get(current)) {
-        inDegree.set(dependent, inDegree.get(dependent) - 1);
-        if (inDegree.get(dependent) === 0) {
-          queue.push(dependent);
-        }
-      }
-    }
-
-    // Check for cycles
-    if (order.length !== nodes.length) {
-      console.error("Circular dependency detected in pipeline");
-      return null;
-    }
-
-    return order;
-  }
-
-  async executeSequentialPipeline() {
-    for (const node of this.executionOrder) {
-      // Check for cancellation
-      if (this.executionCancelled) {
-        this.setNodeExecutionState(node, "cancelled");
-        continue;
-      }
-
-      // Wait if paused
-      while (this.executionPaused && !this.executionCancelled) {
-        await new Promise((resolve) => setTimeout(resolve, 100));
-      }
-
-      if (this.executionCancelled) {
-        this.setNodeExecutionState(node, "cancelled");
-        continue;
-      }
-
-      // Execute this node
-      this.currentExecutingNode = node;
-      this.setNodeExecutionState(node, "running");
-
-      try {
-        const result = await this.executeNode(node);
-        this.executionResults.set(node.dataset.instanceId, result);
-        this.setNodeExecutionState(node, "completed");
-        // Update data badges to show input/output status
-        this.updateNodeDataBadges(node, result);
-      } catch (error) {
-        console.error(
-          `Error executing node ${node.dataset.instanceId}:`,
-          error,
-        );
-        this.executionResults.set(node.dataset.instanceId, {
-          error: error.message,
-        });
-        this.setNodeExecutionState(node, "error");
-
-        // Stop execution on error
-        showToast(`Execution failed: ${error.message}`, "error");
-        this.executionCancelled = true;
-      }
-    }
-  }
-
-  async executeNode(node) {
-    const instanceId = node.dataset.instanceId;
-    const agentId = node.dataset.agentId; // This is the agent ID (e.g., "data_loader")
-
-    // Get instance data to extract config overrides
-    const agentData = JSON.parse(node.dataset.agentData || "{}");
-    const instanceConfig = agentData.config || null;
-
-    // Get input from connected nodes (only enabled connections)
-    const allConnections = this.connectionManager.getConnectionsData();
-    const enabledConnections = allConnections.filter(
-      (conn) => conn.enabled !== false,
-    );
-
-    const inputs = enabledConnections
-      .filter((conn) => conn.to.instanceId === instanceId)
-      .map((conn) => this.executionResults.get(conn.from.instanceId))
-      .filter((result) => result !== undefined);
-
-    // Call backend API to execute agent
-    try {
-      const payload = {
-        instanceId,
-        agentType: agentId, // Send agentId as agentType
-        inputs,
-        config: instanceConfig, // Send instance-specific config
-        mcpServerIds: agentData.mcpServerIds || [], // Send MCP server IDs
-        filePath: agentData.filePath || null, // Send file path if attached
-      };
-
-      console.log("📤 Sending execute request:", payload);
-
-      const response = await fetch(`${API_BASE_URL}/api/canvas/execute`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to execute agent: ${response.statusText}`);
-      }
-
-      const result = await response.json();
-
-      if (result.error) {
-        throw new Error(result.error);
-      }
-
-      return result;
-    } catch (error) {
-      console.error("Error executing node:", error);
-      throw error;
-    }
-  }
-
-  setNodeExecutionState(node, state) {
-    // Remove all state classes
-    node.classList.remove(
-      "node-running",
-      "node-completed",
-      "node-error",
-      "node-cancelled",
-      "node-loading",
-    );
-
-    // Add new state class
-    if (state === "running") {
-      node.classList.add("node-running", "node-loading");
-    } else if (state === "completed") {
-      node.classList.add("node-completed");
-    } else if (state === "error") {
-      node.classList.add("node-error");
-    } else if (state === "cancelled") {
-      node.classList.add("node-cancelled");
-    }
-  }
-
   /**
-   * Update data badges on a node based on execution results
-   * @param {HTMLElement} node - The agent node element
-   * @param {Object} executionData - The execution result data
-   */
-  updateNodeDataBadges(node, executionData) {
-    if (!node || !executionData) return;
-
-    const inputBadge = node.querySelector(".input-badge");
-    const outputBadge = node.querySelector(".output-badge");
-    const agentData = JSON.parse(node.dataset.agentData || "{}");
-
-    // Show input badge if node received inputs OR has a file attached
-    if (inputBadge) {
-      const hasInputs = executionData.inputs > 0;
-      const hasFile = agentData.filePath;
-
-      if (hasInputs || hasFile) {
-        inputBadge.style.display = "flex";
-        if (hasFile && executionData.inputs === 0) {
-          inputBadge.title = "File input attached";
-        } else {
-          inputBadge.title = `${executionData.inputs} input(s) received`;
-        }
-      }
-    }
-
-    // Show output badge if node produced output
-    if (outputBadge && executionData.output) {
-      // Validate that output is meaningful (not empty, not "None", not null)
-      const output = executionData.output.trim();
-      const isValidOutput =
-        output &&
-        output.toLowerCase() !== "none" &&
-        output !== "null" &&
-        output !== "undefined";
-
-      if (isValidOutput) {
-        outputBadge.style.display = "flex";
-        outputBadge.title = "Output generated";
-      }
-    }
-
-    // Re-initialize Lucide icons for badges
-    if (globalThis.lucide) {
-      globalThis.lucide.createIcons();
-    }
-  }
-
-  pauseExecution() {
-    this.executionPaused = true;
-    showToast("Execution paused", "info");
-  }
-
-  resumeExecution() {
-    this.executionPaused = false;
-    showToast("Execution resumed", "info");
-  }
-
-  cancelExecution() {
-    this.executionCancelled = true;
-    showToast("Cancelling execution...", "warning");
-  }
-
-  /**
-   * Show detailed data viewer modal for a specific node
+   * Show detailed data viewer modal for a specific node (config only, no execution data)
    * @param {string} instanceId - The node instance ID
    * @param {Object} agentInstance - The agent instance data
    */
   showNodeDataViewer(instanceId, agentInstance) {
-    const result = this.executionResults.get(instanceId);
-    const hasExecutionData = !!result;
+    // Show agent configuration info (pipeline design only — no execution in Amalia)
+    const connections = this.connectionManager
+      ? this.connectionManager.getConnectionsData()
+      : [];
+    const inputCount = connections.filter(
+      (c) => c.to.instanceId === instanceId,
+    ).length;
+    const outputCount = connections.filter(
+      (c) => c.from.instanceId === instanceId,
+    ).length;
 
-    // Allow viewing even without execution data (will show inputs/connections)
-    if (!hasExecutionData && !agentInstance.filePath) {
-      // Check if there are any input connections
-      const connections = this.connectionManager.getConnectionsData();
-      const inputConnections = connections.filter(
-        (conn) => conn.to.instanceId === instanceId,
-      );
-      if (inputConnections.length === 0) {
-        showToast(
-          "No data available - agent not executed and no inputs connected",
-          "info",
-        );
-        return;
-      }
-    }
-
-    // Get input data from connected nodes
-    const connections = this.connectionManager.getConnectionsData();
-    const inputConnections = connections.filter(
-      (conn) => conn.to.instanceId === instanceId,
-    );
-    const inputData = inputConnections.map((conn) => {
-      const inputResult = this.executionResults.get(conn.from.instanceId);
-      return {
-        fromAgent: conn.from.agentId,
-        fromInstance: conn.from.instanceId,
-        data: inputResult || null,
-      };
-    });
-
-    // Check if this node has a file attached
-    const hasFileInput = agentInstance.filePath;
-    const totalInputs = inputData.length + (hasFileInput ? 1 : 0);
-
-    // Create modal
     const modal = document.createElement("div");
     modal.className = "modal";
     modal.id = "node-data-viewer-modal";
@@ -713,67 +423,37 @@ class App {
     modal.innerHTML = `
       <div class="modal-content data-viewer-modal-content">
         <div class="modal-header">
-          <h2>Node Data: ${agentInstance.config?.name || agentInstance.id}</h2>
+          <h2>Node Info: ${agentInstance.config?.name || agentInstance.id}</h2>
           <button class="modal-close" onclick="document.getElementById('node-data-viewer-modal').remove()">
             <i data-lucide="x"></i>
           </button>
         </div>
         <div class="modal-body data-viewer-body">
-          <!-- Metadata Section -->
           <div class="data-section">
-            <h3>Agent Information</h3>
+            <h3>Agent Configuration</h3>
             <div class="data-grid">
               <div class="data-field">
                 <label>Instance ID:</label>
-                <span class="data-value monospace">${
-                  hasExecutionData ? result.instanceId : instanceId
-                }</span>
+                <span class="data-value monospace">${instanceId}</span>
               </div>
               <div class="data-field">
                 <label>Agent Type:</label>
-                <span class="data-value">${
-                  hasExecutionData
-                    ? result.agentType
-                    : agentInstance.config?.name || agentInstance.id
-                }</span>
+                <span class="data-value">${agentInstance.config?.name || agentInstance.id}</span>
               </div>
               <div class="data-field">
                 <label>Model:</label>
                 <span class="data-value">${agentInstance.config?.model || "N/A"}</span>
               </div>
-              ${
-                hasExecutionData
-                  ? `
               <div class="data-field">
-                <label>Timestamp:</label>
-                <span class="data-value">${new Date(
-                  result.timestamp,
-                ).toLocaleString()}</span>
+                <label>Input Connections:</label>
+                <span class="data-value">${inputCount}</span>
               </div>
               <div class="data-field">
-                <label>Input Count:</label>
-                <span class="data-value badge-count">${result.inputs}</span>
+                <label>Output Connections:</label>
+                <span class="data-value">${outputCount}</span>
               </div>
-              <div class="data-field">
-                <label>Status:</label>
-                <span class="data-value status-${
-                  result.error ? "error" : "success"
-                }">
-                  ${result.error ? "Error" : "Success"}
-                </span>
-              </div>
-              `
-                  : `
-              <div class="data-field">
-                <label>Status:</label>
-                <span class="data-value status-pending">Not Executed</span>
-              </div>
-              `
-              }
             </div>
           </div>
-
-          <!-- MCP Tools Section -->
           ${
             agentInstance.mcpTools && agentInstance.mcpTools.length > 0
               ? `
@@ -801,106 +481,6 @@ class App {
           `
               : ""
           }
-
-          <!-- Input Data Section -->
-          <div class="data-section">
-            <h3>Input Data (${totalInputs} source${
-              totalInputs === 1 ? "" : "s"
-            })</h3>
-            ${
-              hasFileInput
-                ? `
-              <div class="data-connections">
-                <div class="connection-data">
-                  <div class="connection-header">
-                    <span class="connection-label">File Input</span>
-                    <span class="connection-id monospace">Attached File</span>
-                  </div>
-                  <pre class="data-preview file-path-display">
-File Path: ${agentInstance.filePath}
-
-Note: Agent should use MCP filesystem tools to read this file.
-The file path has been passed to the agent's execution context.
-                  </pre>
-                </div>
-              </div>
-            `
-                : ""
-            }
-            ${
-              inputData.length > 0
-                ? `
-              <div class="data-connections">
-                ${inputData
-                  .map(
-                    (input, idx) => `
-                  <div class="connection-data">
-                    <div class="connection-header">
-                      <span class="connection-label">From: ${
-                        input.fromAgent
-                      }</span>
-                      <span class="connection-id monospace">${
-                        input.fromInstance
-                      }</span>
-                    </div>
-                    ${
-                      input.data
-                        ? `
-                      <pre class="data-preview">${this.formatDataForDisplay(
-                        input.data.output,
-                      )}</pre>
-                    `
-                        : '<p class="no-data">No data available</p>'
-                    }
-                  </div>
-                `,
-                  )
-                  .join("")}
-              </div>
-            `
-                : !hasFileInput
-                  ? '<p class="no-data">No input connections</p>'
-                  : ""
-            }
-          </div>
-
-          <!-- Output Data Section -->
-          <div class="data-section">
-            <h3>Output Data</h3>
-            ${
-              !hasExecutionData
-                ? '<p class="no-data">Agent has not been executed yet</p>'
-                : result.error
-                  ? `
-              <div class="error-display">
-                <span>ERROR: ${result.error}</span>
-              </div>
-            `
-                  : `
-              <pre class="data-preview output-preview">${this.formatDataForDisplay(
-                result.output,
-              )}</pre>
-            `
-            }
-          </div>
-
-          <!-- Actions Section -->
-          ${
-            hasExecutionData
-              ? `
-          <div class="data-section data-actions">
-            <button class="btn btn-secondary" id="copy-output-btn">
-              COPY OUTPUT
-            </button>
-            <button class="btn btn-secondary" onclick="${this.getDownloadDataHandler(
-              result,
-            )}">
-              DOWNLOAD JSON
-            </button>
-          </div>
-          `
-              : ""
-          }
         </div>
         <div class="modal-footer">
           <button class="btn btn-primary" onclick="document.getElementById('node-data-viewer-modal').remove()">
@@ -912,30 +492,14 @@ The file path has been passed to the agent's execution context.
 
     document.body.appendChild(modal);
 
-    // Add copy output button handler
-    const copyBtn = modal.querySelector("#copy-output-btn");
-    if (copyBtn && hasExecutionData && !result.error) {
-      copyBtn.addEventListener("click", () => {
-        navigator.clipboard
-          .writeText(JSON.stringify(result.output, null, 2))
-          .then(() => showToast("Output copied to clipboard", "success"))
-          .catch((err) => showToast("Failed to copy output", "error"));
-      });
-    }
-
-    // Initialize Lucide icons
     if (globalThis.lucide) {
       globalThis.lucide.createIcons();
     }
 
-    // Close on overlay click
     modal.addEventListener("click", (e) => {
-      if (e.target === modal) {
-        modal.remove();
-      }
+      if (e.target === modal) modal.remove();
     });
 
-    // Close on Escape key
     const escapeHandler = (e) => {
       if (e.key === "Escape") {
         modal.remove();
@@ -943,332 +507,6 @@ The file path has been passed to the agent's execution context.
       }
     };
     document.addEventListener("keydown", escapeHandler);
-  }
-
-  /**
-   * Format data for display in the data viewer
-   * @param {any} data - The data to format
-   * @returns {string} Formatted string
-   */
-  formatDataForDisplay(data) {
-    if (data === null || data === undefined) {
-      return "(no data)";
-    }
-
-    if (typeof data === "string") {
-      // Truncate very long strings
-      if (data.length > 2000) {
-        return data.substring(0, 2000) + "\n... (truncated)";
-      }
-      return data;
-    }
-
-    try {
-      return JSON.stringify(data, null, 2);
-    } catch (error) {
-      console.warn("Failed to stringify data:", error);
-      return String(data);
-    }
-  }
-
-  /**
-   * Get download handler for execution data
-   * @param {Object} result - The execution result
-   * @returns {string} JavaScript code for download handler
-   */
-  getDownloadDataHandler(result) {
-    const dataStr = JSON.stringify(result, null, 2);
-    const escaped = dataStr.replaceAll('"', "&quot;").replaceAll("'", "\\'");
-    return `(() => {
-      const data = '${escaped}';
-      const blob = new Blob([data], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'execution-${result.instanceId}-${Date.now()}.json';
-      a.click();
-      URL.revokeObjectURL(url);
-      showToast('Data downloaded', 'success');
-    })()`;
-  }
-
-  /**
-   * Show file attachment modal for data_loader nodes
-   * @param {HTMLElement} node - The node element
-   * @param {Object} agentInstance - The agent instance data
-   */
-  async showFileAttachmentModal(node, agentInstance) {
-    try {
-      // Fetch available files
-      const response = await api.listFiles();
-      const files = response.files || [];
-
-      // Create modal
-      const modal = document.createElement("div");
-      modal.className = "modal";
-      modal.id = "file-attachment-modal";
-      modal.style.display = "flex";
-
-      modal.innerHTML = `
-        <div class="modal-content">
-          <div class="modal-header">
-            <h2>Attach File to Data Loader</h2>
-            <button class="modal-close" onclick="document.getElementById('file-attachment-modal').remove()">
-              <i data-lucide="x"></i>
-            </button>
-          </div>
-          <div class="modal-body">
-            ${
-              agentInstance.filePath
-                ? `
-              <div class="current-file-info">
-                <h3>Current File</h3>
-                <div class="file-path-display">
-                  <i data-lucide="file-text"></i>
-                  <span>${agentInstance.filePath}</span>
-                </div>
-                <button class="btn btn-secondary" id="remove-file-attachment">
-                  <i data-lucide="x"></i> Remove Attachment
-                </button>
-              </div>
-              <div class="divider"></div>
-            `
-                : ""
-            }
-            <h3>Available Files</h3>
-            ${
-              files.length === 0
-                ? `
-              <p class="no-data">No files uploaded yet. Please upload a CSV file first.</p>
-            `
-                : `
-              <div class="file-list">
-                ${files
-                  .map(
-                    (file) => `
-                  <div class="file-item" data-filename="${file.filename}">
-                    <div class="file-info">
-                      <i data-lucide="file-text"></i>
-                      <div class="file-details">
-                        <span class="file-name">${file.filename}</span>
-                        <span class="file-meta">${file.size_mb} MB • ${new Date(
-                          file.created_at * 1000,
-                        ).toLocaleDateString()}</span>
-                      </div>
-                    </div>
-                    <button class="btn btn-primary btn-sm attach-file-btn" data-filename="${
-                      file.filename
-                    }">
-                      ATTACH
-                    </button>
-                  </div>
-                `,
-                  )
-                  .join("")}
-              </div>
-            `
-            }
-          </div>
-          <div class="modal-footer">
-            <button class="btn btn-secondary" onclick="document.getElementById('file-attachment-modal').remove()">
-              Cancel
-            </button>
-          </div>
-        </div>
-      `;
-
-      document.body.appendChild(modal);
-
-      // Initialize Lucide icons
-      if (globalThis.lucide) {
-        globalThis.lucide.createIcons();
-      }
-
-      // Add event listeners for attach buttons
-      modal.querySelectorAll(".attach-file-btn").forEach((btn) => {
-        btn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          const filename = btn.dataset.filename;
-          this.attachFileToNode(node, agentInstance, filename);
-          modal.remove();
-        });
-      });
-
-      // Add event listener for remove button
-      const removeBtn = modal.querySelector("#remove-file-attachment");
-      if (removeBtn) {
-        removeBtn.addEventListener("click", () => {
-          this.removeFileFromNode(node, agentInstance);
-          modal.remove();
-        });
-      }
-
-      // Close on overlay click
-      modal.addEventListener("click", (e) => {
-        if (e.target === modal) {
-          modal.remove();
-        }
-      });
-
-      // Close on Escape key
-      const escapeHandler = (e) => {
-        if (e.key === "Escape") {
-          modal.remove();
-          document.removeEventListener("keydown", escapeHandler);
-        }
-      };
-      document.addEventListener("keydown", escapeHandler);
-    } catch (error) {
-      console.error("Error loading files:", error);
-      showToast("Failed to load files", "error");
-    }
-  }
-
-  /**
-   * Attach a file to a data_loader node
-   * @param {HTMLElement} node - The node element
-   * @param {Object} agentInstance - The agent instance data
-   * @param {string} filename - The filename to attach
-   */
-  attachFileToNode(node, agentInstance, filename) {
-    // Build the full file path
-    const filePath = `/app/data/uploads/${filename}`;
-
-    // Update agent instance data
-    const updatedInstance = {
-      ...agentInstance,
-      filePath: filePath,
-    };
-
-    // Update node dataset
-    node.dataset.agentData = JSON.stringify(updatedInstance);
-
-    // Add or update file indicator
-    let fileIndicator = node.querySelector(".node-file-indicator");
-    if (!fileIndicator) {
-      fileIndicator = document.createElement("div");
-      fileIndicator.className = "node-file-indicator";
-      node.appendChild(fileIndicator);
-    }
-
-    fileIndicator.setAttribute("title", `File attached: ${filename}`);
-    fileIndicator.innerHTML =
-      '<i data-lucide="paperclip" style="width:10px;height:10px;"></i>';
-    if (globalThis.lucide) {
-      globalThis.lucide.createIcons();
-    }
-
-    // Update data badges
-    this.updateNodeDataBadges(node.dataset.instanceId, {
-      hasInputData: true,
-      hasOutputData: false,
-    });
-
-    showToast(`File "${filename}" attached successfully`, "success");
-  }
-
-  /**
-   * Remove file attachment from a node
-   * @param {HTMLElement} node - The node element
-   * @param {Object} agentInstance - The agent instance data
-   */
-  removeFileFromNode(node, agentInstance) {
-    // Update agent instance data
-    const updatedInstance = {
-      ...agentInstance,
-      filePath: null,
-    };
-
-    // Update node dataset
-    node.dataset.agentData = JSON.stringify(updatedInstance);
-
-    // Remove file indicator
-    const fileIndicator = node.querySelector(".node-file-indicator");
-    if (fileIndicator) {
-      fileIndicator.remove();
-    }
-
-    // Update data badges
-    const hasInputConnections = this.connectionManager
-      .getConnectionsData()
-      .some((conn) => conn.to.instanceId === node.dataset.instanceId);
-
-    this.updateNodeDataBadges(node.dataset.instanceId, {
-      hasInputData: hasInputConnections,
-      hasOutputData: this.executionResults.has(node.dataset.instanceId),
-    });
-
-    showToast("File attachment removed", "success");
-  }
-
-  showExecutionLogs(instanceId) {
-    const result = this.executionResults.get(instanceId);
-
-    if (!result) {
-      showToast("No execution logs available for this agent", "info");
-      return;
-    }
-
-    // Create and show logs modal
-    const modal = document.createElement("div");
-    modal.className = "modal-overlay";
-    modal.id = "execution-logs-modal";
-
-    modal.innerHTML = `
-      <div class="modal-content execution-logs-modal-content">
-        <div class="modal-header">
-          <h2>Execution Logs</h2>
-          <button class="modal-close" onclick="document.getElementById('execution-logs-modal').remove()">
-            <i data-lucide="x"></i>
-          </button>
-        </div>
-        <div class="modal-body">
-          <div class="execution-logs-info">
-            <div class="log-field">
-              <label>Instance ID:</label>
-              <span>${result.instanceId}</span>
-            </div>
-            <div class="log-field">
-              <label>Agent Type:</label>
-              <span>${result.agentType}</span>
-            </div>
-            <div class="log-field">
-              <label>Timestamp:</label>
-              <span>${new Date(result.timestamp).toLocaleString()}</span>
-            </div>
-            <div class="log-field">
-              <label>Input Count:</label>
-              <span>${result.inputs}</span>
-            </div>
-          </div>
-          <div class="execution-logs-output">
-            <h3>Output</h3>
-            <pre>${
-              result.error
-                ? `ERROR: ${result.error}`
-                : JSON.stringify(result.output, null, 2)
-            }</pre>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" onclick="document.getElementById('execution-logs-modal').remove()">Close</button>
-        </div>
-      </div>
-    `;
-
-    document.body.appendChild(modal);
-
-    // Initialize Lucide icons
-    if (globalThis.lucide) {
-      globalThis.lucide.createIcons();
-    }
-
-    // Close on overlay click
-    modal.addEventListener("click", (e) => {
-      if (e.target === modal) {
-        modal.remove();
-      }
-    });
   }
 
   toggleCanvasMode() {
@@ -1664,14 +902,6 @@ The file path has been passed to the agent's execution context.
       }</div>
       <div class="agent-node-input" data-port="input" title="Input connection"></div>
       <div class="agent-node-output" data-port="output" title="Output connection"></div>
-      <div class="agent-node-data-badges">
-        <span class="data-badge input-badge" style="display: none;" title="Has input data">
-          <i data-lucide="arrow-down-to-line"></i>
-        </span>
-        <span class="data-badge output-badge" style="display: none;" title="Has output data">
-          <i data-lucide="arrow-up-from-line"></i>
-        </span>
-      </div>
     `;
 
     // Initialize Lucide icons
@@ -2009,40 +1239,14 @@ The file path has been passed to the agent's execution context.
     menu.className = "agent-node-menu";
     menu.id = "active-node-menu";
 
-    // Check if this node is currently executing
     const instanceId = node.dataset.instanceId;
-    const isExecuting = this.currentExecutingNode === node;
 
-    if (isExecuting) {
-      // Show execution controls
-      menu.innerHTML = `
-        <button class="agent-node-menu-btn" data-action="pause">${
-          this.executionPaused ? "RESUME" : "PAUSE"
-        }</button>
-        <button class="agent-node-menu-btn" data-action="cancel">CANCEL</button>
-        <button class="agent-node-menu-btn" data-action="logs">LOGS</button>
-      `;
-    } else {
-      // Check if node has execution results
-      const hasExecutionData = this.executionResults.has(instanceId);
-
-      // Check if this is a data_loader agent - check by name since ID is generated
-      const isDataLoader = agentInstance.config?.name === "data_loader";
-
-      // Show normal controls
-      menu.innerHTML = `
-        <button class="agent-node-menu-btn" data-action="execute-prompt" title="Execute with custom prompt">EXECUTE</button>
-        <button class="agent-node-menu-btn" data-action="view-data">VIEW DATA</button>
-        ${
-          isDataLoader
-            ? '<button class="agent-node-menu-btn" data-action="attach-file">ATTACH FILE</button>'
-            : ""
-        }
-        <button class="agent-node-menu-btn" data-action="edit">EDIT</button>
-        <button class="agent-node-menu-btn" data-action="duplicate">DUPLICATE</button>
-        <button class="agent-node-menu-btn delete" data-action="delete">DELETE</button>
-      `;
-    }
+    menu.innerHTML = `
+      <button class="agent-node-menu-btn" data-action="info">INFO</button>
+      <button class="agent-node-menu-btn" data-action="edit">EDIT</button>
+      <button class="agent-node-menu-btn" data-action="duplicate">DUPLICATE</button>
+      <button class="agent-node-menu-btn delete" data-action="delete">DELETE</button>
+    `;
 
     // Menu uses fixed positioning relative to the screen so it is not affected
     // by the canvas-viewport CSS transform.
@@ -2053,129 +1257,59 @@ The file path has been passed to the agent's execution context.
 
     document.body.appendChild(menu);
 
-    // Add event listeners based on menu type
-    if (isExecuting) {
-      const pauseBtn = menu.querySelector('[data-action="pause"]');
-      if (pauseBtn) {
-        pauseBtn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          if (this.executionPaused) {
-            this.resumeExecution();
-          } else {
-            this.pauseExecution();
+    // INFO - show node config viewer
+    menu
+      .querySelector('[data-action="info"]')
+      .addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.showNodeDataViewer(instanceId, agentInstance);
+        this.hideNodeActionMenu();
+      });
+
+    // EDIT - open agent config modal
+    menu
+      .querySelector('[data-action="edit"]')
+      .addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.agentConfig.openModal(agentInstance, (updatedConfig) => {
+          const updatedInstance = { ...agentInstance, config: updatedConfig };
+          node.dataset.agentData = JSON.stringify(updatedInstance);
+          const header = node.querySelector(".agent-node-header");
+          if (header) {
+            header.innerHTML = updatedConfig.icon
+              ? `<i data-lucide="${updatedConfig.icon}" class="agent-node-icon"></i>`
+              : `<span class="agent-node-name">${updatedConfig.name}</span>`;
+            if (globalThis.lucide) globalThis.lucide.createIcons();
           }
-          this.hideNodeActionMenu();
-        });
-      }
-
-      const cancelBtn = menu.querySelector('[data-action="cancel"]');
-      if (cancelBtn) {
-        cancelBtn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          this.cancelExecution();
-          this.hideNodeActionMenu();
-        });
-      }
-
-      const logsBtn = menu.querySelector('[data-action="logs"]');
-      if (logsBtn) {
-        logsBtn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          this.showExecutionLogs(instanceId);
-          this.hideNodeActionMenu();
-        });
-      }
-    } else {
-      // Normal menu event listeners
-      const executePromptBtn = menu.querySelector(
-        '[data-action="execute-prompt"]',
-      );
-      if (executePromptBtn) {
-        executePromptBtn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          this.showExecutePromptModal(node, agentInstance);
-          this.hideNodeActionMenu();
-        });
-      }
-
-      const viewDataBtn = menu.querySelector('[data-action="view-data"]');
-      if (viewDataBtn) {
-        viewDataBtn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          this.showNodeDataViewer(instanceId, agentInstance);
-          this.hideNodeActionMenu();
-        });
-      }
-
-      const attachFileBtn = menu.querySelector('[data-action="attach-file"]');
-      if (attachFileBtn) {
-        attachFileBtn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          this.showFileAttachmentModal(node, agentInstance);
-          this.hideNodeActionMenu();
-        });
-      }
-
-      menu
-        .querySelector('[data-action="edit"]')
-        .addEventListener("click", (e) => {
-          e.stopPropagation();
-          // Open modal with instance data and update callback
-          this.agentConfig.openModal(agentInstance, (updatedConfig) => {
-            // Update the instance data in the node
-            const updatedInstance = {
-              ...agentInstance,
-              config: updatedConfig,
-            };
-            node.dataset.agentData = JSON.stringify(updatedInstance);
-
-            // Update the displayed name and icon if changed
-            const header = node.querySelector(".agent-node-header");
-            if (header) {
-              if (updatedConfig.icon) {
-                header.innerHTML = `<i data-lucide="${updatedConfig.icon}" class="agent-node-icon"></i>`;
-              } else {
-                header.innerHTML = `<span class="agent-node-name">${updatedConfig.name}</span>`;
-              }
-              // Re-initialize Lucide icons
-              if (globalThis.lucide) {
-                globalThis.lucide.createIcons();
-              }
-            }
-
-            // Update the model display
-            const modelDisplay = node.querySelector(".agent-node-model");
-            if (modelDisplay) {
-              modelDisplay.textContent = updatedConfig.model;
-              modelDisplay.title = `Model: ${updatedConfig.model}`;
-            }
-          });
-          this.hideNodeActionMenu();
-        });
-
-      menu
-        .querySelector('[data-action="duplicate"]')
-        .addEventListener("click", (e) => {
-          e.stopPropagation();
-          this.duplicateAgentNode(node, agentInstance);
-          this.hideNodeActionMenu();
-        });
-
-      menu
-        .querySelector('[data-action="delete"]')
-        .addEventListener("click", (e) => {
-          e.stopPropagation();
-          const instanceId = node.dataset.instanceId;
-
-          // Remove all connections for this node
-          if (this.connectionManager) {
-            this.connectionManager.removeNodeConnections(instanceId);
+          const modelDisplay = node.querySelector(".agent-node-model");
+          if (modelDisplay) {
+            modelDisplay.textContent = updatedConfig.model;
+            modelDisplay.title = `Model: ${updatedConfig.model}`;
           }
-
-          node.remove();
-          this.hideNodeActionMenu();
         });
-    }
+        this.hideNodeActionMenu();
+      });
+
+    // DUPLICATE
+    menu
+      .querySelector('[data-action="duplicate"]')
+      .addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.duplicateAgentNode(node, agentInstance);
+        this.hideNodeActionMenu();
+      });
+
+    // DELETE
+    menu
+      .querySelector('[data-action="delete"]')
+      .addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (this.connectionManager) {
+          this.connectionManager.removeNodeConnections(instanceId);
+        }
+        node.remove();
+        this.hideNodeActionMenu();
+      });
 
     // Close menu when clicking outside
     // Remove any existing listener first to prevent conflicts
@@ -2209,178 +1343,6 @@ The file path has been passed to the agent's execution context.
       document.removeEventListener("click", this.menuCloseListener);
       this.menuCloseListener = null;
     }
-  }
-
-  showExecutePromptModal(node, agentInstance) {
-    const instanceId = node.dataset.instanceId;
-
-    // Create modal
-    const modal = document.createElement("div");
-    modal.className = "modal";
-    modal.id = "execute-prompt-modal";
-    modal.style.display = "flex";
-
-    modal.innerHTML = `
-      <div class="modal-content" style="max-width: 600px;">
-        <div class="modal-header">
-          <h2>Execute Agent: ${
-            agentInstance.config?.name || agentInstance.id
-          }</h2>
-          <button class="modal-close" onclick="document.getElementById('execute-prompt-modal').remove()">
-            <i data-lucide="x"></i>
-          </button>
-        </div>
-        <div class="modal-body">
-          <div class="form-group">
-            <label for="execute-user-prompt">User Prompt</label>
-            <textarea
-              id="execute-user-prompt"
-              class="form-control"
-              rows="6"
-              placeholder="Enter a custom prompt to execute this agent directly (bypasses interaction agent for testing)..."
-              autofocus
-            ></textarea>
-            <small class="form-help">
-              This prompt will be sent directly to the agent for execution. 
-              Use this to test individual agents without going through the full pipeline.
-            </small>
-          </div>
-          <div class="form-group">
-            <label>Agent Info</label>
-            <div class="agent-info-grid">
-              <div class="info-field">
-                <span class="info-label">Type:</span>
-                <span class="info-value">${
-                  agentInstance.config?.name || "N/A"
-                }</span>
-              </div>
-              <div class="info-field">
-                <span class="info-label">Model:</span>
-                <span class="info-value">${
-                  agentInstance.config?.model || "N/A"
-                }</span>
-              </div>
-              <div class="info-field">
-                <span class="info-label">Instance ID:</span>
-                <span class="info-value monospace">${instanceId}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" onclick="document.getElementById('execute-prompt-modal').remove()">
-            Cancel
-          </button>
-          <button class="btn btn-primary" id="execute-prompt-btn">
-            Execute Agent
-          </button>
-        </div>
-      </div>
-    `;
-
-    document.body.appendChild(modal);
-
-    // Initialize Lucide icons
-    if (globalThis.lucide) {
-      globalThis.lucide.createIcons();
-    }
-
-    // Handle execute button
-    const executeBtn = document.getElementById("execute-prompt-btn");
-    const promptTextarea = document.getElementById("execute-user-prompt");
-
-    executeBtn.addEventListener("click", async () => {
-      const userPrompt = promptTextarea.value.trim();
-
-      if (!userPrompt) {
-        showToast("Please enter a prompt", "warning");
-        promptTextarea.focus();
-        return;
-      }
-
-      // Close modal
-      modal.remove();
-
-      // Execute the node with the custom prompt
-      try {
-        this.setNodeExecutionState(node, "running");
-
-        // Get input from connected nodes
-        const connections = this.connectionManager.getConnectionsData();
-        const inputs = connections
-          .filter((conn) => conn.to.instanceId === instanceId)
-          .map((conn) => this.executionResults.get(conn.from.instanceId))
-          .filter((result) => result !== undefined);
-
-        // Add user prompt as additional context
-        const promptInput = {
-          instanceId: "user_prompt",
-          agentType: "user_input",
-          output: userPrompt,
-          timestamp: new Date().toISOString(),
-          inputs: 0,
-        };
-
-        // Prepend user prompt to inputs
-        const allInputs = [promptInput, ...inputs];
-
-        // Execute via API
-        const response = await fetch(`${API_BASE_URL}/api/canvas/execute`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            instanceId,
-            agentType: node.dataset.agentId,
-            inputs: allInputs,
-            config: agentInstance.config || null,
-            mcpServerIds: agentInstance.mcpServerIds || [],
-            filePath: agentInstance.filePath || null,
-          }),
-        });
-
-        if (!response.ok) {
-          throw new Error(`Failed to execute agent: ${response.statusText}`);
-        }
-
-        const result = await response.json();
-
-        if (result.error) {
-          throw new Error(result.error);
-        }
-
-        // Store and display results
-        this.executionResults.set(instanceId, result);
-        this.updateNodeDataBadges(node, result);
-        this.setNodeExecutionState(node, "completed");
-
-        showToast("Agent executed successfully", "success");
-      } catch (error) {
-        console.error("Error executing agent:", error);
-        this.setNodeExecutionState(node, "error");
-        showToast(`Execution failed: ${error.message}`, "error");
-      }
-    });
-
-    // Close on overlay click
-    modal.addEventListener("click", (e) => {
-      if (e.target === modal) {
-        modal.remove();
-      }
-    });
-
-    // Close on Escape key
-    const escapeHandler = (e) => {
-      if (e.key === "Escape") {
-        modal.remove();
-        document.removeEventListener("keydown", escapeHandler);
-      }
-    };
-    document.addEventListener("keydown", escapeHandler);
-
-    // Focus the textarea
-    setTimeout(() => promptTextarea.focus(), 100);
   }
 
   duplicateAgentNode(originalNode, agentInstance) {
@@ -2489,23 +1451,29 @@ The file path has been passed to the agent's execution context.
   }
 
   /**
-   * Infer MCP server URL from server configuration
+   * Infer MCP server URL from server configuration.
+   * Canonical source of truth is ConnectionManager.MCP_SERVER_MAP;
+   * this is a fallback for servers fetched from the registry that
+   * don't already carry an explicit URL.
    */
   inferMcpServerUrl(server) {
-    // Common MCP server URL patterns used in docker-compose
     const serverIdToPort = {
       mathematics: 8001,
+      "python-mathematics": 8001,
+      "data-loading": 8002,
       data_loading: 8002,
-      data_loader: 8002,
+      "data-preparation": 8003,
       data_preparation: 8003,
+      "model-training": 8004,
       model_training: 8004,
+      "model-evaluation": 8005,
       model_evaluation: 8005,
+      "feature-engineering": 8006,
+      feature_engineering: 8006,
     };
 
-    // Try to find port from server ID or name
-    const serverId = server.id.toLowerCase().replaceAll(/[^a-z_]/g, "");
+    const serverId = server.id?.toLowerCase() || "";
     const port = serverIdToPort[serverId] || 8000;
-
     return `http://host.docker.internal:${port}/mcp`;
   }
 
@@ -2721,14 +1689,6 @@ The file path has been passed to the agent's execution context.
         }
         <div class="agent-node-input" data-port="input" title="Input connection"></div>
         <div class="agent-node-output" data-port="output" title="Output connection"></div>
-        <div class="agent-node-data-badges">
-          <span class="data-badge input-badge" style="display: none;" title="Has input data">
-            IN
-          </span>
-          <span class="data-badge output-badge" style="display: none;" title="Has output data">
-            OUT
-          </span>
-        </div>
       `;
 
       // Make draggable
