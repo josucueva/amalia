@@ -881,8 +881,16 @@ class ConnectionManager {
 
     const connections = this.getConnectionsData();
 
-    // Perform topological sort to determine execution order
-    const sortedNodes = this.topologicalSort(nodes, connections);
+    // Separate the canvas start node from agent nodes
+    const startNode = nodes.find(
+      (n) => n.agentId === "start_trigger" || n.type === "start",
+    );
+    const agentNodes = nodes.filter(
+      (n) => n.agentId !== "start_trigger" && n.type !== "start",
+    );
+
+    // Perform topological sort to determine execution order (agent nodes only)
+    const sortedNodes = this.topologicalSort(agentNodes, connections);
 
     // Generate Sim AI format
     const simWorkflow = {
@@ -903,17 +911,18 @@ class ConnectionManager {
       },
     };
 
-    // Create start_trigger block
+    // Create start_trigger block — populate filePath from the canvas start node
     const startTriggerId = this.generateUUID();
     const filePathInputId = this.generateUUID();
     const inputTextId = this.generateUUID();
+    const canvasFilePath = startNode?.filePath || "";
 
     simWorkflow.state.blocks[startTriggerId] = {
       id: startTriggerId,
       type: "start_trigger",
       name: "Start",
       position: {
-        x: sortedNodes.length > 0 ? sortedNodes[0].position.x - 200 : -140,
+        x: sortedNodes.length > 0 ? sortedNodes[0].position.x - 250 : -140,
         y: sortedNodes.length > 0 ? sortedNodes[0].position.y : -370,
       },
       enabled: true,
@@ -930,16 +939,16 @@ class ConnectionManager {
               id: filePathInputId,
               name: "filePath",
               type: "string",
-              value: "",
+              value: canvasFilePath,
               collapsed: false,
             },
             {
               id: inputTextId,
-              name: "input",
+              name: "inputText",
               type: "string",
               value: "",
               collapsed: false,
-              description: "User input or instructions",
+              description: "",
             },
           ],
         },
@@ -953,13 +962,9 @@ class ConnectionManager {
           type: "string",
           description: "Primary user input or message",
         },
-        filePath: {
-          type: "string",
-          description: "File path for processing",
-        },
         conversationId: {
           type: "string",
-          description: "Conversation ID",
+          description: "Conversation thread identifier",
         },
       },
       data: {},
@@ -1026,34 +1031,25 @@ class ConnectionManager {
     // Get MCP tools for this agent
     const agentMcpTools = this.getAgentMcpTools(node, mcpServers);
 
-    // Build system prompt
-    let systemPrompt =
+    // Build agent instruction as a user message (Sim AI uses role:"user" for block instructions)
+    const systemPrompt =
+      node.config?.system_prompt ||
       node.system_prompt ||
+      node.config?.description ||
       node.description ||
       "You are a helpful AI assistant.";
 
-    // Enhance system prompt with MCP tool descriptions if available
-    if (agentMcpTools.length > 0) {
-      systemPrompt += "\n\nAvailable MCP Tools:\n";
-      agentMcpTools.forEach((tool) => {
-        systemPrompt += `- ${tool.title}: ${tool.schema?.description || "No description"}\n`;
-      });
-    }
-
-    // Create messages array with system prompt
     const messages = [
       {
-        id: this.generateUUID(),
-        role: "system",
+        role: "user",
         content: systemPrompt,
-        collapsed: false,
       },
     ];
 
     return {
       id: blockId,
       type: "agent",
-      name: node.name || "Agent",
+      name: node.config?.name || node.name || "Agent",
       position: {
         x: node.position.x,
         y: node.position.y,
@@ -1066,8 +1062,8 @@ class ConnectionManager {
       subBlocks: {
         model: {
           id: "model",
-          type: "model-selector",
-          value: this.convertModelName(node.model),
+          type: "combobox",
+          value: this.convertModelName(node.config?.model || node.model),
         },
         tools: {
           id: "tools",
@@ -1081,33 +1077,33 @@ class ConnectionManager {
         },
         skills: {
           id: "skills",
-          type: "skills-selector",
+          type: "skill-input",
           value: [],
         },
         messages: {
           id: "messages",
-          type: "messages",
+          type: "messages-input",
           value: messages,
         },
         maxTokens: {
           id: "maxTokens",
           type: "short-input",
-          value: node.max_tokens || 2000,
+          value: node.config?.max_tokens || node.max_tokens || null,
         },
         verbosity: {
           id: "verbosity",
-          type: "verbosity-selector",
+          type: "dropdown",
           value: "",
         },
         memoryType: {
           id: "memoryType",
-          type: "memory-selector",
+          type: "dropdown",
           value: "none",
         },
         temperature: {
           id: "temperature",
-          type: "short-input",
-          value: node.temperature || 0.7,
+          type: "slider",
+          value: node.config?.temperature ?? node.temperature ?? 0.7,
         },
         azureEndpoint: {
           id: "azureEndpoint",
@@ -1121,7 +1117,7 @@ class ConnectionManager {
         },
         thinkingLevel: {
           id: "thinkingLevel",
-          type: "thinking-level-selector",
+          type: "dropdown",
           value: "",
         },
         vertexProject: {
@@ -1136,7 +1132,7 @@ class ConnectionManager {
         },
         responseFormat: {
           id: "responseFormat",
-          type: "response-format",
+          type: "code",
           value: null,
         },
         vertexLocation: {
@@ -1151,7 +1147,7 @@ class ConnectionManager {
         },
         reasoningEffort: {
           id: "reasoningEffort",
-          type: "reasoning-effort-selector",
+          type: "dropdown",
           value: "",
         },
         bedrockSecretKey: {
@@ -1161,7 +1157,7 @@ class ConnectionManager {
         },
         vertexCredential: {
           id: "vertexCredential",
-          type: "short-input",
+          type: "oauth-input",
           value: null,
         },
         slidingWindowSize: {
@@ -1212,46 +1208,132 @@ class ConnectionManager {
   }
 
   /**
-   * Get MCP tools for an agent in Sim AI format
+   * MCP server ID → { url, name } mapping for Sim AI export.
+   * URLs use host.docker.internal so they resolve correctly when Sim AI
+   * runs inside Docker and needs to reach servers on the host.
+   */
+  static get MCP_SERVER_MAP() {
+    return {
+      "python-mathematics": {
+        url: "http://host.docker.internal:8001/mcp",
+        name: "Mathematics Server",
+      },
+      mathematics: {
+        url: "http://host.docker.internal:8001/mcp",
+        name: "Mathematics Server",
+      },
+      "data-loading": {
+        url: "http://host.docker.internal:8002/mcp",
+        name: "Data Loading Server",
+      },
+      data_loading: {
+        url: "http://host.docker.internal:8002/mcp",
+        name: "Data Loading Server",
+      },
+      "data-preparation": {
+        url: "http://host.docker.internal:8003/mcp",
+        name: "Data Preparation Server",
+      },
+      data_preparation: {
+        url: "http://host.docker.internal:8003/mcp",
+        name: "Data Preparation Server",
+      },
+      "model-training": {
+        url: "http://host.docker.internal:8004/mcp",
+        name: "Model Training Server",
+      },
+      model_training: {
+        url: "http://host.docker.internal:8004/mcp",
+        name: "Model Training Server",
+      },
+      "model-evaluation": {
+        url: "http://host.docker.internal:8005/mcp",
+        name: "Model Evaluation Server",
+      },
+      model_evaluation: {
+        url: "http://host.docker.internal:8005/mcp",
+        name: "Model Evaluation Server",
+      },
+      "feature-engineering": {
+        url: "http://host.docker.internal:8006/mcp",
+        name: "Feature Engineering Server",
+      },
+      feature_engineering: {
+        url: "http://host.docker.internal:8006/mcp",
+        name: "Feature Engineering Server",
+      },
+    };
+  }
+
+  /**
+   * Get MCP tools for an agent in Sim AI format.
+   *
+   * Priority order:
+   *   1. node.mcpTools  — structured tools set by the orchestrator / canvas converter
+   *   2. node.mcp_server_ids — look up servers from the mcpServers registry
    */
   getAgentMcpTools(node, mcpServers) {
-    const tools = [];
+    const serverMap = ConnectionManager.MCP_SERVER_MAP;
 
-    // If agent has mcp_server_ids, get those servers and format tools
+    // --- Priority 1: use the mcpTools array stored on the canvas node ---
+    // These are set by convertSimAIToCanvas → extractMcpTools and carry
+    // the exact tool names chosen by the orchestrator.
+    if (
+      node.mcpTools &&
+      Array.isArray(node.mcpTools) &&
+      node.mcpTools.length > 0
+    ) {
+      return node.mcpTools.map((tool) => {
+        const serverId = tool.serverId || tool.params?.serverId || "";
+        const toolName =
+          tool.toolName || tool.params?.toolName || tool.title || "";
+        const serverInfo = serverMap[serverId] || {};
+        const serverUrl =
+          serverInfo.url ||
+          tool.serverUrl ||
+          tool.params?.serverUrl ||
+          `http://host.docker.internal:8000/mcp`;
+        const serverName =
+          serverInfo.name ||
+          tool.serverName ||
+          tool.params?.serverName ||
+          serverId;
+
+        return {
+          type: "mcp",
+          title: tool.title || toolName,
+          params: {
+            serverId,
+            toolName,
+            serverUrl,
+            serverName,
+          },
+          schema: tool.schema || {
+            type: "object",
+            properties: {},
+            description: `${toolName} tool from ${serverName}`,
+            additionalProperties: false,
+          },
+          toolId: `${serverId}-${toolName}`,
+          isExpanded: false,
+          usageControl: "auto",
+        };
+      });
+    }
+
+    // --- Priority 2: fall back to mcp_server_ids from the registry ---
+    const tools = [];
     if (node.mcp_server_ids && Array.isArray(node.mcp_server_ids)) {
       node.mcp_server_ids.forEach((serverId) => {
         const server = mcpServers.find((s) => s.id === serverId);
         if (server) {
-          // If server has tools data, use it; otherwise create placeholder
           if (server.tools && Array.isArray(server.tools)) {
             server.tools.forEach((tool) => {
               tools.push(this.formatMcpTool(tool, server));
             });
           } else {
-            // Create placeholder tool for server
             tools.push(this.createPlaceholderMcpTool(server));
           }
-        }
-      });
-    }
-
-    // Also check if agent has a tools array (for legacy compatibility)
-    if (node.tools && Array.isArray(node.tools)) {
-      node.tools.forEach((toolName) => {
-        if (!tools.some((t) => t.title === toolName)) {
-          tools.push({
-            type: "mcp",
-            title: toolName,
-            params: {},
-            schema: {
-              type: "object",
-              properties: {},
-              description: `Tool: ${toolName}`,
-            },
-            toolId: `custom-${toolName}`,
-            isExpanded: false,
-            usageControl: "auto",
-          });
         }
       });
     }
@@ -1260,23 +1342,28 @@ class ConnectionManager {
   }
 
   /**
-   * Format MCP tool in Sim AI structure
+   * Format MCP tool in Sim AI structure (used when building from server registry)
    */
   formatMcpTool(tool, server) {
+    const serverInfo = ConnectionManager.MCP_SERVER_MAP[server.id] || {};
+    const serverUrl =
+      serverInfo.url || server.url || `http://host.docker.internal:8000/mcp`;
+    const serverName = serverInfo.name || server.name;
     return {
       type: "mcp",
       title: tool.name || "unnamed_tool",
       params: {
         serverId: server.id,
         toolName: tool.name,
-        serverUrl: server.url || `http://localhost:${server.port || 8000}/mcp`,
-        serverName: server.name,
+        serverUrl,
+        serverName,
         ...tool.defaultParams,
       },
       schema: tool.inputSchema || {
         type: "object",
         properties: {},
         description: tool.description || "No description available",
+        additionalProperties: false,
       },
       toolId: `${server.id}-${tool.name}`,
       isExpanded: false,
@@ -1288,19 +1375,23 @@ class ConnectionManager {
    * Create placeholder MCP tool when tool details aren't available
    */
   createPlaceholderMcpTool(server) {
+    const serverInfo = ConnectionManager.MCP_SERVER_MAP[server.id] || {};
+    const serverUrl =
+      serverInfo.url || server.url || `http://host.docker.internal:8000/mcp`;
+    const serverName = serverInfo.name || server.name;
     return {
       type: "mcp",
-      title: server.name,
+      title: serverName,
       params: {
         serverId: server.id,
         toolName: "placeholder",
-        serverUrl: server.url || `http://localhost:8000/mcp`,
-        serverName: server.name,
+        serverUrl,
+        serverName,
       },
       schema: {
         type: "object",
         properties: {},
-        description: server.description || `MCP Server: ${server.name}`,
+        description: server.description || `MCP Server: ${serverName}`,
         additionalProperties: false,
       },
       toolId: `${server.id}-placeholder`,

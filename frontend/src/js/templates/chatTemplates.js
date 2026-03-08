@@ -46,7 +46,7 @@ export const ChatTemplates = {
         <div class="welcome-suggestions">
           <button class="example-query">Load and analyze my dataset</button>
           <button class="example-query">Build a classification model</button>
-          <button class="example-query">Visualize data distribution</button>
+          <button class="example-query">Build a regression model</button>
         </div>
       </div>
     `;
