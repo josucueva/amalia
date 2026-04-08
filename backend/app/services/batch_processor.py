@@ -1203,6 +1203,19 @@ class BatchProcessorService:
                     )
 
                 orchestration = orchestration_data["orchestration"]
+                validation = orchestration.get("validation", {})
+                if validation.get("status") != "valid":
+                    issues = validation.get("issues", [])
+                    issue_preview = (
+                        "; ".join(str(issue.get("code")) for issue in issues[:5])
+                        if isinstance(issues, list)
+                        else "unknown_validation_issue"
+                    )
+                    raise RuntimeError(
+                        "Orchestration validation failed; refusing to save uncertain batch artifact: "
+                        f"{issue_preview}"
+                    )
+
                 artifact_path = self._save_artifact(job_id, item, orchestration)
 
                 if session_id:
@@ -1243,19 +1256,13 @@ class BatchProcessorService:
         if item.get("intent"):
             return item["intent"]
 
-        parts = [
-            "Create a complete machine learning pipeline for this dataset.",
-            "The output must be ready for Sim AI export and execution.",
-        ]
+        task_type = str(item.get("task_type") or "").strip().lower()
+        if task_type == "classification":
+            return "Build a classification model for this dataset"
+        if task_type == "regression":
+            return "Build a regression model for this dataset"
 
-        if item.get("task_type"):
-            parts.append(f"Task type: {item['task_type']}.")
-        if item.get("tier"):
-            parts.append(f"Difficulty tier: {item['tier']}.")
-        if item.get("target_column"):
-            parts.append(f"Target column: {item['target_column']}.")
-
-        return " ".join(parts)
+        return "Build a machine learning model for this dataset"
 
     def _save_artifact(
         self, job_id: str, item: Dict[str, Any], orchestration: Dict[str, Any]
