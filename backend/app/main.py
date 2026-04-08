@@ -5,7 +5,6 @@ FastAPI main application entry point.
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 import structlog
 
 from app.config import get_settings
@@ -15,10 +14,12 @@ from app.api.routes import (
     files,
     health,
     canvas,
+    batch,
     models,
     mcp_servers,
     sessions,
 )
+from app.services.batch_processor import BatchProcessorService
 from app.utils.logger import setup_logging
 
 
@@ -36,6 +37,7 @@ async def lifespan(app: FastAPI):
     import os
 
     os.makedirs(settings.upload_dir, exist_ok=True)
+    os.makedirs(settings.batch_artifacts_dir, exist_ok=True)
     os.makedirs(os.path.dirname(settings.log_file), exist_ok=True)
 
     # Initialize MongoDB connection
@@ -62,17 +64,17 @@ async def lifespan(app: FastAPI):
         python_mcp_manager = get_python_mcp_manager()
         validation_results = python_mcp_manager.validate_all_servers()
         install_results = python_mcp_manager.install_all_dependencies()
-        
+
         valid_count = sum(1 for v in validation_results.values() if v)
         deps_count = sum(1 for v in install_results.values() if v)
         logger.info(
             "Python MCP initialization complete",
             total=len(python_mcp_manager.list_servers()),
             valid=valid_count,
-            dependencies_installed=deps_count
+            dependencies_installed=deps_count,
         )
         app.state.python_mcp_manager = python_mcp_manager
-        
+
         # Initialize agent service and load from YAML
         agent_service = AgentService(config_dir=settings.agent_config_dir)
         await agent_service.initialize_from_yaml()
@@ -93,12 +95,13 @@ async def lifespan(app: FastAPI):
         await mcp_service.initialize_default_servers()
         app.state.mcp_server_service = mcp_service
         logger.info("MCP server service initialized")
-        
+
         # Register Python MCP servers in main MCP database
         from app.models.mcp_server import MCPServer
+
         for server_id, config in python_mcp_manager.list_servers().items():
             mcp_server_id = f"python-{server_id}"
-            
+
             # Check if already registered
             existing = await mcp_service.get_server(mcp_server_id)
             if not existing:
@@ -108,18 +111,39 @@ async def lifespan(app: FastAPI):
                     command=config.command,
                     args=[config.path],
                     env=config.env,
-                    description=config.description or f"Python MCP Server: {config.name}",
+                    description=config.description
+                    or f"Python MCP Server: {config.name}",
                     is_available=True,
                 )
                 await mcp_service.add_server(python_mcp_server)
-                logger.info("Registered Python MCP server", server_id=mcp_server_id, name=config.name)
+                logger.info(
+                    "Registered Python MCP server",
+                    server_id=mcp_server_id,
+                    name=config.name,
+                )
             else:
-                logger.info("Python MCP server already registered", server_id=mcp_server_id)
+                logger.info(
+                    "Python MCP server already registered", server_id=mcp_server_id
+                )
 
         # Initialize session manager
         session_manager = SessionManager()
         app.state.session_manager = session_manager
         logger.info("Session manager initialized")
+
+        # Initialize batch processor service
+        if settings.batch_enabled:
+            llm_service = get_llm_service(settings)
+            batch_processor = BatchProcessorService(
+                llm_service=llm_service,
+                agent_registry=agent_service.registry,
+                mcp_server_service=mcp_service,
+                session_manager=session_manager,
+                settings=settings,
+            )
+            batch_processor.start()
+            app.state.batch_processor = batch_processor
+            logger.info("Batch processor initialized")
 
     except Exception as e:
         logger.error("Error initializing services", error=str(e))
@@ -128,6 +152,10 @@ async def lifespan(app: FastAPI):
     yield
 
     # Shutdown logic
+    batch_processor = getattr(app.state, "batch_processor", None)
+    if batch_processor:
+        await batch_processor.stop()
+
     await Database.disconnect()
     logger.info("Shutting down application")
 
@@ -163,6 +191,7 @@ app.include_router(canvas.router, prefix="/api/canvas", tags=["canvas"])
 app.include_router(models.router, tags=["models"])
 app.include_router(mcp_servers.router, tags=["mcp-servers"])
 app.include_router(sessions.router, prefix="/api/sessions", tags=["sessions"])
+app.include_router(batch.router)
 
 
 @app.get("/")

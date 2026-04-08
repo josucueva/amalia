@@ -7,14 +7,30 @@ from typing import List
 import structlog
 import uuid
 
-from app.models.llm_model import LLMModel, LLMModelCreateRequest, LLMModelListResponse
+from app.models.llm_model import (
+    LLMModel,
+    LLMModelCreateRequest,
+    LLMModelListResponse,
+    ModelProvider,
+)
 from app.utils.env_manager import update_env_file, generate_env_var_name
 
 router = APIRouter(prefix="/api/models", tags=["models"])
 logger = structlog.get_logger()
 
 
-@router.get("", response_model=LLMModelListResponse)
+def _is_model_available(req: LLMModelCreateRequest, api_key_name: str | None) -> bool:
+    """Determine model availability from provider requirements."""
+    if req.provider == ModelProvider.OLLAMA:
+        return True
+    return bool(api_key_name)
+
+
+@router.get(
+    "",
+    response_model=LLMModelListResponse,
+    responses={500: {"description": "Error listing models"}},
+)
 async def list_models(request: Request, available_only: bool = False):
     """
     Get all LLM models or only available ones.
@@ -34,7 +50,14 @@ async def list_models(request: Request, available_only: bool = False):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/{model_id}", response_model=LLMModel)
+@router.get(
+    "/{model_id}",
+    response_model=LLMModel,
+    responses={
+        404: {"description": "Model not found"},
+        500: {"description": "Error getting model"},
+    },
+)
 async def get_model(request: Request, model_id: str):
     """
     Get a specific LLM model by ID.
@@ -60,7 +83,14 @@ async def get_model(request: Request, model_id: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("", response_model=LLMModel)
+@router.post(
+    "",
+    response_model=LLMModel,
+    responses={
+        400: {"description": "Invalid model request"},
+        500: {"description": "Error creating model"},
+    },
+)
 async def create_model(request: Request, req: LLMModelCreateRequest):
     """
     Create a new LLM model.
@@ -97,7 +127,7 @@ async def create_model(request: Request, req: LLMModelCreateRequest):
             model_name=req.model_name,
             provider=req.provider,
             api_key_name=api_key_name,
-            is_available=bool(api_key_name),  # Available if has API key configured
+            is_available=_is_model_available(req, api_key_name),
             supports_function_calling=req.supports_function_calling,
             max_tokens=req.max_tokens,
             description=req.description,
@@ -114,7 +144,14 @@ async def create_model(request: Request, req: LLMModelCreateRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.put("/{model_id}", response_model=LLMModel)
+@router.put(
+    "/{model_id}",
+    response_model=LLMModel,
+    responses={
+        404: {"description": "Model not found"},
+        500: {"description": "Error updating model"},
+    },
+)
 async def update_model(request: Request, model_id: str, req: LLMModelCreateRequest):
     """
     Update an existing LLM model.
@@ -149,7 +186,7 @@ async def update_model(request: Request, model_id: str, req: LLMModelCreateReque
             model_name=req.model_name,
             provider=req.provider,
             api_key_name=api_key_name,
-            is_available=bool(api_key_name),  # Available if has API key configured
+            is_available=_is_model_available(req, api_key_name),
             supports_function_calling=req.supports_function_calling,
             max_tokens=req.max_tokens,
             description=req.description,
@@ -166,7 +203,13 @@ async def update_model(request: Request, model_id: str, req: LLMModelCreateReque
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/{model_id}")
+@router.delete(
+    "/{model_id}",
+    responses={
+        404: {"description": "Model not found"},
+        500: {"description": "Error deleting model"},
+    },
+)
 async def delete_model(request: Request, model_id: str):
     """
     Delete an LLM model.

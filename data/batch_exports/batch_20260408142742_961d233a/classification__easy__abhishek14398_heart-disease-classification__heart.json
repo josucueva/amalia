@@ -1,0 +1,180 @@
+{
+  "dataset_id": "classification__easy__abhishek14398_heart-disease-classification__heart",
+  "filename": "heart.csv",
+  "file_path": "/app/data/uploads/datasets/classification/easy/abhishek14398_heart-disease-classification/heart.csv",
+  "task_type": "classification",
+  "tier": "easy",
+  "target_column": null,
+  "generated_at": "2026-04-08T14:28:27.147769+00:00",
+  "workflow": {
+    "type": "sim_ai_workflow",
+    "workflow": {
+      "version": "1.0",
+      "metadata": {
+        "name": "Heart Disease Classification Pipeline",
+        "description": "Classify heart disease based on the provided dataset"
+      },
+      "blocks": {
+        "block-start": {
+          "id": "block-start",
+          "type": "trigger",
+          "name": "Start Trigger",
+          "subBlocks": {
+            "inputFormat": {
+              "value": [
+                {
+                  "name": "filePath",
+                  "value": "/app/data/uploads/heart_disease_dataset.csv"
+                }
+              ]
+            }
+          }
+        },
+        "block-1": {
+          "id": "block-1",
+          "type": "agent",
+          "name": "Data Loader",
+          "agentId": "data_loader",
+          "subBlocks": {
+            "tools": {
+              "value": [
+                {
+                  "type": "mcp",
+                  "title": "Read File",
+                  "params": {
+                    "serverId": "filesystem",
+                    "toolName": "read_file",
+                    "serverUrl": "http://host.docker.internal:8001/mcp",
+                    "serverName": "Filesystem"
+                  },
+                  "toolId": "filesystem-read_file",
+                  "isExpanded": false,
+                  "usageControl": "auto"
+                }
+              ]
+            }
+          }
+        },
+        "block-2": {
+          "id": "block-2",
+          "type": "agent",
+          "name": "Data Preprocessor",
+          "agentId": "data_preprocessor",
+          "subBlocks": {
+            "tools": {
+              "value": [
+                {
+                  "type": "mcp",
+                  "title": "Handle Missing Values",
+                  "params": {
+                    "serverId": "data_processing",
+                    "toolName": "handle_missing_values",
+                    "serverUrl": "http://host.docker.internal:8003/mcp",
+                    "serverName": "Data Processing Server"
+                  },
+                  "toolId": "data_processing-handle_missing_values",
+                  "isExpanded": false,
+                  "usageControl": "auto"
+                },
+                {
+                  "type": "mcp",
+                  "title": "Encode Categorical Variables",
+                  "params": {
+                    "serverId": "data_processing",
+                    "toolName": "encode_categorical_variables",
+                    "serverUrl": "http://host.docker.internal:8003/mcp",
+                    "serverName": "Data Processing Server"
+                  },
+                  "toolId": "data_processing-encode_categorical_variables",
+                  "isExpanded": false,
+                  "usageControl": "auto"
+                }
+              ]
+            }
+          }
+        },
+        "block-3": {
+          "id": "block-3",
+          "type": "agent",
+          "name": "Model Trainer",
+          "agentId": "model_trainer",
+          "subBlocks": {
+            "tools": {
+              "value": [
+                {
+                  "type": "mcp",
+                  "title": "Train Classification Model",
+                  "params": {
+                    "serverId": "machine_learning",
+                    "toolName": "train_classification_model",
+                    "serverUrl": "http://host.docker.internal:8004/mcp",
+                    "serverName": "Machine Learning Server"
+                  },
+                  "toolId": "machine_learning-train_classification_model",
+                  "isExpanded": false,
+                  "usageControl": "auto"
+                }
+              ]
+            }
+          }
+        },
+        "block-4": {
+          "id": "block-4",
+          "type": "agent",
+          "name": "Model Evaluator",
+          "agentId": "model_evaluator",
+          "subBlocks": {
+            "tools": {
+              "value": [
+                {
+                  "type": "mcp",
+                  "title": "Evaluate Classification Model",
+                  "params": {
+                    "serverId": "machine_learning",
+                    "toolName": "evaluate_classification_model",
+                    "serverUrl": "http://host.docker.internal:8004/mcp",
+                    "serverName": "Machine Learning Server"
+                  },
+                  "toolId": "machine_learning-evaluate_classification_model",
+                  "isExpanded": false,
+                  "usageControl": "auto"
+                }
+              ]
+            }
+          }
+        }
+      },
+      "edges": [
+        {
+          "source": "block-start",
+          "target": "block-1",
+          "sourceHandle": "source",
+          "targetHandle": "target",
+          "type": "default"
+        },
+        {
+          "source": "block-1",
+          "target": "block-2",
+          "sourceHandle": "source",
+          "targetHandle": "target",
+          "type": "default"
+        },
+        {
+          "source": "block-2",
+          "target": "block-3",
+          "sourceHandle": "source",
+          "targetHandle": "target",
+          "type": "default"
+        },
+        {
+          "source": "block-3",
+          "target": "block-4",
+          "sourceHandle": "source",
+          "targetHandle": "target",
+          "type": "default"
+        }
+      ]
+    },
+    "nodes": []
+  }
+}

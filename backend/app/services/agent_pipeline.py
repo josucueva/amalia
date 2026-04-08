@@ -111,8 +111,11 @@ class AgentPipelineService:
             # Initialize MCP service if agent has MCP servers configured
             available_tools = []
 
-            # Check if the model supports function calling
-            model_supports_tools = True
+            # Check if the model supports function calling.
+            # Local Ollama models are conservative by default to avoid sending
+            # large tool schemas that can cause long stalls/timeouts.
+            model_name = agent.config.model or ""
+            model_supports_tools = not model_name.startswith("ollama/")
             if agent.config.model:
                 # Try to find model by full name (e.g., "groq/llama-3.3-70b-versatile")
                 models = self.model_service.get_all_models()
@@ -279,6 +282,7 @@ class AgentPipelineService:
             File path or None
         """
         import re
+
         # Look for pattern: [File attached: filename at path: /app/data/...]
         match = re.search(r"\[File attached:.*?at path: ([^\]]+)\]", message)
         if match:
@@ -303,7 +307,9 @@ class AgentPipelineService:
                 if end > start:
                     json_str = response[start:end].strip()
                     parsed = json.loads(json_str)
-                    logger.debug("Extracted JSON from code block", keys=list(parsed.keys()))
+                    logger.debug(
+                        "Extracted JSON from code block", keys=list(parsed.keys())
+                    )
                     return parsed
             elif "```" in response:
                 # Try generic code block
@@ -315,7 +321,10 @@ class AgentPipelineService:
                     if json_str.startswith(("json\n", "JSON\n")):
                         json_str = json_str[4:].strip()
                     parsed = json.loads(json_str)
-                    logger.debug("Extracted JSON from generic code block", keys=list(parsed.keys()))
+                    logger.debug(
+                        "Extracted JSON from generic code block",
+                        keys=list(parsed.keys()),
+                    )
                     return parsed
             elif response.strip().startswith("{"):
                 # Try parsing whole response as JSON
@@ -368,14 +377,14 @@ class AgentPipelineService:
             return interaction_response, None
 
         improved_prompt = action_data.get("improved_prompt", user_message)
-        
+
         # Extract file path if present
         file_path = self._extract_file_path_from_message(user_message)
         if file_path:
             logger.info("File path extracted from message", file_path=file_path)
             # Add file path to improved prompt for planner
             improved_prompt = f"{improved_prompt}\n\n[ATTACHED_FILE: {file_path}]"
-        
+
         logger.info(
             "Step 2: Interaction agent created improved prompt",
             prompt_length=len(improved_prompt),
@@ -431,12 +440,16 @@ class AgentPipelineService:
         orchestration_data = self._extract_json_from_response(orchestrator_response)
 
         if not orchestration_data or "orchestration" not in orchestration_data:
-            logger.error("Orchestrator failed to create valid configuration",
-                        response_preview=orchestrator_response[:500] if orchestrator_response else None)
+            logger.error(
+                "Orchestrator failed to create valid configuration",
+                response_preview=(
+                    orchestrator_response[:500] if orchestrator_response else None
+                ),
+            )
             return "Failed to create pipeline configuration.", None
 
         orchestration = orchestration_data["orchestration"]
-        
+
         # Check if this is Sim AI native format
         if orchestration.get("type") == "sim_ai_workflow":
             # New format: orchestrator outputs Sim AI workflow directly
@@ -445,7 +458,7 @@ class AgentPipelineService:
                 blocks=len(orchestration.get("workflow", {}).get("blocks", {})),
                 edges=len(orchestration.get("workflow", {}).get("edges", [])),
             )
-            
+
             # Add file path to start_trigger if file was attached
             if file_path and orchestration.get("workflow", {}).get("blocks"):
                 for block_id, block in orchestration["workflow"]["blocks"].items():
@@ -456,14 +469,21 @@ class AgentPipelineService:
                             for input_field in input_format["value"]:
                                 if input_field.get("name") == "filePath":
                                     input_field["value"] = file_path
-                                    logger.info("File path added to start_trigger", file_path=file_path)
+                                    logger.info(
+                                        "File path added to start_trigger",
+                                        file_path=file_path,
+                                    )
                                     break
                         break
-            
+
             # Create user-facing message
-            objective = orchestration.get("workflow", {}).get("metadata", {}).get("objective", "your pipeline")
+            objective = (
+                orchestration.get("workflow", {})
+                .get("metadata", {})
+                .get("objective", "your pipeline")
+            )
             blocks_count = len(orchestration.get("workflow", {}).get("blocks", {}))
-            
+
             final_message = f"""✅ Complete Sim AI workflow generated!
 
 **Objective:** {objective}
@@ -501,7 +521,7 @@ This workflow is fully self-contained and executable!"""
                 agent = self.agent_registry.get_agent(agent_type)
                 if not agent:
                     agent = self.agent_registry.get_agent_by_name(agent_type)
-                
+
                 if agent:
                     node["agentId"] = agent.id
                 else:
