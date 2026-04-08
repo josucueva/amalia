@@ -28,6 +28,10 @@ class LLMService:
 
     def _setup_api_keys(self):
         """Set up API keys in environment for LiteLLM."""
+        if self.settings.ollama_base_url:
+            os.environ["OLLAMA_BASE_URL"] = self.settings.ollama_base_url
+            os.environ["OLLAMA_API_BASE"] = self.settings.ollama_base_url
+
         if self.settings.openai_api_key:
             os.environ["OPENAI_API_KEY"] = self.settings.openai_api_key
 

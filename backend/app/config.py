@@ -51,6 +51,14 @@ class Settings(BaseSettings):
     mcp_server_enabled: bool = True
     mcp_server_port: int = 3000
 
+    # Batch Processing
+    batch_enabled: bool = True
+    batch_max_workers: int = 2
+    batch_item_max_retries: int = 2
+    batch_retry_delay_seconds: int = 5
+    batch_artifacts_dir: str = "./data/batch_exports"
+    batch_auto_zip_on_completion: bool = True
+
     # Logging
     log_level: str = "INFO"
     log_format: str = "json"

@@ -4,6 +4,25 @@
 import { API_ENDPOINTS } from "./config.js";
 
 class ApiClient {
+  async buildHttpError(response) {
+    let message = `HTTP error! status: ${response.status}`;
+
+    try {
+      const payload = await response.json();
+      const detail = payload?.detail;
+      if (typeof detail === "string") {
+        message = detail;
+      } else if (detail?.message) {
+        const code = detail.code ? ` [${detail.code}]` : "";
+        message = `${detail.message}${code}`;
+      }
+    } catch (_err) {
+      // Keep default message when body is not JSON.
+    }
+
+    return new Error(message);
+  }
+
   /**
    * Make a GET request
    */
@@ -16,9 +35,7 @@ class ApiClient {
         },
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      if (!response.ok) throw await this.buildHttpError(response);
 
       return await response.json();
     } catch (error) {
@@ -40,9 +57,7 @@ class ApiClient {
         body: JSON.stringify(data),
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      if (!response.ok) throw await this.buildHttpError(response);
 
       return await response.json();
     } catch (error) {
@@ -63,9 +78,7 @@ class ApiClient {
         },
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      if (!response.ok) throw await this.buildHttpError(response);
 
       return await response.json();
     } catch (error) {
@@ -87,9 +100,7 @@ class ApiClient {
         body: JSON.stringify(data),
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      if (!response.ok) throw await this.buildHttpError(response);
 
       return await response.json();
     } catch (error) {
@@ -111,9 +122,7 @@ class ApiClient {
         body: formData,
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      if (!response.ok) throw await this.buildHttpError(response);
 
       return await response.json();
     } catch (error) {
@@ -191,6 +200,29 @@ class ApiClient {
     return this.post(`${API_ENDPOINTS.canvas}/build`, {
       command,
     });
+  }
+
+  // Batch API
+  async scanAndLaunchBatch(data) {
+    return this.post(`${API_ENDPOINTS.batch}/scan-and-launch`, data);
+  }
+
+  async generateBatchManifest(data) {
+    return this.post(`${API_ENDPOINTS.batch}/generate-manifest`, data);
+  }
+
+  async validateBatchManifest(manifestPath) {
+    return this.post(`${API_ENDPOINTS.batch}/validate-manifest`, {
+      manifest_path: manifestPath,
+    });
+  }
+
+  async rerunFailedBatchItems(jobId, data = {}) {
+    return this.post(`${API_ENDPOINTS.batch}/${jobId}/rerun-failed`, data);
+  }
+
+  async getBatchJobStatus(jobId) {
+    return this.get(`${API_ENDPOINTS.batch}/${jobId}`);
   }
 
   // Models API

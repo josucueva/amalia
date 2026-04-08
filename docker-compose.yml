@@ -1,4 +1,14 @@
 services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: agentic-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - agentic-network
+
   mongodb:
     image: mongo:7
     container_name: agentic-mongodb
@@ -27,16 +37,20 @@ services:
       - .env
     environment:
       - MONGODB_URL=mongodb://mongodb:27017
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_API_BASE=http://ollama:11434
     volumes:
       - ./backend:/app
       - ./config/agents:/app/config/agents
       - ./backend/mcp_servers:/app/mcp_servers
       - ./backend/mcp_servers_config.json:/app/mcp_servers_config.json
-      - app_data:/app/data
+      - ./data:/app/data
       - app_logs:/app/logs
     depends_on:
       mongodb:
         condition: service_healthy
+      ollama:
+        condition: service_started
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
     networks:
       - agentic-network
@@ -54,6 +68,8 @@ services:
     command: npm run dev -- --host 0.0.0.0
 volumes:
   mongodb_data:
+    driver: local
+  ollama_data:
     driver: local
   app_data:
     driver: local

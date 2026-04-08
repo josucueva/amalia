@@ -33,6 +33,7 @@ class App {
   canvasMode = false;
   showHiddenAgents = false;
   menuCloseListener = null;
+  lastBatchJobId = null;
 
   // Canvas drop listeners (to prevent duplicates)
   canvasDropListeners = {
@@ -154,6 +155,30 @@ class App {
     if (configureInteractionAgentBtn) {
       configureInteractionAgentBtn.addEventListener("click", async () => {
         await this.openInteractionAgentConfig();
+      });
+    }
+
+    // Setup batch automation buttons in chat input
+    const scanLaunchBtn = document.getElementById("scan-launch-btn");
+    if (scanLaunchBtn) {
+      scanLaunchBtn.addEventListener("click", async () => {
+        await this.handleScanAndLaunch();
+      });
+    }
+
+    const validateManifestBtn = document.getElementById(
+      "validate-manifest-btn",
+    );
+    if (validateManifestBtn) {
+      validateManifestBtn.addEventListener("click", async () => {
+        await this.handleValidateManifest();
+      });
+    }
+
+    const rerunFailedBtn = document.getElementById("rerun-failed-btn");
+    if (rerunFailedBtn) {
+      rerunFailedBtn.addEventListener("click", async () => {
+        await this.handleRerunFailed();
       });
     }
 
@@ -355,6 +380,157 @@ class App {
     } catch (error) {
       console.error("Error loading interaction agent:", error);
       showToast("Failed to load interaction agent", "error");
+    }
+  }
+
+  addSystemMessage(content) {
+    if (!this.chat) return;
+    this.chat.addMessage({
+      role: "system",
+      content,
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  async handleScanAndLaunch() {
+    const datasetsRoot =
+      prompt(
+        "Datasets root folder (relative to backend).",
+        "data/uploads/datasets",
+      ) || "data/uploads/datasets";
+
+    const taskTypeRaw = prompt(
+      "Task filter (optional: classification/regression). Leave empty for all.",
+      "",
+    );
+    const tierRaw = prompt(
+      "Tier filter (optional: easy/mid/hard). Leave empty for all.",
+      "",
+    );
+    const limitRaw = prompt(
+      "Limit datasets (optional number). Leave empty for no limit.",
+      "",
+    );
+
+    const payload = {
+      datasets_root: datasetsRoot.trim(),
+      file_extensions: [".csv"],
+      settings: {
+        max_retries: 2,
+        fail_fast: false,
+        create_sessions: true,
+      },
+    };
+
+    const taskType = taskTypeRaw ? taskTypeRaw.trim().toLowerCase() : "";
+    const tier = tierRaw ? tierRaw.trim().toLowerCase() : "";
+    const limit = Number.parseInt(limitRaw || "", 10);
+
+    if (taskType) payload.task_type = taskType;
+    if (tier) payload.tier = tier;
+    if (!Number.isNaN(limit) && limit > 0) payload.limit = limit;
+
+    try {
+      showToast("Launching batch scan...", "info");
+      const response = await api.scanAndLaunchBatch(payload);
+      this.lastBatchJobId = response.batch_job_id;
+
+      const status = await api.getBatchJobStatus(response.batch_job_id);
+      const summary = [
+        `Batch launched: ${response.batch_job_id}`,
+        `Status: ${response.status}`,
+        `Datasets: ${response.total_datasets}`,
+        `Progress: ${status.progress.processed}/${status.progress.total}`,
+      ].join("\n");
+
+      this.addSystemMessage(summary);
+      showToast(
+        `Batch started (${response.total_datasets} datasets)`,
+        "success",
+      );
+    } catch (error) {
+      const detail = error.message || "Unknown error";
+      this.addSystemMessage(`Scan-and-launch failed:\n${detail}`);
+      showToast("Scan-and-launch failed", "error");
+      console.error("Scan-and-launch error:", error);
+    }
+  }
+
+  async handleValidateManifest() {
+    const manifestPath = prompt(
+      "Manifest path to validate (JSON/CSV).",
+      "data/batch_exports/manifests/latest.json",
+    );
+    if (!manifestPath) return;
+
+    try {
+      showToast("Validating manifest...", "info");
+      const result = await api.validateBatchManifest(manifestPath.trim());
+
+      const issuePreview = (result.issues || [])
+        .slice(0, 5)
+        .map((issue) => `- row ${issue.row_index}: ${issue.error}`)
+        .join("\n");
+
+      const summary = [
+        `Manifest validation: ${result.manifest_path}`,
+        `Rows: ${result.total_rows}`,
+        `Valid: ${result.valid_rows}`,
+        `Invalid: ${result.invalid_rows}`,
+        issuePreview ? `Issues:\n${issuePreview}` : "Issues: none",
+      ].join("\n");
+
+      this.addSystemMessage(summary);
+      showToast(
+        `Manifest checked: ${result.valid_rows} valid, ${result.invalid_rows} invalid`,
+        result.invalid_rows > 0 ? "warning" : "success",
+      );
+    } catch (error) {
+      const detail = error.message || "Unknown error";
+      this.addSystemMessage(`Manifest validation failed:\n${detail}`);
+      showToast("Manifest validation failed", "error");
+      console.error("Manifest validation error:", error);
+    }
+  }
+
+  async handleRerunFailed() {
+    const defaultJobId = this.lastBatchJobId || "";
+    const jobId = prompt("Source batch job ID.", defaultJobId);
+    if (!jobId) return;
+
+    const includeSkipped = confirm("Include skipped items in rerun?");
+    const limitRaw = prompt(
+      "Limit rerun items (optional number). Leave empty for all.",
+      "",
+    );
+    const limit = Number.parseInt(limitRaw || "", 10);
+
+    const payload = {
+      include_skipped: includeSkipped,
+    };
+    if (!Number.isNaN(limit) && limit > 0) {
+      payload.limit = limit;
+    }
+
+    try {
+      showToast("Submitting rerun for failed items...", "info");
+      const response = await api.rerunFailedBatchItems(jobId.trim(), payload);
+      this.lastBatchJobId = response.batch_job_id;
+
+      const summary = [
+        `Rerun batch launched: ${response.batch_job_id}`,
+        `Source job: ${jobId.trim()}`,
+        `Status: ${response.status}`,
+        `Items queued: ${response.total_datasets}`,
+      ].join("\n");
+
+      this.addSystemMessage(summary);
+      showToast("Rerun batch submitted", "success");
+    } catch (error) {
+      const detail = error.message || "Unknown error";
+      this.addSystemMessage(`Rerun failed request failed:\n${detail}`);
+      showToast("Rerun failed request failed", "error");
+      console.error("Rerun failed error:", error);
     }
   }
 
