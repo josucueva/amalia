@@ -36,6 +36,24 @@ class MCPServerService:
                     "Default MCP servers initialized", count=len(default_servers)
                 )
 
+        # Ensure filesystem server can read project-level config files needed by agents.
+        filesystem = await self.get_server("filesystem")
+        if filesystem and filesystem.command == "npx":
+            expected_args = [
+                "-y",
+                "@modelcontextprotocol/server-filesystem",
+                "/app",
+            ]
+            if filesystem.args != expected_args:
+                filesystem.args = expected_args
+                filesystem.description = (
+                    "Access and manage project files under /app (catalog, configs, data)"
+                )
+                await collection.replace_one(
+                    {"id": "filesystem"}, filesystem.model_dump(), upsert=True
+                )
+                logger.info("Filesystem MCP scope updated", root="/app")
+
     def _get_default_servers(self) -> List[MCPServer]:
         """Get default MCP server configurations."""
         return [
@@ -46,10 +64,10 @@ class MCPServerService:
                 args=[
                     "-y",
                     "@modelcontextprotocol/server-filesystem",
-                    "/app/data/uploads",
+                    "/app",
                 ],
                 env={},
-                description="Access and manage files in the uploads directory",
+                description="Access and manage project files under /app (catalog, configs, data)",
                 is_available=True,
             ),
         ]
