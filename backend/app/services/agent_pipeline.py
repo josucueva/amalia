@@ -21,6 +21,14 @@ logger = structlog.get_logger()
 # Maximum number of tool call iterations to prevent infinite loops
 MAX_TOOL_ITERATIONS = 10
 
+# Validation codes that should block batch artifact persistence.
+BLOCKING_VALIDATION_CODES = {
+    "dataset_file_not_found",
+    "agent_yaml_missing",
+    "agent_unresolved",
+    "no_valid_tools_for_phase",
+}
+
 
 class AgentPipelineService:
     """Service for orchestrating multi-agent pipelines."""
@@ -114,15 +122,14 @@ class AgentPipelineService:
             available_tools = []
 
             # Check if the model supports function calling.
-            # Local Ollama models are conservative by default to avoid sending
-            # large tool schemas that can cause long stalls/timeouts.
             model_name = agent.config.model or ""
-            model_supports_tools = not model_name.startswith("ollama/")
+            model_supports_tools = True
             if agent.config.model:
-                # Try to find model by full name (e.g., "groq/llama-3.3-70b-versatile")
                 models = self.model_service.get_all_models()
+                model_matched = False
                 for model in models:
                     if model.model_name == agent.config.model:
+                        model_matched = True
                         model_supports_tools = model.supports_function_calling
                         logger.info(
                             "Model function calling support check",
@@ -130,6 +137,15 @@ class AgentPipelineService:
                             supports_function_calling=model_supports_tools,
                         )
                         break
+
+                # For unregistered Ollama models, infer support from model family.
+                if not model_matched and model_name.startswith("ollama/"):
+                    model_supports_tools = self._infer_ollama_tool_support(model_name)
+                    logger.info(
+                        "Inferred Ollama function calling support",
+                        model=agent.config.model,
+                        supports_function_calling=model_supports_tools,
+                    )
 
             # Load MCP servers from both legacy config and new server IDs
             mcp_servers_config = {}
@@ -182,7 +198,22 @@ class AgentPipelineService:
                 # Legacy: Fall back to old mcp_servers dict only if new field doesn't exist
                 mcp_servers_config = agent.config.mcp_servers
 
-            if mcp_servers_config and model_supports_tools:
+            should_enable_tools = bool(mcp_servers_config and model_supports_tools)
+
+            # Keep interaction chat simple unless a dataset attachment is present.
+            # This avoids unnecessary MCP/tool loops for greetings and general Q&A.
+            if (
+                should_enable_tools
+                and agent.id == "interaction_agent"
+                and not self._extract_file_path_from_message(user_message)
+            ):
+                should_enable_tools = False
+                logger.info(
+                    "Skipping MCP tools for interaction agent without attached file",
+                    agent=agent.config.name,
+                )
+
+            if should_enable_tools:
                 mcp_service = MCPService()
                 await mcp_service.connect_servers(mcp_servers_config)
 
@@ -243,7 +274,7 @@ class AgentPipelineService:
                 # Build the assistant message with tool calls
                 assistant_message = {
                     "role": "assistant",
-                    "content": None,
+                    "content": "",
                     "tool_calls": [
                         {
                             "id": tc["id"],
@@ -365,6 +396,25 @@ class AgentPipelineService:
 
         return None
 
+    def _normalize_chat_text_response(
+        self,
+        raw_response: str,
+        parsed_response: Optional[Dict[str, Any]],
+    ) -> str:
+        """Normalize JSON-wrapped chat replies into plain assistant text."""
+        if not parsed_response:
+            return raw_response
+
+        if parsed_response.get("action") == "plan_pipeline":
+            return raw_response
+
+        for key in ("message", "response", "error", "text", "content"):
+            value = parsed_response.get(key)
+            if isinstance(value, str) and value.strip():
+                return value.strip()
+
+        return raw_response
+
     async def process_with_pipeline(
         self, user_message: str, conversation_history: list
     ) -> Tuple[str, Optional[Dict[str, Any]]]:
@@ -422,7 +472,11 @@ class AgentPipelineService:
         if not action_data or action_data.get("action") != "plan_pipeline":
             # No pipeline planning needed, return interaction agent's response
             logger.info("No pipeline planning requested")
-            return interaction_response, None
+            normalized_response = self._normalize_chat_text_response(
+                interaction_response,
+                action_data,
+            )
+            return normalized_response, None
 
         improved_prompt = action_data.get("improved_prompt", user_message)
         dataset_analysis = (
@@ -784,8 +838,9 @@ class AgentPipelineService:
             "steps": steps,
             "mcp_servers": mcp_servers,
             "validation": {
-                "status": "valid" if not validation_issues else "invalid",
+                "status": self._validation_status(validation_issues),
                 "issue_count": len(validation_issues),
+                "blocking_issue_count": self._blocking_issue_count(validation_issues),
                 "issues": validation_issues,
             },
             # Kept for backward compatibility with existing session snapshot handling.
@@ -891,6 +946,34 @@ class AgentPipelineService:
                 missing.append(name)
 
         return missing
+
+    def _infer_ollama_tool_support(self, model_name: str) -> bool:
+        """Infer tool-call support for Ollama models when not explicitly registered."""
+        normalized = model_name.lower()
+        supported_families = [
+            "qwen3",
+            "qwen2.5",
+            "qwen2.5-coder",
+        ]
+        return any(family in normalized for family in supported_families)
+
+    def _blocking_issue_count(self, validation_issues: List[Dict[str, Any]]) -> int:
+        """Count validation issues that should block artifact persistence."""
+        blocking_count = 0
+        for issue in validation_issues:
+            if not isinstance(issue, dict):
+                continue
+            if issue.get("code") in BLOCKING_VALIDATION_CODES:
+                blocking_count += 1
+        return blocking_count
+
+    def _validation_status(self, validation_issues: List[Dict[str, Any]]) -> str:
+        """Return validation status with a warning tier for non-blocking issues."""
+        if not validation_issues:
+            return "valid"
+        if self._blocking_issue_count(validation_issues) > 0:
+            return "invalid"
+        return "warning"
 
     def _dataset_analysis_is_sufficient(
         self,

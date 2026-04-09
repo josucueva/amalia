@@ -1152,38 +1152,36 @@ class BatchProcessorService:
         """Run hidden agent pipeline for one dataset item with retries."""
         retries = 0
         last_error: Optional[Exception] = None
+        session_id = None
+        conversation_history = []
+
+        user_message = self._build_batch_user_message(item)
+        file_context = (
+            f"\n\n[File attached: {item['filename']} (0 MB) at path: {item['file_path']}]"
+        )
+        user_message_with_context = user_message + file_context
+
+        if create_sessions:
+            session = await self.session_manager.create_session(
+                title=f"Batch {job_id} - {item.get('filename', 'dataset')}"
+            )
+            session_id = session.id
+
+            await self.session_manager.add_message(
+                session_id=session_id,
+                role="user",
+                content=user_message,
+                metadata={
+                    "attached_file": {
+                        "filename": item["filename"],
+                        "path": item["file_path"],
+                        "size_mb": 0,
+                    }
+                },
+            )
 
         while retries <= max_retries:
             try:
-                session_id = None
-                conversation_history = []
-
-                if create_sessions:
-                    session = await self.session_manager.create_session(
-                        title=f"Batch {job_id} - {item.get('filename', 'dataset')}"
-                    )
-                    session_id = session.id
-
-                user_message = self._build_batch_user_message(item)
-                file_context = (
-                    f"\n\n[File attached: {item['filename']} (0 MB) at path: {item['file_path']}]"
-                )
-                user_message_with_context = user_message + file_context
-
-                if session_id:
-                    await self.session_manager.add_message(
-                        session_id=session_id,
-                        role="user",
-                        content=user_message,
-                        metadata={
-                            "attached_file": {
-                                "filename": item["filename"],
-                                "path": item["file_path"],
-                                "size_mb": 0,
-                            }
-                        },
-                    )
-
                 pipeline_service = AgentPipelineService(
                     self.llm_service,
                     self.agent_registry,
@@ -1204,7 +1202,7 @@ class BatchProcessorService:
 
                 orchestration = orchestration_data["orchestration"]
                 validation = orchestration.get("validation", {})
-                if validation.get("status") != "valid":
+                if validation.get("status") == "invalid":
                     issues = validation.get("issues", [])
                     issue_preview = (
                         "; ".join(str(issue.get("code")) for issue in issues[:5])
@@ -1212,7 +1210,7 @@ class BatchProcessorService:
                         else "unknown_validation_issue"
                     )
                     raise RuntimeError(
-                        "Orchestration validation failed; refusing to save uncertain batch artifact: "
+                        "Orchestration validation failed (blocking issues); refusing to save uncertain batch artifact: "
                         f"{issue_preview}"
                     )
 

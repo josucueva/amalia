@@ -1,4 +1,15 @@
 {
+  "ollama-qwen3-8b": {
+    "id": "ollama-qwen3-8b",
+    "display_name": "Ollama Qwen3 8B",
+    "model_name": "ollama/qwen3:8b",
+    "provider": "ollama",
+    "api_key_name": null,
+    "is_available": true,
+    "supports_function_calling": true,
+    "max_tokens": 8192,
+    "description": "Local Qwen3 8B model served by Ollama with tool calling support"
+  },
   "ollama-llama3.1-8b": {
     "id": "ollama-llama3.1-8b",
     "display_name": "Ollama Llama 3.1 8B",

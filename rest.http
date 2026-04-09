@@ -1,0 +1,11 @@
+
+###
+# @name report
+GET http://localhost:8000/api/batch/monitoring/report
+
+###
+@job_id = {{report.response.body.active_jobs[0].batch_job_id}}
+
+###
+POST http://localhost:8000/api/batch/{{job_id}}/cancel
+
