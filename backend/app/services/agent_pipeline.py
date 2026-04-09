@@ -397,7 +397,9 @@ class AgentPipelineService:
         action_data = self._extract_json_from_response(interaction_response)
 
         file_path = self._extract_file_path_from_message(user_message)
-        if file_path and not self._dataset_analysis_is_sufficient(action_data, file_path):
+        if file_path and not self._dataset_analysis_is_sufficient(
+            action_data, file_path
+        ):
             logger.warning(
                 "Interaction output missing required dataset analysis; requesting strict retry",
                 file_path=file_path,
@@ -506,7 +508,9 @@ class AgentPipelineService:
                 if isinstance(action_data, dict)
                 else None
             ),
-            dataset_analysis=(dataset_analysis if isinstance(dataset_analysis, dict) else None),
+            dataset_analysis=(
+                dataset_analysis if isinstance(dataset_analysis, dict) else None
+            ),
         )
 
         final_message = (
@@ -549,12 +553,16 @@ class AgentPipelineService:
 
         servers_by_id: Dict[str, Any] = {}
         servers_by_name: Dict[str, Any] = {}
+        servers_by_normalized_name: Dict[str, Any] = {}
         if self.mcp_server_service:
             try:
                 servers = await self.mcp_server_service.list_servers()
                 for server in servers:
                     servers_by_id[server.id] = server
                     servers_by_name[server.name.lower()] = server
+                    servers_by_normalized_name[
+                        self._normalize_reference(server.name)
+                    ] = server
             except Exception as exc:
                 logger.warning("Failed to list MCP servers for export", error=str(exc))
 
@@ -568,16 +576,24 @@ class AgentPipelineService:
             planner_agent_id = str(phase.get("agent_id") or "").strip()
             planner_agent_name = str(phase.get("agent_name") or "").strip()
 
-            agent = None
-            if planner_agent_id:
-                agent = self.agent_registry.get_agent(planner_agent_id)
-            if not agent and planner_agent_name:
-                agent = self.agent_registry.get_agent_by_name(planner_agent_name)
+            agent = self._resolve_agent_reference(planner_agent_id, planner_agent_name)
 
-            resolved_agent_id = agent.id if agent else (planner_agent_id or planner_agent_name)
-            agent_yaml_relative = f"config/agents/{resolved_agent_id}.yaml"
-            agent_yaml_exists = Path(agent_yaml_relative).exists()
-            if not agent_yaml_exists:
+            resolved_agent_id = agent.id if agent else None
+            agent_yaml_relative, agent_yaml_exists = self._resolve_agent_yaml_reference(
+                resolved_agent_id
+            )
+            if not resolved_agent_id:
+                validation_issues.append(
+                    {
+                        "code": "agent_unresolved",
+                        "message": (
+                            "Planner referenced unresolved agent "
+                            f"id='{planner_agent_id}' name='{planner_agent_name}'"
+                        ),
+                        "phase_number": phase_number,
+                    }
+                )
+            elif not agent_yaml_exists:
                 validation_issues.append(
                     {
                         "code": "agent_yaml_missing",
@@ -587,11 +603,12 @@ class AgentPipelineService:
                 )
 
             planner_server_name = str(phase.get("mcp_server") or "").strip()
-            resolved_server = None
-            if planner_server_name:
-                resolved_server = servers_by_name.get(planner_server_name.lower())
-            if not resolved_server and planner_server_name:
-                resolved_server = servers_by_id.get(planner_server_name)
+            resolved_server = self._resolve_server_reference(
+                planner_server_name,
+                servers_by_id,
+                servers_by_name,
+                servers_by_normalized_name,
+            )
 
             resolved_server_payload = None
             if resolved_server:
@@ -625,9 +642,13 @@ class AgentPipelineService:
                     task_type=inferred_task_type,
                     selected_model_type=selected_model_type,
                     planner_parameters=(
-                        planner_parameters if isinstance(planner_parameters, dict) else None
+                        planner_parameters
+                        if isinstance(planner_parameters, dict)
+                        else None
                     ),
-                    dataset_analysis=(dataset_analysis if isinstance(dataset_analysis, dict) else None),
+                    dataset_analysis=(
+                        dataset_analysis if isinstance(dataset_analysis, dict) else None
+                    ),
                 )
                 catalog_parameters = self._catalog_parameters_for_tool(
                     tool_name=tool_name,
@@ -642,15 +663,37 @@ class AgentPipelineService:
                         }
                     )
                     continue
+
+                missing_required_parameters = self._find_missing_required_parameters(
+                    catalog_parameters=catalog_parameters,
+                    replication_parameters=replication_parameters,
+                )
+                if missing_required_parameters:
+                    validation_issues.append(
+                        {
+                            "code": "tool_required_parameters_unresolved",
+                            "message": (
+                                f"Tool '{tool_name}' has unresolved required parameters: "
+                                f"{', '.join(missing_required_parameters)}"
+                            ),
+                            "phase_number": phase_number,
+                            "tool_name": tool_name,
+                            "missing_parameters": missing_required_parameters,
+                        }
+                    )
+
                 step_tools.append(
                     {
                         "tool_name": tool_name,
                         "description": tool.get("description"),
                         "catalog_parameters": catalog_parameters,
                         "planner_parameters": (
-                            planner_parameters if isinstance(planner_parameters, dict) else {}
+                            planner_parameters
+                            if isinstance(planner_parameters, dict)
+                            else {}
                         ),
                         "replication_parameters": replication_parameters,
+                        "missing_required_parameters": missing_required_parameters,
                         "parameter_source": "mcp_catalog_defaults_and_context",
                     }
                 )
@@ -674,6 +717,10 @@ class AgentPipelineService:
                         "name": agent.config.name if agent else planner_agent_name,
                         "yaml_path": agent_yaml_relative,
                         "yaml_exists": agent_yaml_exists,
+                        "planner_reference": {
+                            "agent_id": planner_agent_id or None,
+                            "agent_name": planner_agent_name or None,
+                        },
                     },
                     "planner_mcp_server": planner_server_name,
                     "resolved_mcp_server": resolved_server_payload,
@@ -686,7 +733,12 @@ class AgentPipelineService:
             nodes.append(
                 {
                     "instanceId": f"phase-{phase_number}",
-                    "agentId": resolved_agent_id,
+                    "agentId": (
+                        resolved_agent_id
+                        or planner_agent_id
+                        or planner_agent_name
+                        or f"unresolved_phase_{phase_number}"
+                    ),
                     "position": {"x": 220 * phase_number, "y": 200},
                 }
             )
@@ -725,18 +777,120 @@ class AgentPipelineService:
             "dataset": {
                 "file_path": file_path,
                 "exists_on_disk": bool(resolved_dataset_path),
-                "resolved_path": str(resolved_dataset_path) if resolved_dataset_path else None,
+                "resolved_path": (
+                    str(resolved_dataset_path) if resolved_dataset_path else None
+                ),
             },
             "steps": steps,
             "mcp_servers": mcp_servers,
             "validation": {
-                "status": "valid" if not validation_issues else "needs_review",
+                "status": "valid" if not validation_issues else "invalid",
+                "issue_count": len(validation_issues),
                 "issues": validation_issues,
             },
             # Kept for backward compatibility with existing session snapshot handling.
             "nodes": nodes,
             "connections": connections,
         }
+
+    def _normalize_reference(self, value: Optional[str]) -> str:
+        """Normalize IDs/names to compare planner references deterministically."""
+        if not value:
+            return ""
+        return re.sub(r"[^a-z0-9]+", "", str(value).lower())
+
+    def _resolve_agent_reference(
+        self,
+        planner_agent_id: str,
+        planner_agent_name: str,
+    ) -> Optional[Agent]:
+        """Resolve planner agent references to a canonical registry agent."""
+        if planner_agent_id:
+            agent = self.agent_registry.get_agent(planner_agent_id)
+            if agent:
+                return agent
+
+        if planner_agent_name:
+            agent = self.agent_registry.get_agent_by_name(planner_agent_name)
+            if agent:
+                return agent
+
+        normalized_id = self._normalize_reference(planner_agent_id)
+        normalized_name = self._normalize_reference(planner_agent_name)
+        if not normalized_id and not normalized_name:
+            return None
+
+        for candidate in self.agent_registry.list_agents():
+            if (
+                normalized_id
+                and self._normalize_reference(candidate.id) == normalized_id
+            ):
+                return candidate
+            if (
+                normalized_name
+                and self._normalize_reference(candidate.config.name) == normalized_name
+            ):
+                return candidate
+
+        return None
+
+    def _resolve_server_reference(
+        self,
+        planner_server_reference: str,
+        servers_by_id: Dict[str, Any],
+        servers_by_name: Dict[str, Any],
+        servers_by_normalized_name: Dict[str, Any],
+    ) -> Optional[Any]:
+        """Resolve planner MCP server references to a canonical server record."""
+        if not planner_server_reference:
+            return None
+
+        if planner_server_reference in servers_by_id:
+            return servers_by_id[planner_server_reference]
+
+        lowered = planner_server_reference.lower()
+        if lowered in servers_by_name:
+            return servers_by_name[lowered]
+
+        normalized_reference = self._normalize_reference(planner_server_reference)
+        if normalized_reference and normalized_reference in servers_by_normalized_name:
+            return servers_by_normalized_name[normalized_reference]
+
+        candidate_ids = [
+            planner_server_reference,
+            f"python-{planner_server_reference}",
+            planner_server_reference.replace("-", "_"),
+            planner_server_reference.replace("_", "-"),
+            f"python-{planner_server_reference.replace('-', '_')}",
+            f"python-{planner_server_reference.replace('_', '-')}",
+        ]
+
+        for candidate_id in candidate_ids:
+            if candidate_id in servers_by_id:
+                return servers_by_id[candidate_id]
+
+        return None
+
+    def _find_missing_required_parameters(
+        self,
+        catalog_parameters: List[Dict[str, Any]],
+        replication_parameters: Dict[str, Any],
+    ) -> List[str]:
+        """Return required catalog parameters still unresolved in replication params."""
+        missing: List[str] = []
+        for parameter in catalog_parameters:
+            if not parameter.get("required"):
+                continue
+
+            name = parameter.get("name")
+            if not name:
+                continue
+
+            value = replication_parameters.get(name)
+            if value is None or value == "":
+                missing.append(name)
+
+        return missing
 
     def _dataset_analysis_is_sufficient(
         self,
@@ -753,7 +907,13 @@ class AgentPipelineService:
         if not isinstance(analysis, dict):
             return False
 
-        required_keys = ["file_path", "rows", "column_names", "column_types", "sample_rows"]
+        required_keys = [
+            "file_path",
+            "rows",
+            "column_names",
+            "column_types",
+            "sample_rows",
+        ]
         if any(key not in analysis for key in required_keys):
             return False
 
@@ -815,11 +975,38 @@ class AgentPipelineService:
             if local_candidate.exists():
                 return local_candidate
 
-        for fallback in [Path("data") / Path(file_path).name, Path("backend/data") / Path(file_path).name]:
+        for fallback in [
+            Path("data") / Path(file_path).name,
+            Path("backend/data") / Path(file_path).name,
+        ]:
             if fallback.exists():
                 return fallback
 
         return None
+
+    def _resolve_agent_yaml_reference(
+        self,
+        agent_id: Optional[str],
+    ) -> Tuple[Optional[str], bool]:
+        """Resolve canonical agent YAML path in both repo-root and backend cwd contexts."""
+        if not agent_id:
+            return None, False
+
+        relative_path = f"config/agents/{agent_id}.yaml"
+        project_root = Path(__file__).resolve().parents[3]
+        backend_root = Path(__file__).resolve().parents[2]
+
+        candidates = [
+            Path(relative_path),
+            backend_root / relative_path,
+            project_root / relative_path,
+        ]
+
+        for candidate in candidates:
+            if candidate.exists():
+                return relative_path, True
+
+        return relative_path, False
 
     def _load_tool_catalog_index(self) -> Dict[str, Dict[str, Any]]:
         """Load MCP tool metadata from mcp-catalog.yaml into a tool lookup."""
@@ -838,7 +1025,9 @@ class AgentPipelineService:
                     catalog_data = yaml.safe_load(file) or {}
                 break
             except Exception as exc:
-                logger.warning("Failed to read MCP catalog", path=str(path), error=str(exc))
+                logger.warning(
+                    "Failed to read MCP catalog", path=str(path), error=str(exc)
+                )
 
         if not catalog_data:
             return {}
@@ -960,8 +1149,21 @@ class AgentPipelineService:
         if "train" in lowered_name and target_column and "target_column" not in params:
             params["target_column"] = target_column
 
-        if file_path and "filepath" not in params and any(
-            token in lowered_name for token in ["load", "read", "train", "evaluate", "detect", "scale", "encode"]
+        if (
+            file_path
+            and "filepath" not in params
+            and any(
+                token in lowered_name
+                for token in [
+                    "load",
+                    "read",
+                    "train",
+                    "evaluate",
+                    "detect",
+                    "scale",
+                    "encode",
+                ]
+            )
         ):
             params["filepath"] = file_path
 
@@ -988,13 +1190,19 @@ class AgentPipelineService:
         numeric_columns = [
             col
             for col in columns
-            if any(marker in str(column_types.get(col, "")).lower() for marker in numeric_markers)
+            if any(
+                marker in str(column_types.get(col, "")).lower()
+                for marker in numeric_markers
+            )
             and col != target
         ]
         categorical_columns = [
             col
             for col in columns
-            if any(marker in str(column_types.get(col, "")).lower() for marker in categorical_markers)
+            if any(
+                marker in str(column_types.get(col, "")).lower()
+                for marker in categorical_markers
+            )
             and col != target
         ]
 
@@ -1014,7 +1222,10 @@ class AgentPipelineService:
         if param_name == "columns":
             if "encode" in lowered_tool and categorical_columns:
                 return categorical_columns
-            if any(token in lowered_tool for token in ["scale", "noise", "outlier"]) and numeric_columns:
+            if (
+                any(token in lowered_tool for token in ["scale", "noise", "outlier"])
+                and numeric_columns
+            ):
                 return numeric_columns
             if numeric_columns:
                 return numeric_columns
@@ -1031,7 +1242,9 @@ class AgentPipelineService:
 
         if param_name == "method":
             if "feature_selection" in lowered_tool:
-                return "f_classif" if task_type != "regression" else "mutual_info_classif"
+                return (
+                    "f_classif" if task_type != "regression" else "mutual_info_classif"
+                )
             if "encode" in lowered_tool:
                 return "onehot"
             if "scale" in lowered_tool:
@@ -1056,15 +1269,26 @@ class AgentPipelineService:
     ) -> List[Dict[str, Any]]:
         """Return parameter schema metadata for one tool from mcp-catalog."""
         tool_info = tool_catalog.get(tool_name) or {}
-        return [
-            {
-                "name": input_info.get("name"),
-                "type": input_info.get("type_spec"),
-                "default": input_info.get("default"),
-            }
-            for input_info in tool_info.get("inputs", [])
-            if input_info.get("name")
-        ]
+        catalog_parameters: List[Dict[str, Any]] = []
+        for input_info in tool_info.get("inputs", []):
+            name = input_info.get("name")
+            if not name:
+                continue
+
+            type_spec = str(input_info.get("type_spec") or "")
+            is_optional = "optional" in type_spec.lower()
+            has_default = input_info.get("default") is not None
+
+            catalog_parameters.append(
+                {
+                    "name": name,
+                    "type": type_spec,
+                    "default": input_info.get("default"),
+                    "required": not is_optional and not has_default,
+                }
+            )
+
+        return catalog_parameters
 
     def _select_model_type_for_phase(self, phase: Dict[str, Any]) -> Optional[str]:
         """Infer selected model type from planner text to make training steps reproducible."""
@@ -1072,7 +1296,9 @@ class AgentPipelineService:
             [
                 str(phase.get("agent_name") or ""),
                 str(phase.get("rationale") or ""),
-                " ".join(str(t.get("description") or "") for t in phase.get("tools", [])),
+                " ".join(
+                    str(t.get("description") or "") for t in phase.get("tools", [])
+                ),
                 " ".join(str(t.get("tool_name") or "") for t in phase.get("tools", [])),
             ]
         ).lower()
@@ -1099,7 +1325,9 @@ class AgentPipelineService:
 
         return None
 
-    def _infer_task_type(self, objective_text: str, file_path: Optional[str]) -> Optional[str]:
+    def _infer_task_type(
+        self, objective_text: str, file_path: Optional[str]
+    ) -> Optional[str]:
         """Infer classification/regression hint from objective/path."""
         haystack = f"{objective_text} {file_path or ''}".lower()
         if "classification" in haystack:
