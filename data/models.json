@@ -1,4 +1,15 @@
 {
+  "ollama-qwen3-8b": {
+    "id": "ollama-qwen3-8b",
+    "display_name": "Ollama Qwen3 8B",
+    "model_name": "ollama/qwen3:8b",
+    "provider": "ollama",
+    "api_key_name": null,
+    "is_available": true,
+    "supports_function_calling": true,
+    "max_tokens": 8192,
+    "description": "Local Qwen3 8B model served by Ollama with tool calling support"
+  },
   "groq-llama-3.3-70b": {
     "id": "groq-llama-3.3-70b",
     "display_name": "Groq Llama 3.3 70B",
@@ -31,38 +42,5 @@
     "supports_function_calling": true,
     "max_tokens": 8192,
     "description": "Advanced Gemini 2.5 model with enhanced capabilities"
-  },
-  "gemini-2.5-flash-lite": {
-    "id": "gemini-2.5-flash-lite",
-    "display_name": "Gemini 2.5 Flash Lite",
-    "model_name": "gemini/gemini-2.5-flash-lite",
-    "provider": "gemini",
-    "api_key_name": "GOOGLE_API_KEY",
-    "is_available": true,
-    "supports_function_calling": true,
-    "max_tokens": 20000,
-    "description": "Lightweight Gemini 2.5 model"
-  },
-  "gemma-3-27b": {
-    "id": "gemma-3-27b",
-    "display_name": "Gemma 3 27B",
-    "model_name": "openrouter/google/gemma-3-27b-it:free",
-    "provider": "openrouter",
-    "api_key_name": "OPENROUTER_API_KEY",
-    "is_available": true,
-    "supports_function_calling": true,
-    "max_tokens": 10000,
-    "description": "Google's open-source Gemma 3 model with 27B parameters"
-  },
-  "openrouter-claude-sonnet": {
-    "id": "openrouter-claude-sonnet",
-    "display_name": "Openrouter Grok 4.1 Fast Free",
-    "model_name": "openrouter/x-ai/grok-4.1-fast:free",
-    "provider": "openrouter",
-    "api_key_name": "OPENROUTER_API_KEY",
-    "is_available": true,
-    "supports_function_calling": true,
-    "max_tokens": 8192,
-    "description": "Claude 3.5 Sonnet via OpenRouter"
   }
 }
