@@ -3,7 +3,7 @@ description:
   Reads the MCP tool catalog and agent descriptions to decide the optimal
   pipeline for the user's goal, then instructs the Orchestrator on exactly which agents
   and tools to use
-model: ollama/qwen3:8b
+model: deepseek/deepseek-chat
 system_prompt:
   "You are AMALIA's Planner Agent. You receive a description of an ML\
   \ task\n(goal + dataset info) from the Interaction Agent, and you produce a precise\n\
@@ -42,8 +42,8 @@ mcp_servers: {}
 mcp_server_ids:
   - filesystem
   - data-loading
-temperature: 0.3
-max_tokens: 30000
+temperature: 0.0
+max_tokens: 8000
 metadata:
   version: 4.0.0
   category: planning

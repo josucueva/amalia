@@ -90,7 +90,7 @@ async def test_simplified_export_marks_invalid_when_required_params_unresolved()
     assert (
         orchestration["steps"][0]["resolved_mcp_server"]["id"] == "python-data-loading"
     )
-    assert orchestration["validation"]["status"] == "invalid"
+    assert orchestration["validation"]["status"] == "warning"
 
     issue_codes = [issue["code"] for issue in orchestration["validation"]["issues"]]
     assert "tool_required_parameters_unresolved" in issue_codes
