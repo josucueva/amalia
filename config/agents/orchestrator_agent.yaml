@@ -2,7 +2,7 @@ name: Orchestrator Agent
 description:
   Receives the Planner's pipeline specification and converts it into a
   complete, valid Sim AI workflow JSON ready for canvas display and export
-model: ollama/qwen3:8b
+model: deepseek/deepseek-chat
 system_prompt:
   "You are AMALIA's Orchestrator Agent. Your only job is to convert the\
   \ Planner\nAgent's pipeline specification into a correctly formatted Sim AI workflow\
@@ -109,8 +109,8 @@ icon: cpu
 tools: []
 mcp_servers: {}
 mcp_server_ids: []
-temperature: 0.3
-max_tokens: 50000
+temperature: 0.0
+max_tokens: 8000
 metadata:
   version: 4.0.0
   category: orchestration

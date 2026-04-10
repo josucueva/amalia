@@ -38,6 +38,9 @@ class LLMService:
         if self.settings.anthropic_api_key:
             os.environ["ANTHROPIC_API_KEY"] = self.settings.anthropic_api_key
 
+        if self.settings.deepseek_api_key:
+            os.environ["DEEPSEEK_API_KEY"] = self.settings.deepseek_api_key
+
         if self.settings.google_api_key:
             os.environ["GEMINI_API_KEY"] = self.settings.google_api_key
             os.environ["GOOGLE_API_KEY"] = self.settings.google_api_key

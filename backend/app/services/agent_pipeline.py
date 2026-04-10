@@ -5,6 +5,7 @@ Implements the hidden agent flow: Interaction → Planner → Orchestrator
 
 import json
 import re
+import csv
 from pathlib import Path
 import structlog
 from typing import Dict, Any, Optional, Tuple, List
@@ -104,6 +105,10 @@ class AgentPipelineService:
         agent: Agent,
         user_message: str,
         conversation_history: list,
+        *,
+        single_pass: bool = False,
+        disable_tools: bool = False,
+        max_tokens_override: Optional[int] = None,
     ) -> str:
         """Generate agent response with MCP tool support.
 
@@ -200,6 +205,9 @@ class AgentPipelineService:
 
             should_enable_tools = bool(mcp_servers_config and model_supports_tools)
 
+            if disable_tools:
+                should_enable_tools = False
+
             # Keep interaction chat simple unless a dataset attachment is present.
             # This avoids unnecessary MCP/tool loops for greetings and general Q&A.
             if (
@@ -232,12 +240,19 @@ class AgentPipelineService:
                 )
 
             # Generate initial response
+            agent_config_payload = agent.config.dict()
+            if max_tokens_override is not None:
+                agent_config_payload["max_tokens"] = max_tokens_override
+
             result = await self.llm_service.generate_agent_response(
                 user_message=user_message,
-                agent_config=agent.config.dict(),
+                agent_config=agent_config_payload,
                 conversation_history=conversation_history,
                 tools=available_tools if available_tools else None,
             )
+
+            if single_pass:
+                return result if isinstance(result, str) else str(result)
 
             # Handle tool calls with proper LLM loop
             iteration = 0
@@ -308,7 +323,11 @@ class AgentPipelineService:
                     messages=messages,
                     model=agent.config.model,
                     temperature=agent.config.temperature,
-                    max_tokens=agent.config.max_tokens,
+                    max_tokens=(
+                        max_tokens_override
+                        if max_tokens_override is not None
+                        else agent.config.max_tokens
+                    ),
                     tools=available_tools,
                 )
 
@@ -436,38 +455,55 @@ class AgentPipelineService:
             logger.error("Interaction agent not found")
             return "Interaction agent is not available.", None
 
+        file_path = self._extract_file_path_from_message(user_message)
+        dataset_snapshot = (
+            self._build_dataset_snapshot(file_path) if file_path else None
+        )
+
+        interaction_input = user_message
+        if dataset_snapshot:
+            interaction_input = (
+                f"{user_message}\n\n"
+                "[DATASET_FIRST_100_ROWS_ANALYSIS_JSON]\n"
+                f"{json.dumps(dataset_snapshot, ensure_ascii=True)}"
+            )
+
         logger.info("Step 1: Processing with interaction agent")
         interaction_response = await self._generate_agent_response_with_tools(
             agent=interaction_agent,
-            user_message=user_message,
+            user_message=interaction_input,
             conversation_history=conversation_history,
+            single_pass=True,
+            disable_tools=False,
+            max_tokens_override=1800,
         )
 
         # Check if interaction agent wants to plan a pipeline
         action_data = self._extract_json_from_response(interaction_response)
 
-        file_path = self._extract_file_path_from_message(user_message)
-        if file_path and not self._dataset_analysis_is_sufficient(
-            action_data, file_path
-        ):
-            logger.warning(
-                "Interaction output missing required dataset analysis; requesting strict retry",
-                file_path=file_path,
-            )
-            retry_prompt = (
-                f"{user_message}\n\n"
-                "[STRICT_REQUIREMENT]\n"
-                "You must call MCP tools read_file_head(filepath, n_rows=100) and analyze_csv "
-                "before responding. Return JSON with action=plan_pipeline and complete "
-                "dataset_analysis including file_path, rows, column_names, column_types, "
-                "target_column, task_type, data_quality, and sample_rows."
-            )
-            interaction_response = await self._generate_agent_response_with_tools(
-                agent=interaction_agent,
-                user_message=retry_prompt,
-                conversation_history=conversation_history,
-            )
-            action_data = self._extract_json_from_response(interaction_response)
+        if not action_data or action_data.get("action") != "plan_pipeline":
+            if file_path:
+                logger.warning(
+                    "Interaction did not return plan JSON; falling back to backend-grounded planning path",
+                    file_path=file_path,
+                )
+                action_data = {
+                    "action": "plan_pipeline",
+                    "improved_prompt": user_message,
+                    "dataset_analysis": dataset_snapshot or {},
+                }
+            else:
+                # No pipeline planning needed, return interaction agent's response
+                logger.info("No pipeline planning requested")
+                normalized_response = self._normalize_chat_text_response(
+                    interaction_response,
+                    action_data,
+                )
+                return normalized_response, None
+
+        if not self._dataset_analysis_is_sufficient(action_data, file_path or ""):
+            if dataset_snapshot:
+                action_data["dataset_analysis"] = dataset_snapshot
 
         if not action_data or action_data.get("action") != "plan_pipeline":
             # No pipeline planning needed, return interaction agent's response
@@ -504,6 +540,7 @@ class AgentPipelineService:
             return "Pipeline planning is not available.", None
 
         logger.info("Step 3: Processing with planner agent")
+        planner_grounding = await self._build_planner_grounding_context()
         planner_input = improved_prompt
         if dataset_analysis:
             planner_input = (
@@ -511,40 +548,39 @@ class AgentPipelineService:
                 "[DATASET_ANALYSIS_JSON]\n"
                 f"{json.dumps(dataset_analysis, ensure_ascii=True)}"
             )
+        planner_input = (
+            f"{planner_input}\n\n"
+            "[PLANNER_GROUNDING_CONTEXT_JSON]\n"
+            f"{json.dumps(planner_grounding, ensure_ascii=True)}\n\n"
+            "[STRICT_PLANNER_MODE]\n"
+            "Use only IDs/names/tool names present in PLANNER_GROUNDING_CONTEXT_JSON. "
+            "Do not call MCP tools in this step. Output only JSON plan."
+        )
 
         planner_response = await self._generate_agent_response_with_tools(
             agent=planner_agent,
             user_message=planner_input,
             conversation_history=[],  # Fresh context for planner
+            single_pass=True,
+            disable_tools=True,
+            max_tokens_override=2200,
         )
 
         plan_data = self._extract_json_from_response(planner_response)
 
-        if file_path and not self._plan_has_header_evidence(plan_data, file_path):
-            logger.warning(
-                "Planner output missing header evidence; requesting strict retry",
-                file_path=file_path,
-            )
-            planner_retry_input = (
-                f"{planner_input}\n\n"
-                "[STRICT_REQUIREMENT]\n"
-                "Before final plan, call MCP read_file_head on the attached dataset and include "
-                "plan.planner_file_header with file_path, columns, sample_rows_read."
-            )
-            planner_response = await self._generate_agent_response_with_tools(
-                agent=planner_agent,
-                user_message=planner_retry_input,
-                conversation_history=[],
-            )
-            plan_data = self._extract_json_from_response(planner_response)
-
         if not plan_data or "plan" not in plan_data:
-            logger.error(
-                "Planner failed to create valid plan",
-                plan_data=plan_data,
+            logger.warning(
+                "Planner failed to create valid JSON plan; using backend fallback plan",
                 response_preview=planner_response[:500] if planner_response else None,
             )
-            return "Failed to create execution plan.", None
+            plan_data = {
+                "plan": self._build_fallback_plan(
+                    file_path=file_path,
+                    dataset_analysis=(
+                        dataset_analysis if isinstance(dataset_analysis, dict) else None
+                    ),
+                )
+            }
 
         plan = plan_data["plan"]
         logger.info(
@@ -553,7 +589,21 @@ class AgentPipelineService:
             complexity=plan.get("complexity"),
         )
 
-        logger.info("Step 5: Building simplified orchestration export")
+        orchestrator_agent = self.agent_registry.get_agent("orchestrator_agent")
+        if orchestrator_agent:
+            logger.info("Step 5: Processing with orchestrator agent")
+            await self._generate_agent_response_with_tools(
+                agent=orchestrator_agent,
+                user_message=json.dumps(plan_data, ensure_ascii=True),
+                conversation_history=[],
+                single_pass=True,
+                disable_tools=True,
+                max_tokens_override=1200,
+            )
+        else:
+            logger.warning("Orchestrator agent not found")
+
+        logger.info("Step 6: Building simplified orchestration export")
         orchestration = await self._build_simplified_orchestration_export(
             plan_data=plan_data,
             file_path=file_path,
@@ -575,6 +625,284 @@ class AgentPipelineService:
         )
 
         return final_message, {"orchestration": orchestration}
+
+    async def _build_planner_grounding_context(self) -> Dict[str, Any]:
+        """Build compact grounding context from real agents, MCP servers, and catalog."""
+        agents = []
+        for agent in self.agent_registry.list_agents():
+            if agent.id in {"interaction_agent", "planner_agent", "orchestrator_agent"}:
+                continue
+            agents.append(
+                {
+                    "id": agent.id,
+                    "name": agent.config.name,
+                    "description": agent.config.description,
+                    "yaml_path": f"config/agents/{agent.id}.yaml",
+                }
+            )
+
+        mcp_servers = []
+        if self.mcp_server_service:
+            try:
+                servers = await self.mcp_server_service.list_servers(
+                    available_only=True
+                )
+                for server in servers:
+                    mcp_servers.append(
+                        {
+                            "id": server.id,
+                            "name": server.name,
+                            "description": server.description,
+                        }
+                    )
+            except Exception as exc:
+                logger.warning(
+                    "Failed to collect MCP grounding context", error=str(exc)
+                )
+
+        tool_catalog = self._load_tool_catalog_index()
+        tools = []
+        for tool_name, meta in tool_catalog.items():
+            inputs = [
+                inp.get("name") for inp in meta.get("inputs", []) if inp.get("name")
+            ]
+            tools.append(
+                {
+                    "name": tool_name,
+                    "server_name": meta.get("server_name"),
+                    "inputs": inputs,
+                }
+            )
+
+        return {
+            "agents": agents,
+            "mcp_servers": mcp_servers,
+            "tools": tools,
+            "constraints": {
+                "use_only_known_agents": True,
+                "use_only_known_mcp_servers": True,
+                "use_only_known_tools": True,
+            },
+        }
+
+    def _build_dataset_snapshot(
+        self, file_path: Optional[str]
+    ) -> Optional[Dict[str, Any]]:
+        """Build deterministic dataset analysis from first 100 rows without extra LLM calls."""
+        resolved = self._resolve_data_file_path(file_path)
+        if not resolved:
+            return None
+
+        encodings = ["utf-8", "latin-1"]
+        last_error: Optional[Exception] = None
+        for encoding in encodings:
+            try:
+                with open(resolved, "r", encoding=encoding, newline="") as handle:
+                    reader = csv.DictReader(handle)
+                    if not reader.fieldnames:
+                        return None
+
+                    rows = []
+                    total_rows = 0
+                    for row in reader:
+                        total_rows += 1
+                        if len(rows) < 100:
+                            rows.append(row)
+
+                fieldnames = list(reader.fieldnames)
+                column_types = self._infer_column_types(rows, fieldnames)
+                target_column = self._guess_target_column(fieldnames)
+                task_type = self._infer_task_type_from_sample(rows, target_column)
+                missing_by_column = {
+                    col: sum(1 for row in rows if str(row.get(col, "")).strip() == "")
+                    for col in fieldnames
+                }
+
+                return {
+                    "file_path": file_path,
+                    "file_name": Path(resolved).name,
+                    "rows": total_rows,
+                    "columns": len(fieldnames),
+                    "column_names": fieldnames,
+                    "column_types": column_types,
+                    "target_column": target_column,
+                    "task_type": task_type,
+                    "data_quality": {
+                        "missing_values_per_column": missing_by_column,
+                        "total_missing": sum(missing_by_column.values()),
+                        "duplicate_rows": max(
+                            0, len(rows) - len({tuple(sorted(r.items())) for r in rows})
+                        ),
+                        "needs_preprocessing": any(
+                            v > 0 for v in missing_by_column.values()
+                        ),
+                    },
+                    "sample_rows": min(100, len(rows)),
+                    "sample_rows_preview": rows[:3],
+                    "source": "backend_csv_first_100",
+                }
+            except Exception as exc:
+                last_error = exc
+
+        if last_error:
+            logger.warning(
+                "Failed to build dataset snapshot",
+                file_path=file_path,
+                error=str(last_error),
+            )
+        return None
+
+    def _infer_column_types(
+        self, rows: List[Dict[str, Any]], columns: List[str]
+    ) -> Dict[str, str]:
+        """Infer lightweight column dtypes from sampled rows."""
+        inferred: Dict[str, str] = {}
+        for col in columns:
+            values = [
+                str(r.get(col, "")).strip()
+                for r in rows
+                if str(r.get(col, "")).strip() != ""
+            ]
+            if not values:
+                inferred[col] = "unknown"
+                continue
+
+            is_int = all(re.fullmatch(r"[-+]?\d+", v) for v in values)
+            is_float = all(re.fullmatch(r"[-+]?(\d+\.\d+|\d+)", v) for v in values)
+            if is_int:
+                inferred[col] = "int64"
+            elif is_float:
+                inferred[col] = "float64"
+            else:
+                inferred[col] = "object"
+        return inferred
+
+    def _guess_target_column(self, columns: List[str]) -> Optional[str]:
+        """Guess likely target column from common naming conventions."""
+        normalized = {c.lower(): c for c in columns}
+        for candidate in ["target", "label", "class", "y", "output", "diagnosis"]:
+            if candidate in normalized:
+                return normalized[candidate]
+        return columns[-1] if columns else None
+
+    def _infer_task_type_from_sample(
+        self,
+        rows: List[Dict[str, Any]],
+        target_column: Optional[str],
+    ) -> Optional[str]:
+        """Infer task type using target distribution in sampled rows."""
+        if not target_column or not rows:
+            return None
+
+        target_values = [
+            str(r.get(target_column, "")).strip()
+            for r in rows
+            if str(r.get(target_column, "")).strip() != ""
+        ]
+        if not target_values:
+            return None
+
+        unique_count = len(set(target_values))
+        numeric_like = all(
+            re.fullmatch(r"[-+]?(\d+\.\d+|\d+)", v) for v in target_values
+        )
+        if numeric_like and unique_count > max(10, int(len(target_values) * 0.3)):
+            return "regression"
+        return "classification"
+
+    def _build_fallback_plan(
+        self,
+        file_path: Optional[str],
+        dataset_analysis: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        """Create a deterministic fallback plan when planner output is malformed."""
+        dataset_analysis = dataset_analysis or {}
+        target_column = dataset_analysis.get("target_column") or "target"
+        task_type = (
+            dataset_analysis.get("task_type")
+            or self._infer_task_type("", file_path)
+            or "classification"
+        )
+
+        trainer_tool = (
+            "train_classification_model"
+            if task_type != "regression"
+            else "train_regression_model"
+        )
+        evaluator_tool = (
+            "evaluate_classification_model"
+            if task_type != "regression"
+            else "evaluate_regression_model"
+        )
+
+        return {
+            "objective": f"Build a {task_type} pipeline for the provided dataset",
+            "complexity": "moderate",
+            "planner_file_header": {
+                "file_path": file_path,
+                "columns": dataset_analysis.get("column_names") or [],
+                "sample_rows_read": int(dataset_analysis.get("sample_rows") or 0),
+            },
+            "phases": [
+                {
+                    "phase_number": 1,
+                    "agent_name": "Data Loader",
+                    "agent_id": "data_loader",
+                    "mcp_server": "Data Loading Server",
+                    "tools": [
+                        {
+                            "tool_name": "load_csv",
+                            "description": "Load dataset and verify structure",
+                            "parameters": {
+                                "filepath": file_path,
+                                "encoding": "utf-8",
+                                "delimiter": ",",
+                            },
+                        }
+                    ],
+                    "rationale": "Start with deterministic dataset loading.",
+                },
+                {
+                    "phase_number": 2,
+                    "agent_name": "model_trainer",
+                    "agent_id": "model_trainer",
+                    "mcp_server": "Model Training Server",
+                    "tools": [
+                        {
+                            "tool_name": trainer_tool,
+                            "description": "Train baseline model",
+                            "parameters": {
+                                "filepath": file_path,
+                                "target_column": target_column,
+                                "model_type": "random_forest",
+                                "test_size": 0.2,
+                                "random_state": 42,
+                                "model_save_path": None,
+                            },
+                        }
+                    ],
+                    "rationale": "Train a robust baseline model.",
+                },
+                {
+                    "phase_number": 3,
+                    "agent_name": "model_evaluator",
+                    "agent_id": "model_evaluator",
+                    "mcp_server": "Model Evaluation Server",
+                    "tools": [
+                        {
+                            "tool_name": evaluator_tool,
+                            "description": "Evaluate trained model",
+                            "parameters": {
+                                "model_path": None,
+                                "test_data_path": file_path,
+                                "target_column": target_column,
+                            },
+                        }
+                    ],
+                    "rationale": "Evaluate model performance and surface metrics.",
+                },
+            ],
+        }
 
     async def _build_simplified_orchestration_export(
         self,
@@ -740,13 +1068,11 @@ class AgentPipelineService:
                     {
                         "tool_name": tool_name,
                         "description": tool.get("description"),
-                        "catalog_parameters": catalog_parameters,
-                        "planner_parameters": (
+                        "tool_parameters": (
                             planner_parameters
                             if isinstance(planner_parameters, dict)
                             else {}
                         ),
-                        "replication_parameters": replication_parameters,
                         "missing_required_parameters": missing_required_parameters,
                         "parameter_source": "mcp_catalog_defaults_and_context",
                     }

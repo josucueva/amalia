@@ -58,7 +58,9 @@ class BatchProcessorError(Exception):
 class BatchValidationError(BatchProcessorError):
     """Validation-layer error (bad inputs/paths/filters)."""
 
-    def __init__(self, message: str, *, code: str, details: Optional[dict[str, Any]] = None):
+    def __init__(
+        self, message: str, *, code: str, details: Optional[dict[str, Any]] = None
+    ):
         super().__init__(
             message,
             code=code,
@@ -71,7 +73,9 @@ class BatchValidationError(BatchProcessorError):
 class BatchConflictError(BatchProcessorError):
     """Concurrency/idempotency conflict error."""
 
-    def __init__(self, message: str, *, code: str, details: Optional[dict[str, Any]] = None):
+    def __init__(
+        self, message: str, *, code: str, details: Optional[dict[str, Any]] = None
+    ):
         super().__init__(
             message,
             code=code,
@@ -84,7 +88,9 @@ class BatchConflictError(BatchProcessorError):
 class BatchInfrastructureError(BatchProcessorError):
     """Infrastructure/runtime consistency error."""
 
-    def __init__(self, message: str, *, code: str, details: Optional[dict[str, Any]] = None):
+    def __init__(
+        self, message: str, *, code: str, details: Optional[dict[str, Any]] = None
+    ):
         super().__init__(
             message,
             code=code,
@@ -710,9 +716,7 @@ class BatchProcessorService:
         if request.task_type:
             task_lower = request.task_type.lower()
             datasets = [
-                d
-                for d in datasets
-                if (d.task_type or "").lower() == task_lower
+                d for d in datasets if (d.task_type or "").lower() == task_lower
             ]
 
         if request.tier:
@@ -736,12 +740,11 @@ class BatchProcessorService:
 
     def list_artifacts(self, job_id: str) -> list[str]:
         """List existing artifact files for a job."""
-        return [
-            str(path)
-            for path in self.artifact_service.list_json_artifacts(job_id)
-        ]
+        return [str(path) for path in self.artifact_service.list_json_artifacts(job_id)]
 
-    async def ensure_artifact_zip(self, job_id: str, force_rebuild: bool = False) -> Optional[str]:
+    async def ensure_artifact_zip(
+        self, job_id: str, force_rebuild: bool = False
+    ) -> Optional[str]:
         """Ensure a zip package exists for the job and persist zip metadata."""
         job = await self.get_job(job_id)
         if not job:
@@ -890,7 +893,9 @@ class BatchProcessorService:
 
         return normalized
 
-    def _infer_task_and_tier(self, file_path: Path) -> tuple[Optional[str], Optional[str]]:
+    def _infer_task_and_tier(
+        self, file_path: Path
+    ) -> tuple[Optional[str], Optional[str]]:
         """Infer task_type and tier from known folder segments in path."""
         parts = [part.lower() for part in file_path.parts]
 
@@ -939,7 +944,9 @@ class BatchProcessorService:
         doc.pop("_id", None)
         return doc
 
-    async def get_monitoring_report(self, job_id: Optional[str] = None) -> Dict[str, Any]:
+    async def get_monitoring_report(
+        self, job_id: Optional[str] = None
+    ) -> Dict[str, Any]:
         """Build monitoring payload for one job or all active jobs."""
         now = datetime.now(timezone.utc)
 
@@ -1156,9 +1163,7 @@ class BatchProcessorService:
         conversation_history = []
 
         user_message = self._build_batch_user_message(item)
-        file_context = (
-            f"\n\n[File attached: {item['filename']} (0 MB) at path: {item['file_path']}]"
-        )
+        file_context = f"\n\n[File attached: {item['filename']} (0 MB) at path: {item['file_path']}]"
         user_message_with_context = user_message + file_context
 
         if create_sessions:
@@ -1203,15 +1208,18 @@ class BatchProcessorService:
                 orchestration = orchestration_data["orchestration"]
                 validation = orchestration.get("validation", {})
                 if validation.get("status") == "invalid":
-                    issues = validation.get("issues", [])
-                    issue_preview = (
-                        "; ".join(str(issue.get("code")) for issue in issues[:5])
-                        if isinstance(issues, list)
-                        else "unknown_validation_issue"
-                    )
-                    raise RuntimeError(
-                        "Orchestration validation failed (blocking issues); refusing to save uncertain batch artifact: "
-                        f"{issue_preview}"
+                    # Persist the artifact anyway so users can inspect and iterate quickly.
+                    # We keep all issues but downgrade status to signal uncertainty instead of
+                    # hard-failing the entire batch item.
+                    validation["status"] = "uncertain"
+                    validation["allow_persist_with_issues"] = True
+                    orchestration["validation"] = validation
+                    logger.warning(
+                        "Persisting uncertain orchestration artifact",
+                        job_id=job_id,
+                        dataset_id=item.get("dataset_id"),
+                        issue_count=validation.get("issue_count"),
+                        blocking_issue_count=validation.get("blocking_issue_count"),
                     )
 
                 artifact_path = self._save_artifact(job_id, item, orchestration)
@@ -1305,9 +1313,15 @@ class BatchProcessorService:
             return
 
         total = len(job["items"])
-        succeeded = sum(1 for i in job["items"] if i["status"] == BatchItemStatus.SUCCEEDED.value)
-        failed = sum(1 for i in job["items"] if i["status"] == BatchItemStatus.FAILED.value)
-        skipped = sum(1 for i in job["items"] if i["status"] == BatchItemStatus.SKIPPED.value)
+        succeeded = sum(
+            1 for i in job["items"] if i["status"] == BatchItemStatus.SUCCEEDED.value
+        )
+        failed = sum(
+            1 for i in job["items"] if i["status"] == BatchItemStatus.FAILED.value
+        )
+        skipped = sum(
+            1 for i in job["items"] if i["status"] == BatchItemStatus.SKIPPED.value
+        )
         processed = succeeded + failed + skipped
 
         durations = [

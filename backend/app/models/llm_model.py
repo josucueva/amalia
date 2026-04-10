@@ -13,6 +13,7 @@ class ModelProvider(str, Enum):
     OPENAI = "openai"
     ANTHROPIC = "anthropic"
     GROQ = "groq"
+    DEEPSEEK = "deepseek"
     GEMINI = "gemini"
     OLLAMA = "ollama"
     TOGETHER = "together"
