@@ -1,0 +1,533 @@
+{
+  "dataset_id": "classification__hard__ddosad_ecommerce-customer-service-satisfaction__Customer_support_data",
+  "filename": "Customer_support_data.csv",
+  "file_path": "/app/data/uploads/datasets/classification/hard/ddosad_ecommerce-customer-service-satisfaction/Customer_support_data.csv",
+  "task_type": "classification",
+  "tier": "hard",
+  "target_column": null,
+  "generated_at": "2026-04-12T17:49:44.205347+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a classification model for predicting CSAT Score using the Customer_support_data.csv dataset",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/hard/ddosad_ecommerce-customer-service-satisfaction/Customer_support_data.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/hard/ddosad_ecommerce-customer-service-satisfaction/Customer_support_data.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_loader",
+            "agent_name": "data_loader"
+          }
+        },
+        "planner_mcp_server": "Data Loading Server",
+        "resolved_mcp_server": {
+          "id": "python-data_loading",
+          "name": "Data Loading Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "read_file_head",
+            "description": "Read the first few rows of the dataset to understand its structure and content.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/ddosad_ecommerce-customer-service-satisfaction/Customer_support_data.csv",
+              "n_rows": 10
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/ddosad_ecommerce-customer-service-satisfaction/Customer_support_data.csv",
+              "n_rows": 10
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "This phase is needed to understand the dataset structure and content before proceeding with data preprocessing."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "missing_values_detector",
+          "name": "missing_values_detector",
+          "yaml_path": "config/agents/missing_values_detector.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "missing_values_detector",
+            "agent_name": "missing_values_detector"
+          }
+        },
+        "planner_mcp_server": "Data Loading Server",
+        "resolved_mcp_server": {
+          "id": "python-data_loading",
+          "name": "Data Loading Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "validate_csv_structure",
+            "description": "Validate the CSV structure to ensure it matches the expected columns.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/ddosad_ecommerce-customer-service-satisfaction/Customer_support_data.csv",
+              "expected_columns": [
+                "Unique id",
+                "channel_name",
+                "category",
+                "Sub-category",
+                "Customer Remarks",
+                "Order_id",
+                "order_date_time",
+                "Issue_reported at",
+                "issue_responded",
+                "Survey_response_Date",
+                "Customer_City",
+                "Product_category",
+                "Item_price",
+                "connected_handling_time",
+                "Agent_name",
+                "Supervisor",
+                "Manager",
+                "Tenure Bucket",
+                "Agent Shift",
+                "CSAT Score"
+              ]
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/ddosad_ecommerce-customer-service-satisfaction/Customer_support_data.csv",
+              "expected_columns": [
+                "Unique id",
+                "channel_name",
+                "category",
+                "Sub-category",
+                "Customer Remarks",
+                "Order_id",
+                "order_date_time",
+                "Issue_reported at",
+                "issue_responded",
+                "Survey_response_Date",
+                "Customer_City",
+                "Product_category",
+                "Item_price",
+                "connected_handling_time",
+                "Agent_name",
+                "Supervisor",
+                "Manager",
+                "Tenure Bucket",
+                "Agent Shift",
+                "CSAT Score"
+              ]
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "detect_outliers",
+            "description": "Detect and handle outliers in the dataset.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/ddosad_ecommerce-customer-service-satisfaction/Customer_support_data.csv",
+              "column": "CSAT Score",
+              "method": "z-score",
+              "threshold": "1.5"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/ddosad_ecommerce-customer-service-satisfaction/Customer_support_data.csv",
+              "column": "CSAT Score",
+              "method": "z-score"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "handle_missing_values",
+            "description": "Handle missing values in the dataset.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/ddosad_ecommerce-customer-service-satisfaction/Customer_support_data.csv",
+              "strategy": "imputation",
+              "columns": [
+                "Item_price"
+              ],
+              "output_filepath": null
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/ddosad_ecommerce-customer-service-satisfaction/Customer_support_data.csv",
+              "strategy": "imputation"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "This phase is crucial for data cleaning and preprocessing to handle missing values, outliers, and ensure the dataset structure is valid."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": null,
+          "name": "data_preparator",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "data_preparator",
+            "agent_name": "data_preparator"
+          }
+        },
+        "planner_mcp_server": "Data Preparation Server",
+        "resolved_mcp_server": {
+          "id": "python-data_preparation",
+          "name": "Data Preparation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "encode_categorical",
+            "description": "Encode categorical variables.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/ddosad_ecommerce-customer-service-satisfaction/Customer_support_data.csv",
+              "columns": [
+                "Unique id",
+                "channel_name",
+                "category",
+                "Sub-category",
+                "Customer Remarks",
+                "order_date_time",
+                "Issue_reported at",
+                "issue_responded",
+                "Survey_response_Date",
+                "Customer_City",
+                "Product_category",
+                "Agent_name",
+                "Supervisor",
+                "Manager",
+                "Tenure Bucket",
+                "Agent Shift"
+              ],
+              "method": "one-hot",
+              "output_filepath": null
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/ddosad_ecommerce-customer-service-satisfaction/Customer_support_data.csv",
+              "columns": [
+                "Unique id",
+                "channel_name",
+                "category",
+                "Sub-category",
+                "Customer Remarks",
+                "order_date_time",
+                "Issue_reported at",
+                "issue_responded",
+                "Survey_response_Date",
+                "Customer_City",
+                "Product_category",
+                "Agent_name",
+                "Supervisor",
+                "Manager",
+                "Tenure Bucket",
+                "Agent Shift"
+              ],
+              "method": "one-hot"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "scale_features",
+            "description": "Scale features to have zero mean and unit variance.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/ddosad_ecommerce-customer-service-satisfaction/Customer_support_data.csv",
+              "columns": [
+                "Item_price",
+                "connected_handling_time"
+              ],
+              "method": "standard",
+              "output_filepath": null
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/ddosad_ecommerce-customer-service-satisfaction/Customer_support_data.csv",
+              "columns": [
+                "Item_price",
+                "connected_handling_time"
+              ],
+              "method": "standard"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "split_dataset",
+            "description": "Split the dataset into training and testing sets.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/ddosad_ecommerce-customer-service-satisfaction/Customer_support_data.csv",
+              "train_ratio": 0.8,
+              "random_state": 42,
+              "shuffle": "True"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/ddosad_ecommerce-customer-service-satisfaction/Customer_support_data.csv",
+              "train_ratio": 0.8,
+              "random_state": 42
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "This phase prepares the data for modeling by encoding categorical variables, scaling features, and splitting the dataset into training and testing sets."
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": "model_trainer",
+          "name": "model_trainer",
+          "yaml_path": "config/agents/model_trainer.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_trainer",
+            "agent_name": "model_trainer"
+          }
+        },
+        "planner_mcp_server": "Model Training Server",
+        "resolved_mcp_server": {
+          "id": "python-model_training",
+          "name": "Model Training Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "train_classification_model",
+            "description": "Train a classification model.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/ddosad_ecommerce-customer-service-satisfaction/Customer_support_data.csv",
+              "target_column": "CSAT Score",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": null,
+              "hyperparameters": {
+                "n_estimators": 100,
+                "max_depth": null,
+                "min_samples_split": 2,
+                "min_samples_leaf": 1
+              },
+              "model_save_path": null
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/ddosad_ecommerce-customer-service-satisfaction/Customer_support_data.csv",
+              "target_column": "CSAT Score",
+              "model_type": "random_forest"
+            },
+            "missing_required_parameters": [
+              "random_state"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "This phase trains a classification model using the prepared training data."
+      },
+      {
+        "phase_number": 5,
+        "agent": {
+          "id": "model_evaluator",
+          "name": "model_evaluator",
+          "yaml_path": "config/agents/model_evaluator.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_evaluator",
+            "agent_name": "model_evaluator"
+          }
+        },
+        "planner_mcp_server": "Model Evaluation Server",
+        "resolved_mcp_server": {
+          "id": "python-model_evaluation",
+          "name": "Model Evaluation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "evaluate_classification_model",
+            "description": "Evaluate the trained classification model.",
+            "tool_parameters": {
+              "model_path": "/app/models/random_forest_classifier.pkl",
+              "test_data_path": "/app/data/uploads/datasets/classification/hard/ddosad_ecommerce-customer-service-satisfaction/Customer_support_data_test.csv",
+              "target_column": "CSAT Score",
+              "filepath": "/app/data/uploads/datasets/classification/hard/ddosad_ecommerce-customer-service-satisfaction/Customer_support_data.csv"
+            },
+            "planner_parameters": {
+              "model_path": "/app/models/random_forest_classifier.pkl",
+              "test_data_path": "/app/data/uploads/datasets/classification/hard/ddosad_ecommerce-customer-service-satisfaction/Customer_support_data_test.csv",
+              "target_column": "CSAT Score"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "get_classification_report",
+            "description": "Generate a classification report.",
+            "tool_parameters": {
+              "model_path": "/app/models/random_forest_classifier.pkl",
+              "test_data_path": "/app/data/uploads/datasets/classification/hard/ddosad_ecommerce-customer-service-satisfaction/Customer_support_data_test.csv",
+              "target_column": "CSAT Score"
+            },
+            "planner_parameters": {
+              "model_path": "/app/models/random_forest_classifier.pkl",
+              "test_data_path": "/app/data/uploads/datasets/classification/hard/ddosad_ecommerce-customer-service-satisfaction/Customer_support_data_test.csv",
+              "target_column": "CSAT Score"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "This phase evaluates the trained classification model using appropriate metrics and generates a classification report."
+      }
+    ],
+    "mcp_servers": [
+      {
+        "id": "python-data_loading",
+        "name": "Data Loading Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/data_loading/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "CSV file loading, analysis, and validation tools"
+      },
+      {
+        "id": "python-data_preparation",
+        "name": "Data Preparation Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/data_preparation/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Data transformation, feature engineering, and dataset preparation tools"
+      },
+      {
+        "id": "python-model_evaluation",
+        "name": "Model Evaluation Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_evaluation/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Model evaluation, metrics calculation, and error analysis tools"
+      },
+      {
+        "id": "python-model_training",
+        "name": "Model Training Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_training/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Machine learning model training, hyperparameter tuning, and optimization"
+      }
+    ],
+    "validation": {
+      "status": "uncertain",
+      "issue_count": 2,
+      "blocking_issue_count": 1,
+      "issues": [
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='data_preparator' name='data_preparator'",
+          "phase_number": 3
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'train_classification_model' has unresolved required parameters: random_state",
+          "phase_number": 4,
+          "tool_name": "train_classification_model",
+          "missing_parameters": [
+            "random_state"
+          ]
+        }
+      ],
+      "allow_persist_with_issues": true
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "missing_values_detector",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "data_preparator",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "model_trainer",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-5",
+        "agentId": "model_evaluator",
+        "position": {
+          "x": 1100,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      },
+      {
+        "id": "conn-4",
+        "fromInstanceId": "phase-4",
+        "toInstanceId": "phase-5"
+      }
+    ]
+  }
+}

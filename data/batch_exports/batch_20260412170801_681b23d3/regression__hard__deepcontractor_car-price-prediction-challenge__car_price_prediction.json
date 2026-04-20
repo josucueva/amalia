@@ -1,0 +1,486 @@
+{
+  "dataset_id": "regression__hard__deepcontractor_car-price-prediction-challenge__car_price_prediction",
+  "filename": "car_price_prediction.csv",
+  "file_path": "/app/data/uploads/datasets/regression/hard/deepcontractor_car-price-prediction-challenge/car_price_prediction.csv",
+  "task_type": "regression",
+  "tier": "hard",
+  "target_column": null,
+  "generated_at": "2026-04-12T19:04:48.207499+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Train a regression model to predict car prices",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/regression/hard/deepcontractor_car-price-prediction-challenge/car_price_prediction.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/regression/hard/deepcontractor_car-price-prediction-challenge/car_price_prediction.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_loader",
+            "agent_name": "data_loader"
+          }
+        },
+        "planner_mcp_server": "python-data_loading",
+        "resolved_mcp_server": {
+          "id": "python-data_loading",
+          "name": "Data Loading Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "load_csv",
+            "description": "Load the car_price_prediction.csv dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/deepcontractor_car-price-prediction-challenge/car_price_prediction.csv",
+              "encoding": "utf-8",
+              "delimiter": ","
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/deepcontractor_car-price-prediction-challenge/car_price_prediction.csv",
+              "encoding": "utf-8",
+              "delimiter": ","
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Load the dataset for further processing."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "data_preprocessor",
+          "name": "data_preprocessor",
+          "yaml_path": "config/agents/data_preprocessor.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_preprocessor",
+            "agent_name": "data_preprocessor"
+          }
+        },
+        "planner_mcp_server": "python-data_preparation",
+        "resolved_mcp_server": {
+          "id": "python-data_preparation",
+          "name": "Data Preparation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "encode_categorical",
+            "description": "Encode categorical columns for better analysis",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/deepcontractor_car-price-prediction-challenge/car_price_prediction.csv",
+              "columns": [
+                "Levy",
+                "Manufacturer",
+                "Model",
+                "Category",
+                "Leather interior",
+                "Fuel type",
+                "Gear box type",
+                "Drive wheels",
+                "Doors",
+                "Wheel",
+                "Color"
+              ],
+              "method": "one_hot",
+              "output_filepath": null
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/deepcontractor_car-price-prediction-challenge/car_price_prediction.csv",
+              "columns": [
+                "Levy",
+                "Manufacturer",
+                "Model",
+                "Category",
+                "Leather interior",
+                "Fuel type",
+                "Gear box type",
+                "Drive wheels",
+                "Doors",
+                "Wheel",
+                "Color"
+              ],
+              "method": "one_hot"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Encode categorical columns to prepare the dataset for regression analysis."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": "statistics_analyzer",
+          "name": "statistics_analyzer",
+          "yaml_path": "config/agents/statistics_analyzer.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "statistics_analyzer",
+            "agent_name": "statistics_analyzer"
+          }
+        },
+        "planner_mcp_server": "python-data_preparation",
+        "resolved_mcp_server": {
+          "id": "python-data_preparation",
+          "name": "Data Preparation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "detect_outliers",
+            "description": "Detect outliers in the numerical columns",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/deepcontractor_car-price-prediction-challenge/car_price_prediction.csv",
+              "column": [
+                "Engine volume",
+                "Mileage",
+                "Cylinders"
+              ],
+              "method": "z-score",
+              "threshold": "1.5"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/deepcontractor_car-price-prediction-challenge/car_price_prediction.csv",
+              "column": [
+                "Engine volume",
+                "Mileage",
+                "Cylinders"
+              ],
+              "method": "z-score"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "filter_rows",
+            "description": "Remove outliers from the dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/deepcontractor_car-price-prediction-challenge/car_price_prediction.csv",
+              "column": [
+                "Engine volume",
+                "Mileage",
+                "Cylinders"
+              ],
+              "condition": "<=3",
+              "value": null,
+              "output_filepath": null
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/deepcontractor_car-price-prediction-challenge/car_price_prediction.csv",
+              "column": [
+                "Engine volume",
+                "Mileage",
+                "Cylinders"
+              ],
+              "condition": "<=3"
+            },
+            "missing_required_parameters": [
+              "value"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Analyze the dataset statistics to identify and remove outliers."
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": "data_preprocessor",
+          "name": "data_preprocessor",
+          "yaml_path": "config/agents/data_preprocessor.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_preprocessor",
+            "agent_name": "data_preprocessor"
+          }
+        },
+        "planner_mcp_server": "python-data_preparation",
+        "resolved_mcp_server": {
+          "id": "python-data_preparation",
+          "name": "Data Preparation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "split_dataset",
+            "description": "Split the dataset into training and testing sets",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/deepcontractor_car-price-prediction-challenge/car_price_prediction.csv",
+              "train_ratio": 0.8,
+              "random_state": 42,
+              "shuffle": "True"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/deepcontractor_car-price-prediction-challenge/car_price_prediction.csv",
+              "train_ratio": 0.8,
+              "random_state": 42
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Split the dataset into training and testing sets for model evaluation."
+      },
+      {
+        "phase_number": 5,
+        "agent": {
+          "id": "model_trainer",
+          "name": "model_trainer",
+          "yaml_path": "config/agents/model_trainer.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_trainer",
+            "agent_name": "model_trainer"
+          }
+        },
+        "planner_mcp_server": "python-model_training",
+        "resolved_mcp_server": {
+          "id": "python-model_training",
+          "name": "Model Training Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "train_regression_model",
+            "description": "Train a regression model using the training dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/deepcontractor_car-price-prediction-challenge/car_price_prediction.csv",
+              "target_column": "Price",
+              "model_type": "linear",
+              "test_size": 0.2,
+              "random_state": null,
+              "hyperparameters": {
+                "n_estimators": 100,
+                "max_depth": null,
+                "min_samples_split": 2,
+                "min_samples_leaf": 1
+              },
+              "model_save_path": null
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/deepcontractor_car-price-prediction-challenge/car_price_prediction.csv",
+              "target_column": "Price",
+              "model_type": "linear"
+            },
+            "missing_required_parameters": [
+              "random_state"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Train a regression model on the training dataset."
+      },
+      {
+        "phase_number": 6,
+        "agent": {
+          "id": "model_evaluator",
+          "name": "model_evaluator",
+          "yaml_path": "config/agents/model_evaluator.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_evaluator",
+            "agent_name": "model_evaluator"
+          }
+        },
+        "planner_mcp_server": "python-model_evaluation",
+        "resolved_mcp_server": {
+          "id": "python-model_evaluation",
+          "name": "Model Evaluation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "evaluate_regression_model",
+            "description": "Evaluate the trained regression model using the testing dataset",
+            "tool_parameters": {
+              "model_path": "/app/models/linear_regression_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/regression/hard/deepcontractor_car-price-prediction-challenge/car_price_prediction_test.csv",
+              "target_column": "Price",
+              "filepath": "/app/data/uploads/datasets/regression/hard/deepcontractor_car-price-prediction-challenge/car_price_prediction.csv"
+            },
+            "planner_parameters": {
+              "model_path": "/app/models/linear_regression_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/regression/hard/deepcontractor_car-price-prediction-challenge/car_price_prediction_test.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Evaluate the trained regression model on the testing dataset."
+      }
+    ],
+    "mcp_servers": [
+      {
+        "id": "python-data_loading",
+        "name": "Data Loading Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/data_loading/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "CSV file loading, analysis, and validation tools"
+      },
+      {
+        "id": "python-data_preparation",
+        "name": "Data Preparation Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/data_preparation/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Data transformation, feature engineering, and dataset preparation tools"
+      },
+      {
+        "id": "python-model_evaluation",
+        "name": "Model Evaluation Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_evaluation/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Model evaluation, metrics calculation, and error analysis tools"
+      },
+      {
+        "id": "python-model_training",
+        "name": "Model Training Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_training/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Machine learning model training, hyperparameter tuning, and optimization"
+      }
+    ],
+    "validation": {
+      "status": "warning",
+      "issue_count": 2,
+      "blocking_issue_count": 0,
+      "issues": [
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'filter_rows' has unresolved required parameters: value",
+          "phase_number": 3,
+          "tool_name": "filter_rows",
+          "missing_parameters": [
+            "value"
+          ]
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'train_regression_model' has unresolved required parameters: random_state",
+          "phase_number": 5,
+          "tool_name": "train_regression_model",
+          "missing_parameters": [
+            "random_state"
+          ]
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "data_preprocessor",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "statistics_analyzer",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "data_preprocessor",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-5",
+        "agentId": "model_trainer",
+        "position": {
+          "x": 1100,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-6",
+        "agentId": "model_evaluator",
+        "position": {
+          "x": 1320,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      },
+      {
+        "id": "conn-4",
+        "fromInstanceId": "phase-4",
+        "toInstanceId": "phase-5"
+      },
+      {
+        "id": "conn-5",
+        "fromInstanceId": "phase-5",
+        "toInstanceId": "phase-6"
+      }
+    ]
+  }
+}

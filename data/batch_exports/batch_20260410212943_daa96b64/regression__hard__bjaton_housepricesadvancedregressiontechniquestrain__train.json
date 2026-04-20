@@ -1,0 +1,442 @@
+{
+  "dataset_id": "regression__hard__bjaton_housepricesadvancedregressiontechniquestrain__train",
+  "filename": "train.csv",
+  "file_path": "/app/data/uploads/datasets/regression/hard/bjaton_housepricesadvancedregressiontechniquestrain/train.csv",
+  "task_type": "regression",
+  "tier": "hard",
+  "target_column": null,
+  "generated_at": "2026-04-10T22:10:22.347136+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a regression model to predict house sale prices using the provided dataset with 81 features including categorical and numerical variables.",
+    "complexity": "complex",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/regression/hard/bjaton_housepricesadvancedregressiontechniquestrain/train.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/regression/hard/bjaton_housepricesadvancedregressiontechniquestrain/train.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_preprocessor",
+          "name": "data_preprocessor",
+          "yaml_path": "config/agents/data_preprocessor.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_preprocessor",
+            "agent_name": "data_preprocessor"
+          }
+        },
+        "planner_mcp_server": "Data Preparation Server",
+        "resolved_mcp_server": {
+          "id": "python-data_preparation",
+          "name": "Data Preparation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "split_dataset",
+            "description": "Split the dataset into training and testing sets for model evaluation",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/bjaton_housepricesadvancedregressiontechniquestrain/train.csv",
+              "train_ratio": 0.8,
+              "random_state": 42,
+              "shuffle": true
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/bjaton_housepricesadvancedregressiontechniquestrain/train.csv",
+              "train_ratio": 0.8,
+              "random_state": 42,
+              "shuffle": true
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "The dataset needs to be split into training and testing sets before preprocessing to avoid data leakage and ensure proper model evaluation."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "data_preprocessor",
+          "name": "data_preprocessor",
+          "yaml_path": "config/agents/data_preprocessor.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_preprocessor",
+            "agent_name": "data_preprocessor"
+          }
+        },
+        "planner_mcp_server": "Data Preparation Server",
+        "resolved_mcp_server": {
+          "id": "python-data_preparation",
+          "name": "Data Preparation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "encode_categorical",
+            "description": "Encode categorical variables in the training dataset using one-hot encoding",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/bjaton_housepricesadvancedregressiontechniquestrain/train.csv",
+              "columns": [
+                "MSZoning",
+                "LotFrontage",
+                "Street",
+                "Alley",
+                "LotShape",
+                "LandContour",
+                "Utilities",
+                "LotConfig",
+                "LandSlope",
+                "Neighborhood",
+                "Condition1",
+                "Condition2",
+                "BldgType",
+                "HouseStyle",
+                "RoofStyle",
+                "RoofMatl",
+                "Exterior1st",
+                "Exterior2nd",
+                "MasVnrType",
+                "ExterQual",
+                "ExterCond",
+                "Foundation",
+                "BsmtQual",
+                "BsmtCond",
+                "BsmtExposure",
+                "BsmtFinType1",
+                "BsmtFinType2",
+                "Heating",
+                "HeatingQC",
+                "CentralAir",
+                "Electrical",
+                "KitchenQual",
+                "Functional",
+                "FireplaceQu",
+                "GarageType",
+                "GarageYrBlt",
+                "GarageFinish",
+                "GarageQual",
+                "GarageCond",
+                "PavedDrive",
+                "PoolQC",
+                "Fence",
+                "MiscFeature",
+                "SaleType",
+                "SaleCondition"
+              ],
+              "method": "onehot",
+              "output_filepath": null
+            },
+            "planner_parameters": {
+              "filepath": null,
+              "columns": null,
+              "method": "onehot",
+              "output_filepath": null
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "The dataset contains many categorical variables (MSZoning, Street, Alley, etc.) that need to be encoded for regression algorithms to process them."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": "data_preprocessor",
+          "name": "data_preprocessor",
+          "yaml_path": "config/agents/data_preprocessor.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_preprocessor",
+            "agent_name": "data_preprocessor"
+          }
+        },
+        "planner_mcp_server": "Data Preparation Server",
+        "resolved_mcp_server": {
+          "id": "python-data_preparation",
+          "name": "Data Preparation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "scale_features",
+            "description": "Scale numerical features to normalize their ranges and improve model performance",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/bjaton_housepricesadvancedregressiontechniquestrain/train.csv",
+              "columns": [
+                "Id",
+                "MSSubClass",
+                "LotArea",
+                "OverallQual",
+                "OverallCond",
+                "YearBuilt",
+                "YearRemodAdd",
+                "MasVnrArea",
+                "BsmtFinSF1",
+                "BsmtFinSF2",
+                "BsmtUnfSF",
+                "TotalBsmtSF",
+                "1stFlrSF",
+                "2ndFlrSF",
+                "LowQualFinSF",
+                "GrLivArea",
+                "BsmtFullBath",
+                "BsmtHalfBath",
+                "FullBath",
+                "HalfBath",
+                "BedroomAbvGr",
+                "KitchenAbvGr",
+                "TotRmsAbvGrd",
+                "Fireplaces",
+                "GarageCars",
+                "GarageArea",
+                "WoodDeckSF",
+                "OpenPorchSF",
+                "EnclosedPorch",
+                "3SsnPorch",
+                "ScreenPorch",
+                "PoolArea",
+                "MiscVal",
+                "MoSold",
+                "YrSold"
+              ],
+              "method": "standard",
+              "output_filepath": null
+            },
+            "planner_parameters": {
+              "filepath": null,
+              "columns": null,
+              "method": "standard",
+              "output_filepath": null
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Numerical features have different scales (e.g., LotArea vs YearBuilt vs SalePrice) which can negatively impact regression model performance without scaling."
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": "model_trainer",
+          "name": "model_trainer",
+          "yaml_path": "config/agents/model_trainer.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_trainer",
+            "agent_name": "model_trainer"
+          }
+        },
+        "planner_mcp_server": "Model Training Server",
+        "resolved_mcp_server": {
+          "id": "python-model_training",
+          "name": "Model Training Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "train_regression_model",
+            "description": "Train a regression model on the preprocessed training data to predict SalePrice",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/bjaton_housepricesadvancedregressiontechniquestrain/train.csv",
+              "target_column": "SalePrice",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "n_estimators": 100,
+                "max_depth": null,
+                "min_samples_split": 2,
+                "min_samples_leaf": 1
+              },
+              "model_save_path": null
+            },
+            "planner_parameters": {
+              "filepath": null,
+              "target_column": "SalePrice",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": null,
+              "model_save_path": null
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Random Forest is a robust regression algorithm that handles mixed feature types well and provides feature importance insights for this complex housing dataset."
+      },
+      {
+        "phase_number": 5,
+        "agent": {
+          "id": "model_evaluator",
+          "name": "model_evaluator",
+          "yaml_path": "config/agents/model_evaluator.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_evaluator",
+            "agent_name": "model_evaluator"
+          }
+        },
+        "planner_mcp_server": "Model Evaluation Server",
+        "resolved_mcp_server": {
+          "id": "python-model_evaluation",
+          "name": "Model Evaluation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "evaluate_regression_model",
+            "description": "Evaluate the trained regression model on the test set using appropriate regression metrics",
+            "tool_parameters": {
+              "model_path": null,
+              "test_data_path": "/app/data/uploads/datasets/regression/hard/bjaton_housepricesadvancedregressiontechniquestrain/train.csv",
+              "target_column": "SalePrice",
+              "filepath": "/app/data/uploads/datasets/regression/hard/bjaton_housepricesadvancedregressiontechniquestrain/train.csv"
+            },
+            "planner_parameters": {
+              "model_path": null,
+              "test_data_path": null,
+              "target_column": "SalePrice"
+            },
+            "missing_required_parameters": [
+              "model_path"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Model evaluation is essential to assess performance on unseen data and determine if the regression model meets quality standards for predicting house prices."
+      }
+    ],
+    "mcp_servers": [
+      {
+        "id": "python-data_preparation",
+        "name": "Data Preparation Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/data_preparation/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Data transformation, feature engineering, and dataset preparation tools"
+      },
+      {
+        "id": "python-model_evaluation",
+        "name": "Model Evaluation Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_evaluation/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Model evaluation, metrics calculation, and error analysis tools"
+      },
+      {
+        "id": "python-model_training",
+        "name": "Model Training Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_training/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Machine learning model training, hyperparameter tuning, and optimization"
+      }
+    ],
+    "validation": {
+      "status": "warning",
+      "issue_count": 1,
+      "blocking_issue_count": 0,
+      "issues": [
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'evaluate_regression_model' has unresolved required parameters: model_path",
+          "phase_number": 5,
+          "tool_name": "evaluate_regression_model",
+          "missing_parameters": [
+            "model_path"
+          ]
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_preprocessor",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "data_preprocessor",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "data_preprocessor",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "model_trainer",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-5",
+        "agentId": "model_evaluator",
+        "position": {
+          "x": 1100,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      },
+      {
+        "id": "conn-4",
+        "fromInstanceId": "phase-4",
+        "toInstanceId": "phase-5"
+      }
+    ]
+  }
+}

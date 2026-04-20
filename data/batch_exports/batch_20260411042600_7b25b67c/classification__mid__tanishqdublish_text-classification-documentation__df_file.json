@@ -1,0 +1,386 @@
+{
+  "dataset_id": "classification__mid__tanishqdublish_text-classification-documentation__df_file",
+  "filename": "df_file.csv",
+  "file_path": "/app/data/uploads/datasets/classification/mid/tanishqdublish_text-classification-documentation/df_file.csv",
+  "task_type": "classification",
+  "tier": "mid",
+  "target_column": null,
+  "generated_at": "2026-04-11T05:01:42.166759+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a text classification model to predict Label from Text in a dataset of 100 news articles.",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/mid/tanishqdublish_text-classification-documentation/df_file.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/mid/tanishqdublish_text-classification-documentation/df_file.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_loader",
+            "agent_name": "Data Loader"
+          }
+        },
+        "planner_mcp_server": "Data Loading Server",
+        "resolved_mcp_server": {
+          "id": "python-data_loading",
+          "name": "Data Loading Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "read_file_head",
+            "description": "Read dataset header and first rows to verify structure",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/tanishqdublish_text-classification-documentation/df_file.csv",
+              "n_rows": 10
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/tanishqdublish_text-classification-documentation/df_file.csv",
+              "n_rows": 10
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "validate_csv_structure",
+            "description": "Validate that the CSV contains expected Text and Label columns",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/tanishqdublish_text-classification-documentation/df_file.csv",
+              "expected_columns": [
+                "Text",
+                "Label"
+              ]
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/tanishqdublish_text-classification-documentation/df_file.csv",
+              "expected_columns": [
+                "Text",
+                "Label"
+              ]
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "infer_data_types",
+            "description": "Confirm data types for both columns",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/tanishqdublish_text-classification-documentation/df_file.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/tanishqdublish_text-classification-documentation/df_file.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Initial dataset verification to ensure proper structure and data types before preprocessing."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "data_preprocessor",
+          "name": "data_preprocessor",
+          "yaml_path": "config/agents/data_preprocessor.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_preprocessor",
+            "agent_name": "data_preprocessor"
+          }
+        },
+        "planner_mcp_server": "Data Preparation Server",
+        "resolved_mcp_server": {
+          "id": "python-data_preparation",
+          "name": "Data Preparation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "remove_duplicates",
+            "description": "Remove duplicate rows (dataset analysis shows 1 duplicate)",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/tanishqdublish_text-classification-documentation/df_file.csv",
+              "subset": null,
+              "keep": "first",
+              "output_filepath": "/app/data/uploads/datasets/classification/mid/tanishqdublish_text-classification-documentation/df_file_cleaned.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/tanishqdublish_text-classification-documentation/df_file.csv",
+              "subset": null,
+              "keep": "first",
+              "output_filepath": "/app/data/uploads/datasets/classification/mid/tanishqdublish_text-classification-documentation/df_file_cleaned.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "split_dataset",
+            "description": "Split cleaned dataset into training and testing sets",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/tanishqdublish_text-classification-documentation/df_file_cleaned.csv",
+              "train_ratio": 0.8,
+              "random_state": 42,
+              "shuffle": true
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/tanishqdublish_text-classification-documentation/df_file_cleaned.csv",
+              "train_ratio": 0.8,
+              "random_state": 42,
+              "shuffle": true
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Clean dataset by removing duplicates and create train/test split for model training and evaluation."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": "model_trainer",
+          "name": "model_trainer",
+          "yaml_path": "config/agents/model_trainer.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_trainer",
+            "agent_name": "model_trainer"
+          }
+        },
+        "planner_mcp_server": "Model Training Server",
+        "resolved_mcp_server": {
+          "id": "python-model_training",
+          "name": "Model Training Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "train_classification_model",
+            "description": "Train a classification model on the training data",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/tanishqdublish_text-classification-documentation/df_file_cleaned_train.csv",
+              "target_column": "Label",
+              "model_type": "logistic_regression",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "max_iter": 1000,
+                "C": 1.0,
+                "solver": "lbfgs"
+              },
+              "model_save_path": "/app/data/models/text_classification_model.pkl"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/tanishqdublish_text-classification-documentation/df_file_cleaned_train.csv",
+              "target_column": "Label",
+              "model_type": "logistic_regression",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": null,
+              "model_save_path": "/app/data/models/text_classification_model.pkl"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "logistic",
+        "rationale": "Train a logistic regression model for text classification (suitable for moderate-sized text datasets)."
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": "model_evaluator",
+          "name": "model_evaluator",
+          "yaml_path": "config/agents/model_evaluator.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_evaluator",
+            "agent_name": "model_evaluator"
+          }
+        },
+        "planner_mcp_server": "Model Evaluation Server",
+        "resolved_mcp_server": {
+          "id": "python-model_evaluation",
+          "name": "Model Evaluation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "evaluate_classification_model",
+            "description": "Evaluate the trained model on the test dataset",
+            "tool_parameters": {
+              "model_path": "/app/data/models/text_classification_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/classification/mid/tanishqdublish_text-classification-documentation/df_file_cleaned_test.csv",
+              "target_column": "Label",
+              "filepath": "/app/data/uploads/datasets/classification/mid/tanishqdublish_text-classification-documentation/df_file.csv"
+            },
+            "planner_parameters": {
+              "model_path": "/app/data/models/text_classification_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/classification/mid/tanishqdublish_text-classification-documentation/df_file_cleaned_test.csv",
+              "target_column": "Label"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "get_classification_report",
+            "description": "Generate detailed classification metrics (precision, recall, F1-score)",
+            "tool_parameters": {
+              "model_path": "/app/data/models/text_classification_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/classification/mid/tanishqdublish_text-classification-documentation/df_file_cleaned_test.csv",
+              "target_column": "Label"
+            },
+            "planner_parameters": {
+              "model_path": "/app/data/models/text_classification_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/classification/mid/tanishqdublish_text-classification-documentation/df_file_cleaned_test.csv",
+              "target_column": "Label"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "calculate_confusion_matrix",
+            "description": "Calculate confusion matrix to understand model performance per class",
+            "tool_parameters": {
+              "model_path": "/app/data/models/text_classification_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/classification/mid/tanishqdublish_text-classification-documentation/df_file_cleaned_test.csv",
+              "target_column": "Label",
+              "normalize": "true"
+            },
+            "planner_parameters": {
+              "model_path": "/app/data/models/text_classification_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/classification/mid/tanishqdublish_text-classification-documentation/df_file_cleaned_test.csv",
+              "target_column": "Label",
+              "normalize": "true"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Comprehensive evaluation of model performance using appropriate classification metrics."
+      }
+    ],
+    "mcp_servers": [
+      {
+        "id": "python-data_loading",
+        "name": "Data Loading Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/data_loading/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "CSV file loading, analysis, and validation tools"
+      },
+      {
+        "id": "python-data_preparation",
+        "name": "Data Preparation Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/data_preparation/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Data transformation, feature engineering, and dataset preparation tools"
+      },
+      {
+        "id": "python-model_evaluation",
+        "name": "Model Evaluation Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_evaluation/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Model evaluation, metrics calculation, and error analysis tools"
+      },
+      {
+        "id": "python-model_training",
+        "name": "Model Training Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_training/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Machine learning model training, hyperparameter tuning, and optimization"
+      }
+    ],
+    "validation": {
+      "status": "valid",
+      "issue_count": 0,
+      "blocking_issue_count": 0,
+      "issues": []
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "data_preprocessor",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_trainer",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "model_evaluator",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      }
+    ]
+  }
+}

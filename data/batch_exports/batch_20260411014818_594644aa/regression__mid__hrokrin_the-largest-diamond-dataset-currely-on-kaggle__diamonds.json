@@ -1,0 +1,30 @@
+{
+  "dataset_id": "regression__mid__hrokrin_the-largest-diamond-dataset-currely-on-kaggle__diamonds",
+  "filename": "diamonds.csv",
+  "file_path": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds.csv",
+  "task_type": "regression",
+  "tier": "mid",
+  "target_column": null,
+  "generated_at": "2026-04-11T02:42:26.901862+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": null,
+    "complexity": null,
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds.csv"
+    },
+    "steps": [],
+    "mcp_servers": [],
+    "validation": {
+      "status": "valid",
+      "issue_count": 0,
+      "blocking_issue_count": 0,
+      "issues": []
+    },
+    "nodes": [],
+    "connections": []
+  }
+}

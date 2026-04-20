@@ -1,0 +1,495 @@
+{
+  "dataset_id": "regression__mid__alamshihab075_health-and-lifestyle-data-for-diabetes-prediction__Diabetes_and_LifeStyle_Dataset ",
+  "filename": "Diabetes_and_LifeStyle_Dataset .csv",
+  "file_path": "/app/data/uploads/datasets/regression/mid/alamshihab075_health-and-lifestyle-data-for-diabetes-prediction/Diabetes_and_LifeStyle_Dataset .csv",
+  "task_type": "regression",
+  "tier": "mid",
+  "target_column": null,
+  "generated_at": "2026-04-10T22:19:07.868107+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a regression model to predict diabetes risk score using health and lifestyle features.",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/regression/mid/alamshihab075_health-and-lifestyle-data-for-diabetes-prediction/Diabetes_and_LifeStyle_Dataset .csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/regression/mid/alamshihab075_health-and-lifestyle-data-for-diabetes-prediction/Diabetes_and_LifeStyle_Dataset .csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_loader",
+            "agent_name": "Data Loader"
+          }
+        },
+        "planner_mcp_server": "Data Loading Server",
+        "resolved_mcp_server": {
+          "id": "python-data_loading",
+          "name": "Data Loading Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "read_file_head",
+            "description": "Read dataset header and first rows to verify structure",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/alamshihab075_health-and-lifestyle-data-for-diabetes-prediction/Diabetes_and_LifeStyle_Dataset .csv",
+              "n_rows": 10
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/alamshihab075_health-and-lifestyle-data-for-diabetes-prediction/Diabetes_and_LifeStyle_Dataset .csv",
+              "n_rows": 10
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "load_csv",
+            "description": "Load the full dataset for analysis",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/alamshihab075_health-and-lifestyle-data-for-diabetes-prediction/Diabetes_and_LifeStyle_Dataset .csv",
+              "encoding": "utf-8",
+              "delimiter": ","
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/alamshihab075_health-and-lifestyle-data-for-diabetes-prediction/Diabetes_and_LifeStyle_Dataset .csv",
+              "encoding": null,
+              "delimiter": null
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Load and verify the dataset structure before preprocessing. The dataset has 31 columns and 97,297 rows with no missing values according to analysis."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "data_preprocessor",
+          "name": "data_preprocessor",
+          "yaml_path": "config/agents/data_preprocessor.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_preprocessor",
+            "agent_name": "data_preprocessor"
+          }
+        },
+        "planner_mcp_server": "Data Preparation Server",
+        "resolved_mcp_server": {
+          "id": "python-data_preparation",
+          "name": "Data Preparation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "encode_categorical",
+            "description": "Encode categorical variables (gender, ethnicity, education_level, income_level, employment_status, smoking_status, diabetes_stage) for regression modeling",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/alamshihab075_health-and-lifestyle-data-for-diabetes-prediction/Diabetes_and_LifeStyle_Dataset .csv",
+              "columns": [
+                "gender",
+                "ethnicity",
+                "education_level",
+                "income_level",
+                "employment_status",
+                "smoking_status",
+                "diabetes_stage"
+              ],
+              "method": "onehot",
+              "output_filepath": "/app/data/uploads/datasets/regression/mid/alamshihab075_health-and-lifestyle-data-for-diabetes-prediction/Diabetes_and_LifeStyle_Dataset_encoded.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/alamshihab075_health-and-lifestyle-data-for-diabetes-prediction/Diabetes_and_LifeStyle_Dataset .csv",
+              "columns": [
+                "gender",
+                "ethnicity",
+                "education_level",
+                "income_level",
+                "employment_status",
+                "smoking_status",
+                "diabetes_stage"
+              ],
+              "method": "onehot",
+              "output_filepath": "/app/data/uploads/datasets/regression/mid/alamshihab075_health-and-lifestyle-data-for-diabetes-prediction/Diabetes_and_LifeStyle_Dataset_encoded.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "scale_features",
+            "description": "Scale numerical features to normalize ranges for regression",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/alamshihab075_health-and-lifestyle-data-for-diabetes-prediction/Diabetes_and_LifeStyle_Dataset_encoded.csv",
+              "columns": [
+                "\ufeffAge",
+                "alcohol_consumption_per_week",
+                "physical_activity_minutes_per_week",
+                "diet_score",
+                "sleep_hours_per_day",
+                "screen_time_hours_per_day",
+                "bmi",
+                "waist_to_hip_ratio",
+                "systolic_bp",
+                "diastolic_bp",
+                "heart_rate",
+                "cholesterol_total",
+                "hdl_cholesterol",
+                "ldl_cholesterol",
+                "triglycerides",
+                "glucose_fasting",
+                "glucose_postprandial",
+                "insulin_level",
+                "hba1c"
+              ],
+              "method": "standard",
+              "output_filepath": "/app/data/uploads/datasets/regression/mid/alamshihab075_health-and-lifestyle-data-for-diabetes-prediction/Diabetes_and_LifeStyle_Dataset_scaled.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/alamshihab075_health-and-lifestyle-data-for-diabetes-prediction/Diabetes_and_LifeStyle_Dataset_encoded.csv",
+              "columns": [
+                "\ufeffAge",
+                "alcohol_consumption_per_week",
+                "physical_activity_minutes_per_week",
+                "diet_score",
+                "sleep_hours_per_day",
+                "screen_time_hours_per_day",
+                "bmi",
+                "waist_to_hip_ratio",
+                "systolic_bp",
+                "diastolic_bp",
+                "heart_rate",
+                "cholesterol_total",
+                "hdl_cholesterol",
+                "ldl_cholesterol",
+                "triglycerides",
+                "glucose_fasting",
+                "glucose_postprandial",
+                "insulin_level",
+                "hba1c"
+              ],
+              "method": "standard",
+              "output_filepath": "/app/data/uploads/datasets/regression/mid/alamshihab075_health-and-lifestyle-data-for-diabetes-prediction/Diabetes_and_LifeStyle_Dataset_scaled.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "split_dataset",
+            "description": "Split the preprocessed dataset into training and testing sets for regression",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/alamshihab075_health-and-lifestyle-data-for-diabetes-prediction/Diabetes_and_LifeStyle_Dataset_scaled.csv",
+              "train_ratio": 0.8,
+              "random_state": 42,
+              "shuffle": true
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/alamshihab075_health-and-lifestyle-data-for-diabetes-prediction/Diabetes_and_LifeStyle_Dataset_scaled.csv",
+              "train_ratio": 0.8,
+              "random_state": 42,
+              "shuffle": true
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Preprocess the dataset by encoding categorical variables and scaling numerical features. The dataset has no missing values, so no imputation needed. Split for train/test evaluation."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": "model_trainer",
+          "name": "model_trainer",
+          "yaml_path": "config/agents/model_trainer.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_trainer",
+            "agent_name": "model_trainer"
+          }
+        },
+        "planner_mcp_server": "Model Training Server",
+        "resolved_mcp_server": {
+          "id": "python-model_training",
+          "name": "Model Training Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "train_regression_model",
+            "description": "Train a regression model to predict diabetes_risk_score using health and lifestyle features",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/alamshihab075_health-and-lifestyle-data-for-diabetes-prediction/Diabetes_and_LifeStyle_Dataset_scaled.csv",
+              "target_column": "diabetes_risk_score",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "n_estimators": 100,
+                "max_depth": null,
+                "min_samples_split": 2,
+                "min_samples_leaf": 1
+              },
+              "model_save_path": "/app/models/diabetes_risk_regression_model.pkl"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/alamshihab075_health-and-lifestyle-data-for-diabetes-prediction/Diabetes_and_LifeStyle_Dataset_scaled.csv",
+              "target_column": "diabetes_risk_score",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": null,
+              "model_save_path": "/app/models/diabetes_risk_regression_model.pkl"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "get_feature_importance",
+            "description": "Get feature importance scores to understand which factors most influence diabetes risk",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/alamshihab075_health-and-lifestyle-data-for-diabetes-prediction/Diabetes_and_LifeStyle_Dataset_scaled.csv",
+              "target_column": "diabetes_risk_score",
+              "model_type": "random_forest",
+              "task": "regression",
+              "top_n": 10
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/alamshihab075_health-and-lifestyle-data-for-diabetes-prediction/Diabetes_and_LifeStyle_Dataset_scaled.csv",
+              "target_column": "diabetes_risk_score",
+              "model_type": "random_forest",
+              "task": "regression",
+              "top_n": 10
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Train a Random Forest regression model to predict diabetes risk score. Random Forest handles mixed feature types well and provides feature importance. Target is 'diabetes_risk_score' (continuous)."
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": "model_evaluator",
+          "name": "model_evaluator",
+          "yaml_path": "config/agents/model_evaluator.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_evaluator",
+            "agent_name": "model_evaluator"
+          }
+        },
+        "planner_mcp_server": "Model Evaluation Server",
+        "resolved_mcp_server": {
+          "id": "python-model_evaluation",
+          "name": "Model Evaluation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "evaluate_regression_model",
+            "description": "Evaluate the trained regression model using appropriate metrics (RMSE, MAE, R\u00b2)",
+            "tool_parameters": {
+              "model_path": "/app/models/diabetes_risk_regression_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/regression/mid/alamshihab075_health-and-lifestyle-data-for-diabetes-prediction/Diabetes_and_LifeStyle_Dataset_scaled_test.csv",
+              "target_column": "diabetes_risk_score",
+              "filepath": "/app/data/uploads/datasets/regression/mid/alamshihab075_health-and-lifestyle-data-for-diabetes-prediction/Diabetes_and_LifeStyle_Dataset .csv"
+            },
+            "planner_parameters": {
+              "model_path": "/app/models/diabetes_risk_regression_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/regression/mid/alamshihab075_health-and-lifestyle-data-for-diabetes-prediction/Diabetes_and_LifeStyle_Dataset_scaled_test.csv",
+              "target_column": "diabetes_risk_score"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "calculate_residuals",
+            "description": "Calculate and analyze residuals to check regression assumptions",
+            "tool_parameters": {
+              "model_path": "/app/models/diabetes_risk_regression_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/regression/mid/alamshihab075_health-and-lifestyle-data-for-diabetes-prediction/Diabetes_and_LifeStyle_Dataset_scaled_test.csv",
+              "target_column": "diabetes_risk_score"
+            },
+            "planner_parameters": {
+              "model_path": "/app/models/diabetes_risk_regression_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/regression/mid/alamshihab075_health-and-lifestyle-data-for-diabetes-prediction/Diabetes_and_LifeStyle_Dataset_scaled_test.csv",
+              "target_column": "diabetes_risk_score"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "save_evaluation_results",
+            "description": "Save evaluation results for future reference and comparison",
+            "tool_parameters": {
+              "metrics": null,
+              "task_type": "regression",
+              "model_name": "diabetes_risk_regression_model",
+              "dataset_name": "Diabetes_and_LifeStyle_Dataset",
+              "notes": "Regression model predicting diabetes_risk_score from health/lifestyle features",
+              "tags": [
+                "diabetes",
+                "regression",
+                "health",
+                "lifestyle"
+              ],
+              "pipeline": "regression_pipeline_v1",
+              "registry_path": "/app/model_registry/"
+            },
+            "planner_parameters": {
+              "metrics": null,
+              "task_type": "regression",
+              "model_name": "diabetes_risk_regression_model",
+              "dataset_name": "Diabetes_and_LifeStyle_Dataset",
+              "notes": "Regression model predicting diabetes_risk_score from health/lifestyle features",
+              "tags": [
+                "diabetes",
+                "regression",
+                "health",
+                "lifestyle"
+              ],
+              "pipeline": "regression_pipeline_v1",
+              "registry_path": "/app/model_registry/"
+            },
+            "missing_required_parameters": [
+              "metrics"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Evaluate regression model performance using standard regression metrics. Analyze residuals to validate model assumptions. Save results for documentation and future comparison."
+      }
+    ],
+    "mcp_servers": [
+      {
+        "id": "python-data_loading",
+        "name": "Data Loading Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/data_loading/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "CSV file loading, analysis, and validation tools"
+      },
+      {
+        "id": "python-data_preparation",
+        "name": "Data Preparation Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/data_preparation/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Data transformation, feature engineering, and dataset preparation tools"
+      },
+      {
+        "id": "python-model_evaluation",
+        "name": "Model Evaluation Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_evaluation/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Model evaluation, metrics calculation, and error analysis tools"
+      },
+      {
+        "id": "python-model_training",
+        "name": "Model Training Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_training/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Machine learning model training, hyperparameter tuning, and optimization"
+      }
+    ],
+    "validation": {
+      "status": "warning",
+      "issue_count": 1,
+      "blocking_issue_count": 0,
+      "issues": [
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'save_evaluation_results' has unresolved required parameters: metrics",
+          "phase_number": 4,
+          "tool_name": "save_evaluation_results",
+          "missing_parameters": [
+            "metrics"
+          ]
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "data_preprocessor",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_trainer",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "model_evaluator",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      }
+    ]
+  }
+}

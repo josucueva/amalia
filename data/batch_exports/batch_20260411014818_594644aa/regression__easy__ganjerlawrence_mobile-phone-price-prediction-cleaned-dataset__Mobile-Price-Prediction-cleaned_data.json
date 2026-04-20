@@ -1,0 +1,342 @@
+{
+  "dataset_id": "regression__easy__ganjerlawrence_mobile-phone-price-prediction-cleaned-dataset__Mobile-Price-Prediction-cleaned_data",
+  "filename": "Mobile-Price-Prediction-cleaned_data.csv",
+  "file_path": "/app/data/uploads/datasets/regression/easy/ganjerlawrence_mobile-phone-price-prediction-cleaned-dataset/Mobile-Price-Prediction-cleaned_data.csv",
+  "task_type": "regression",
+  "tier": "easy",
+  "target_column": null,
+  "generated_at": "2026-04-11T02:21:34.564137+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a regression model to predict mobile phone prices based on other features.",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/regression/easy/ganjerlawrence_mobile-phone-price-prediction-cleaned-dataset/Mobile-Price-Prediction-cleaned_data.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/regression/easy/ganjerlawrence_mobile-phone-price-prediction-cleaned-dataset/Mobile-Price-Prediction-cleaned_data.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": null,
+            "agent_name": "data_loader"
+          }
+        },
+        "planner_mcp_server": "Data Loading Server",
+        "resolved_mcp_server": {
+          "id": "python-data_loading",
+          "name": "Data Loading Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "load_csv",
+            "description": "Load the Mobile-Price-Prediction-cleaned_data.csv file.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/ganjerlawrence_mobile-phone-price-prediction-cleaned-dataset/Mobile-Price-Prediction-cleaned_data.csv",
+              "encoding": "utf-8",
+              "delimiter": ","
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/ganjerlawrence_mobile-phone-price-prediction-cleaned-dataset/Mobile-Price-Prediction-cleaned_data.csv",
+              "encoding": "utf-8",
+              "delimiter": ","
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "infer_data_types",
+            "description": "Determine the data types of each column in the loaded dataset.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/ganjerlawrence_mobile-phone-price-prediction-cleaned-dataset/Mobile-Price-Prediction-cleaned_data.csv"
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "get_basic_stats",
+            "description": "Compute basic statistics for each numeric column in the loaded dataset.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/ganjerlawrence_mobile-phone-price-prediction-cleaned-dataset/Mobile-Price-Prediction-cleaned_data.csv"
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Load and explore the dataset to understand its structure."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "data_preprocessor",
+          "name": "data_preprocessor",
+          "yaml_path": "config/agents/data_preprocessor.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": null,
+            "agent_name": "data_preprocessor"
+          }
+        },
+        "planner_mcp_server": "Data Preparation Server",
+        "resolved_mcp_server": {
+          "id": "python-data_preparation",
+          "name": "Data Preparation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "detect_duplicates",
+            "description": "Identify and remove duplicate rows in the preprocessed dataset.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/ganjerlawrence_mobile-phone-price-prediction-cleaned-dataset/Mobile-Price-Prediction-cleaned_data.csv",
+              "subset": null
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "handle_missing_values",
+            "description": "Handle missing values in the preprocessed dataset by imputation or removal.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/ganjerlawrence_mobile-phone-price-prediction-cleaned-dataset/Mobile-Price-Prediction-cleaned_data.csv",
+              "strategy": "mean",
+              "columns": [
+                "Ratings",
+                "RAM",
+                "ROM",
+                "Mobile_Size",
+                "Primary_Cam",
+                "Selfi_Cam",
+                "Battery_Power"
+              ],
+              "output_filepath": null
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Preprocess the dataset to remove duplicates and handle missing values."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": "model_trainer",
+          "name": "model_trainer",
+          "yaml_path": "config/agents/model_trainer.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": null,
+            "agent_name": "model_trainer"
+          }
+        },
+        "planner_mcp_server": "Model Training Server",
+        "resolved_mcp_server": {
+          "id": "python-model_training",
+          "name": "Model Training Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "train_regression_model",
+            "description": "Train a regression model to predict mobile phone prices.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/ganjerlawrence_mobile-phone-price-prediction-cleaned-dataset/Mobile-Price-Prediction-cleaned_data.csv",
+              "target_column": "Price",
+              "model_type": "linear_regression",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {},
+              "model_save_path": "/app/models/regression_model"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/ganjerlawrence_mobile-phone-price-prediction-cleaned-dataset/Mobile-Price-Prediction-cleaned_data.csv",
+              "target_column": "Price",
+              "model_type": "linear_regression",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {},
+              "model_save_path": "/app/models/regression_model"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Train a regression model to predict mobile phone prices based on other features."
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": "model_evaluator",
+          "name": "model_evaluator",
+          "yaml_path": "config/agents/model_evaluator.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": null,
+            "agent_name": "model_evaluator"
+          }
+        },
+        "planner_mcp_server": "Model Evaluation Server",
+        "resolved_mcp_server": {
+          "id": "python-model_evaluation",
+          "name": "Model Evaluation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "evaluate_regression_model",
+            "description": "Evaluate the performance of the trained regression model.",
+            "tool_parameters": {
+              "model_path": null,
+              "test_data_path": "/app/data/uploads/datasets/regression/easy/ganjerlawrence_mobile-phone-price-prediction-cleaned-dataset/Mobile-Price-Prediction-cleaned_data.csv",
+              "target_column": "Price",
+              "filepath": "/app/data/uploads/datasets/regression/easy/ganjerlawrence_mobile-phone-price-prediction-cleaned-dataset/Mobile-Price-Prediction-cleaned_data.csv"
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [
+              "model_path"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Evaluate the performance of the trained regression model."
+      }
+    ],
+    "mcp_servers": [
+      {
+        "id": "python-data_loading",
+        "name": "Data Loading Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/data_loading/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "CSV file loading, analysis, and validation tools"
+      },
+      {
+        "id": "python-data_preparation",
+        "name": "Data Preparation Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/data_preparation/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Data transformation, feature engineering, and dataset preparation tools"
+      },
+      {
+        "id": "python-model_evaluation",
+        "name": "Model Evaluation Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_evaluation/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Model evaluation, metrics calculation, and error analysis tools"
+      },
+      {
+        "id": "python-model_training",
+        "name": "Model Training Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_training/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Machine learning model training, hyperparameter tuning, and optimization"
+      }
+    ],
+    "validation": {
+      "status": "warning",
+      "issue_count": 1,
+      "blocking_issue_count": 0,
+      "issues": [
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'evaluate_regression_model' has unresolved required parameters: model_path",
+          "phase_number": 4,
+          "tool_name": "evaluate_regression_model",
+          "missing_parameters": [
+            "model_path"
+          ]
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "data_preprocessor",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_trainer",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "model_evaluator",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      }
+    ]
+  }
+}

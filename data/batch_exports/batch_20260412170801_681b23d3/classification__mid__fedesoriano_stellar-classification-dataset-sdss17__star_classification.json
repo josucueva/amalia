@@ -1,0 +1,230 @@
+{
+  "dataset_id": "classification__mid__fedesoriano_stellar-classification-dataset-sdss17__star_classification",
+  "filename": "star_classification.csv",
+  "file_path": "/app/data/uploads/datasets/classification/mid/fedesoriano_stellar-classification-dataset-sdss17/star_classification.csv",
+  "task_type": "classification",
+  "tier": "mid",
+  "target_column": null,
+  "generated_at": "2026-04-12T18:15:17.946781+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Train a classification model on the star_classification.csv dataset",
+    "complexity": "simple",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/mid/fedesoriano_stellar-classification-dataset-sdss17/star_classification.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/mid/fedesoriano_stellar-classification-dataset-sdss17/star_classification.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_loader",
+            "agent_name": "data_loader"
+          }
+        },
+        "planner_mcp_server": "",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "load_csv",
+            "description": null,
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/fedesoriano_stellar-classification-dataset-sdss17/star_classification.csv",
+              "encoding": "utf-8",
+              "delimiter": ","
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/fedesoriano_stellar-classification-dataset-sdss17/star_classification.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "get_column_info",
+            "description": null,
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/fedesoriano_stellar-classification-dataset-sdss17/star_classification.csv",
+              "column_name": "class"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/fedesoriano_stellar-classification-dataset-sdss17/star_classification.csv",
+              "column_name": "class"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "validate_csv_structure",
+            "description": null,
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/fedesoriano_stellar-classification-dataset-sdss17/star_classification.csv",
+              "expected_columns": [
+                "obj_ID",
+                "alpha",
+                "delta",
+                "u",
+                "g",
+                "r",
+                "i",
+                "z",
+                "run_ID",
+                "rerun_ID",
+                "cam_col",
+                "field_ID",
+                "spec_obj_ID",
+                "class",
+                "redshift",
+                "plate",
+                "MJD",
+                "fiber_ID"
+              ]
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/fedesoriano_stellar-classification-dataset-sdss17/star_classification.csv",
+              "expected_columns": [
+                "obj_ID",
+                "alpha",
+                "delta",
+                "u",
+                "g",
+                "r",
+                "i",
+                "z",
+                "run_ID",
+                "rerun_ID",
+                "cam_col",
+                "field_ID",
+                "spec_obj_ID",
+                "class",
+                "redshift",
+                "plate",
+                "MJD",
+                "fiber_ID"
+              ]
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "get_basic_stats",
+            "description": null,
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/fedesoriano_stellar-classification-dataset-sdss17/star_classification.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/fedesoriano_stellar-classification-dataset-sdss17/star_classification.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Load the dataset, validate its structure and retrieve basic statistics"
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "model_trainer",
+          "name": "model_trainer",
+          "yaml_path": "config/agents/model_trainer.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_trainer",
+            "agent_name": "model_trainer"
+          }
+        },
+        "planner_mcp_server": "",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "train_classification_model",
+            "description": null,
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/fedesoriano_stellar-classification-dataset-sdss17/star_classification.csv",
+              "target_column": "class",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": null,
+              "hyperparameters": {
+                "n_estimators": 100,
+                "max_depth": null,
+                "min_samples_split": 2,
+                "min_samples_leaf": 1
+              },
+              "model_save_path": null
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/fedesoriano_stellar-classification-dataset-sdss17/star_classification.csv",
+              "target_column": "class"
+            },
+            "missing_required_parameters": [
+              "random_state"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Train a classification model using the loaded dataset"
+      }
+    ],
+    "mcp_servers": [],
+    "validation": {
+      "status": "warning",
+      "issue_count": 3,
+      "blocking_issue_count": 0,
+      "issues": [
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server ''",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server ''",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'train_classification_model' has unresolved required parameters: random_state",
+          "phase_number": 2,
+          "tool_name": "train_classification_model",
+          "missing_parameters": [
+            "random_state"
+          ]
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "model_trainer",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      }
+    ]
+  }
+}

@@ -1,0 +1,300 @@
+{
+  "dataset_id": "regression__hard__valakhorasani_tehran-house-prices-dataset__TehranHouse",
+  "filename": "TehranHouse.csv",
+  "file_path": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse.csv",
+  "task_type": "regression",
+  "tier": "hard",
+  "target_column": null,
+  "generated_at": "2026-04-11T02:37:26.626557+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a regression model to predict house prices in Tehran",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_loader",
+            "agent_name": "Data Loader"
+          }
+        },
+        "planner_mcp_server": "Filesystem",
+        "resolved_mcp_server": {
+          "id": "filesystem",
+          "name": "Filesystem",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "read_file_head",
+            "description": "Read file header and first rows to understand dataset properties",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse.csv",
+              "n_rows": 10
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse.csv",
+              "n_rows": 10
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "validate_csv_structure",
+            "description": "Validate CSV structure and column names",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse.csv",
+              "expected_columns": [
+                "Area",
+                "Room",
+                "Parking",
+                "Warehouse",
+                "Elevator",
+                "Address",
+                "Price",
+                "Price(USD)"
+              ]
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse.csv",
+              "expected_columns": [
+                "Area",
+                "Room",
+                "Parking",
+                "Warehouse",
+                "Elevator",
+                "Address",
+                "Price",
+                "Price(USD)"
+              ]
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "infer_data_types",
+            "description": "Infer data types for each column based on content",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse.csv"
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Understanding dataset properties and structure is essential before preprocessing"
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "data_preprocessor",
+          "name": "data_preprocessor",
+          "yaml_path": "config/agents/data_preprocessor.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_preprocessor",
+            "agent_name": "Data Preprocessor"
+          }
+        },
+        "planner_mcp_server": "Filesystem",
+        "resolved_mcp_server": {
+          "id": "filesystem",
+          "name": "Filesystem",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "handle_missing_values",
+            "description": "Handle missing values in the Address column",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse.csv",
+              "strategy": "impute_mean",
+              "columns": [
+                "Address"
+              ],
+              "output_filepath": "/app/data/preprocessed/TehranHouse_preprocessed.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse.csv",
+              "strategy": "impute_mean",
+              "columns": [
+                "Address"
+              ],
+              "output_filepath": "/app/data/preprocessed/TehranHouse_preprocessed.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "remove_duplicates",
+            "description": "Remove duplicate rows to ensure unique data points",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse.csv",
+              "subset": "all",
+              "keep": "first",
+              "output_filepath": "/app/data/preprocessed/TehranHouse_preprocessed_no_duplicates.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse.csv",
+              "subset": "all",
+              "keep": "first",
+              "output_filepath": "/app/data/preprocessed/TehranHouse_preprocessed_no_duplicates.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "encode_categorical",
+            "description": "Encode categorical variables using one-hot encoding",
+            "tool_parameters": {
+              "filepath": "/app/data/preprocessed/TehranHouse_preprocessed_no_duplicates.csv",
+              "columns": [
+                "Area",
+                "Room",
+                "Parking",
+                "Warehouse",
+                "Elevator"
+              ],
+              "method": "onehot",
+              "output_filepath": "/app/data/preprocessed/TehranHouse_encoded.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/preprocessed/TehranHouse_preprocessed_no_duplicates.csv",
+              "columns": [
+                "Area",
+                "Room",
+                "Parking",
+                "Warehouse",
+                "Elevator"
+              ],
+              "method": "onehot",
+              "output_filepath": "/app/data/preprocessed/TehranHouse_encoded.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Preprocessing is essential to prepare data for modeling, handling missing values and duplicates, and encoding categorical variables"
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": "model_trainer",
+          "name": "model_trainer",
+          "yaml_path": "config/agents/model_trainer.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_trainer",
+            "agent_name": "Model Trainer"
+          }
+        },
+        "planner_mcp_server": "Filesystem",
+        "resolved_mcp_server": {
+          "id": "filesystem",
+          "name": "Filesystem",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "train_regression_model",
+            "description": "Train a regression model to predict house prices using preprocessed data",
+            "tool_parameters": {
+              "filepath": "/app/data/preprocessed/TehranHouse_encoded.csv",
+              "target_column": "Price(USD)",
+              "model_type": "LinearRegression",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {},
+              "model_save_path": "/app/models/tehran_house_price_model.pkl"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/preprocessed/TehranHouse_encoded.csv",
+              "target_column": "Price(USD)",
+              "model_type": "LinearRegression",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {},
+              "model_save_path": "/app/models/tehran_house_price_model.pkl"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Training a regression model using preprocessed data to predict house prices in Tehran"
+      }
+    ],
+    "mcp_servers": [
+      {
+        "id": "filesystem",
+        "name": "Filesystem",
+        "command": "npx",
+        "args": [
+          "-y",
+          "@modelcontextprotocol/server-filesystem",
+          "/app"
+        ],
+        "env": {},
+        "is_available": true,
+        "description": "Access and manage project files under /app (catalog, configs, data)"
+      }
+    ],
+    "validation": {
+      "status": "valid",
+      "issue_count": 0,
+      "blocking_issue_count": 0,
+      "issues": []
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "data_preprocessor",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_trainer",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      }
+    ]
+  }
+}

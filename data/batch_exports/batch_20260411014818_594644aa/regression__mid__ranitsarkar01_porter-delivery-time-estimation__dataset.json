@@ -1,0 +1,30 @@
+{
+  "dataset_id": "regression__mid__ranitsarkar01_porter-delivery-time-estimation__dataset",
+  "filename": "dataset.csv",
+  "file_path": "/app/data/uploads/datasets/regression/mid/ranitsarkar01_porter-delivery-time-estimation/dataset.csv",
+  "task_type": "regression",
+  "tier": "mid",
+  "target_column": null,
+  "generated_at": "2026-04-11T02:45:09.513093+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": null,
+    "complexity": null,
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/regression/mid/ranitsarkar01_porter-delivery-time-estimation/dataset.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/regression/mid/ranitsarkar01_porter-delivery-time-estimation/dataset.csv"
+    },
+    "steps": [],
+    "mcp_servers": [],
+    "validation": {
+      "status": "valid",
+      "issue_count": 0,
+      "blocking_issue_count": 0,
+      "issues": []
+    },
+    "nodes": [],
+    "connections": []
+  }
+}

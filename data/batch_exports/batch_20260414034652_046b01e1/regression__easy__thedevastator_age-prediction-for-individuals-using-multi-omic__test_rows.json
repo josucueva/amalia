@@ -1,0 +1,298 @@
+{
+  "dataset_id": "regression__easy__thedevastator_age-prediction-for-individuals-using-multi-omic__test_rows",
+  "filename": "test_rows.csv",
+  "file_path": "/app/data/uploads/datasets/regression/easy/thedevastator_age-prediction-for-individuals-using-multi-omic/test_rows.csv",
+  "task_type": "regression",
+  "tier": "easy",
+  "target_column": null,
+  "generated_at": "2026-04-14T04:20:55.164805+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Develop a regression pipeline to predict 'KLF14_2' column",
+    "complexity": "simple",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/regression/easy/thedevastator_age-prediction-for-individuals-using-multi-omic/test_rows.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/regression/easy/thedevastator_age-prediction-for-individuals-using-multi-omic/test_rows.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_loader",
+            "agent_name": "Data Loader"
+          }
+        },
+        "planner_mcp_server": "Filesystem",
+        "resolved_mcp_server": {
+          "id": "filesystem",
+          "name": "Filesystem",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "load_csv",
+            "description": "Load the CSV dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/thedevastator_age-prediction-for-individuals-using-multi-omic/test_rows.csv",
+              "encoding": "utf-8",
+              "delimiter": ","
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/thedevastator_age-prediction-for-individuals-using-multi-omic/test_rows.csv",
+              "encoding": "utf-8",
+              "delimiter": ","
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "get_column_info",
+            "description": "Get column information from the loaded CSV dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/thedevastator_age-prediction-for-individuals-using-multi-omic/test_rows.csv",
+              "column_name": "KLF14_2"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/thedevastator_age-prediction-for-individuals-using-multi-omic/test_rows.csv",
+              "column_name": "KLF14_2"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Load the dataset and get column information for 'KLF14_2'"
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "model_trainer",
+          "name": "model_trainer",
+          "yaml_path": "config/agents/model_trainer.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_trainer",
+            "agent_name": "Model Trainer"
+          }
+        },
+        "planner_mcp_server": "Mathematics Server",
+        "resolved_mcp_server": {
+          "id": "python-mathematics",
+          "name": "Mathematics Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "train_regression_model",
+            "description": "Train a regression model on the loaded dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/thedevastator_age-prediction-for-individuals-using-multi-omic/test_rows.csv",
+              "target_column": "KLF14_2",
+              "model_type": "Linear Regression",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {},
+              "model_save_path": "/app/models/regression_model.pkl"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/thedevastator_age-prediction-for-individuals-using-multi-omic/test_rows.csv",
+              "target_column": "KLF14_2",
+              "model_type": "Linear Regression",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {},
+              "model_save_path": "/app/models/regression_model.pkl"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Train a regression model on the loaded dataset to predict 'KLF14_2'"
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": null,
+          "name": "Model Evaluation",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_evaluation",
+            "agent_name": "Model Evaluation"
+          }
+        },
+        "planner_mcp_server": "Mathematics Server",
+        "resolved_mcp_server": {
+          "id": "python-mathematics",
+          "name": "Mathematics Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "evaluate_regression_model",
+            "description": "Evaluate the trained regression model on a test dataset",
+            "tool_parameters": {
+              "model_path": "/app/models/regression_model.pkl",
+              "test_data_path": "/app/datasets/test.csv",
+              "target_column": "KLF14_2",
+              "filepath": "/app/data/uploads/datasets/regression/easy/thedevastator_age-prediction-for-individuals-using-multi-omic/test_rows.csv"
+            },
+            "planner_parameters": {
+              "model_path": "/app/models/regression_model.pkl",
+              "test_data_path": "/app/datasets/test.csv",
+              "target_column": "KLF14_2"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Evaluate the trained regression model on a test dataset to assess its performance"
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": null,
+          "name": "Model Prediction",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_prediction",
+            "agent_name": "Model Prediction"
+          }
+        },
+        "planner_mcp_server": "Mathematics Server",
+        "resolved_mcp_server": {
+          "id": "python-mathematics",
+          "name": "Mathematics Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "predict_with_model",
+            "description": "Make predictions using the trained regression model",
+            "tool_parameters": {
+              "model_path": "/app/models/regression_model.pkl",
+              "input_data_path": "/app/datasets/input.csv",
+              "output_path": "/app/predictions/regression_predictions.csv"
+            },
+            "planner_parameters": {
+              "model_path": "/app/models/regression_model.pkl",
+              "input_data_path": "/app/datasets/input.csv",
+              "output_path": "/app/predictions/regression_predictions.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Make predictions using the trained regression model on a new input dataset"
+      }
+    ],
+    "mcp_servers": [
+      {
+        "id": "filesystem",
+        "name": "Filesystem",
+        "command": "npx",
+        "args": [
+          "-y",
+          "@modelcontextprotocol/server-filesystem",
+          "/app"
+        ],
+        "env": {},
+        "is_available": true,
+        "description": "Access and manage project files under /app (catalog, configs, data)"
+      },
+      {
+        "id": "python-mathematics",
+        "name": "Mathematics Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/mathematics/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Mathematical operations and statistical calculations"
+      }
+    ],
+    "validation": {
+      "status": "uncertain",
+      "issue_count": 2,
+      "blocking_issue_count": 2,
+      "issues": [
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_evaluation' name='Model Evaluation'",
+          "phase_number": 3
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_prediction' name='Model Prediction'",
+          "phase_number": 4
+        }
+      ],
+      "allow_persist_with_issues": true
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "model_trainer",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_evaluation",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "model_prediction",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      }
+    ]
+  }
+}

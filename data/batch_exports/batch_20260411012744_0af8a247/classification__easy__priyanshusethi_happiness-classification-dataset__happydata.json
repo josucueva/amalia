@@ -1,0 +1,266 @@
+{
+  "dataset_id": "classification__easy__priyanshusethi_happiness-classification-dataset__happydata",
+  "filename": "happydata.csv",
+  "file_path": "/app/data/uploads/datasets/classification/easy/priyanshusethi_happiness-classification-dataset/happydata.csv",
+  "task_type": "classification",
+  "tier": "easy",
+  "target_column": null,
+  "generated_at": "2026-04-11T01:33:14.178834+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a classification model using happydata.csv",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/easy/priyanshusethi_happiness-classification-dataset/happydata.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/easy/priyanshusethi_happiness-classification-dataset/happydata.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_loader",
+            "agent_name": "Data Loader"
+          }
+        },
+        "planner_mcp_server": "Filesystem",
+        "resolved_mcp_server": {
+          "id": "filesystem",
+          "name": "Filesystem",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "read_file_head",
+            "description": "Read the first rows of the dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/priyanshusethi_happiness-classification-dataset/happydata.csv",
+              "n_rows": 10
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/priyanshusethi_happiness-classification-dataset/happydata.csv",
+              "n_rows": 10
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "validate_csv_structure",
+            "description": "Validate the structure of the CSV file",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/priyanshusethi_happiness-classification-dataset/happydata.csv",
+              "expected_columns": [
+                "infoavail",
+                "housecost",
+                "schoolquality",
+                "policetrust",
+                "streetquality",
+                "\u00ebvents",
+                "happy"
+              ]
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/priyanshusethi_happiness-classification-dataset/happydata.csv",
+              "expected_columns": [
+                "infoavail",
+                "housecost",
+                "schoolquality",
+                "policetrust",
+                "streetquality",
+                "\u00ebvents",
+                "happy"
+              ]
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "handle_missing_values",
+            "description": "Handle missing values in the dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/priyanshusethi_happiness-classification-dataset/happydata.csv",
+              "strategy": "imputation",
+              "columns": [
+                "infoavail",
+                "housecost",
+                "schoolquality",
+                "policetrust",
+                "streetquality",
+                "\u00ebvents"
+              ],
+              "output_filepath": "/app/data/uploads/datasets/classification/easy/priyanshusethi_happiness-classification-dataset/happydata_processed.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/priyanshusethi_happiness-classification-dataset/happydata.csv",
+              "strategy": "imputation",
+              "columns": [
+                "infoavail",
+                "housecost",
+                "schoolquality",
+                "policetrust",
+                "streetquality",
+                "\u00ebvents"
+              ],
+              "output_filepath": "/app/data/uploads/datasets/classification/easy/priyanshusethi_happiness-classification-dataset/happydata_processed.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "remove_duplicates",
+            "description": "Remove duplicate rows in the dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/priyanshusethi_happiness-classification-dataset/happydata_processed.csv",
+              "subset": "none",
+              "keep": "first",
+              "output_filepath": "/app/data/uploads/datasets/classification/easy/priyanshusethi_happiness-classification-dataset/happydata_duplicates_removed.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/priyanshusethi_happiness-classification-dataset/happydata_processed.csv",
+              "subset": "none",
+              "keep": "first",
+              "output_filepath": "/app/data/uploads/datasets/classification/easy/priyanshusethi_happiness-classification-dataset/happydata_duplicates_removed.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "encode_categorical",
+            "description": "Encode categorical variables in the dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/priyanshusethi_happiness-classification-dataset/happydata_duplicates_removed.csv",
+              "columns": [
+                "infoavail",
+                "housecost",
+                "schoolquality",
+                "policetrust",
+                "streetquality"
+              ],
+              "method": "onehot",
+              "output_filepath": "/app/data/uploads/datasets/classification/easy/priyanshusethi_happiness-classification-dataset/happydata_encoded.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/priyanshusethi_happiness-classification-dataset/happydata_duplicates_removed.csv",
+              "columns": [
+                "infoavail",
+                "housecost",
+                "schoolquality",
+                "policetrust",
+                "streetquality"
+              ],
+              "method": "onehot",
+              "output_filepath": "/app/data/uploads/datasets/classification/easy/priyanshusethi_happiness-classification-dataset/happydata_encoded.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "split_dataset",
+            "description": "Split the dataset into training and testing sets",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/priyanshusethi_happiness-classification-dataset/happydata_encoded.csv",
+              "train_ratio": 0.7,
+              "random_state": 42,
+              "shuffle": true
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/priyanshusethi_happiness-classification-dataset/happydata_encoded.csv",
+              "train_ratio": 0.7,
+              "random_state": 42,
+              "shuffle": true
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "train_classification_model",
+            "description": "Train a classification model on the dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/priyanshusethi_happiness-classification-dataset/happydata_encoded.csv",
+              "target_column": "happy",
+              "model_type": "logistic_regression",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "C": 1,
+                "penalty": "l2"
+              },
+              "model_save_path": "/app/models/classification/"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/priyanshusethi_happiness-classification-dataset/happydata_encoded.csv",
+              "target_column": "happy",
+              "model_type": "logistic_regression",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "C": 1,
+                "penalty": "l2"
+              },
+              "model_save_path": "/app/models/classification/"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "evaluate_classification_model",
+            "description": "Evaluate the performance of the classification model",
+            "tool_parameters": {
+              "model_path": "/app/models/classification/model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/classification/easy/priyanshusethi_happiness-classification-dataset/happydata_encoded.csv",
+              "target_column": "happy",
+              "filepath": "/app/data/uploads/datasets/classification/easy/priyanshusethi_happiness-classification-dataset/happydata.csv"
+            },
+            "planner_parameters": {
+              "model_path": "/app/models/classification/model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/classification/easy/priyanshusethi_happiness-classification-dataset/happydata_encoded.csv",
+              "target_column": "happy"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": null
+      }
+    ],
+    "mcp_servers": [
+      {
+        "id": "filesystem",
+        "name": "Filesystem",
+        "command": "npx",
+        "args": [
+          "-y",
+          "@modelcontextprotocol/server-filesystem",
+          "/app"
+        ],
+        "env": {},
+        "is_available": true,
+        "description": "Access and manage project files under /app (catalog, configs, data)"
+      }
+    ],
+    "validation": {
+      "status": "valid",
+      "issue_count": 0,
+      "blocking_issue_count": 0,
+      "issues": []
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      }
+    ],
+    "connections": []
+  }
+}

@@ -1,0 +1,240 @@
+{
+  "dataset_id": "regression__hard__taweilo_mba-admission-dataset__MBA",
+  "filename": "MBA.csv",
+  "file_path": "/app/data/uploads/datasets/regression/hard/taweilo_mba-admission-dataset/MBA.csv",
+  "task_type": "regression",
+  "tier": "hard",
+  "target_column": null,
+  "generated_at": "2026-04-12T19:14:44.542304+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a regression model to predict MBA admissions.",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/regression/hard/taweilo_mba-admission-dataset/MBA.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/regression/hard/taweilo_mba-admission-dataset/MBA.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_preprocessor",
+          "name": "data_preprocessor",
+          "yaml_path": "config/agents/data_preprocessor.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_preprocessor",
+            "agent_name": "data_preprocessor"
+          }
+        },
+        "planner_mcp_server": "",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "handle_missing_values",
+            "description": null,
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/taweilo_mba-admission-dataset/MBA.csv",
+              "strategy": "fill_with_mean",
+              "columns": [
+                "application_id",
+                "gpa",
+                "gmat",
+                "work_exp"
+              ],
+              "output_filepath": null
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/taweilo_mba-admission-dataset/MBA.csv",
+              "strategy": "fill_with_mean"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "encode_categorical",
+            "description": null,
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/taweilo_mba-admission-dataset/MBA_processed.csv",
+              "columns": [
+                "gender",
+                "international",
+                "major",
+                "race"
+              ],
+              "method": "one_hot",
+              "output_filepath": null
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/taweilo_mba-admission-dataset/MBA_processed.csv",
+              "columns": [
+                "gender",
+                "international",
+                "major",
+                "race"
+              ],
+              "method": "one_hot"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Handle missing values and encode categorical variables for model training."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "model_trainer",
+          "name": "model_trainer",
+          "yaml_path": "config/agents/model_trainer.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_trainer",
+            "agent_name": "model_trainer"
+          }
+        },
+        "planner_mcp_server": "",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "train_regression_model",
+            "description": null,
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/taweilo_mba-admission-dataset/MBA_processed.csv",
+              "target_column": "admission",
+              "model_type": "linear",
+              "test_size": 0.2,
+              "random_state": null,
+              "hyperparameters": {
+                "n_estimators": 100,
+                "max_depth": null,
+                "min_samples_split": 2,
+                "min_samples_leaf": 1
+              },
+              "model_save_path": null
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/taweilo_mba-admission-dataset/MBA_processed.csv",
+              "target_column": "admission",
+              "model_type": "linear"
+            },
+            "missing_required_parameters": [
+              "random_state"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Train a regression model to predict MBA admissions."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": "model_evaluator",
+          "name": "model_evaluator",
+          "yaml_path": "config/agents/model_evaluator.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_evaluator",
+            "agent_name": "model_evaluator"
+          }
+        },
+        "planner_mcp_server": "",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "evaluate_regression_model",
+            "description": null,
+            "tool_parameters": {
+              "model_path": "/app/data/models/MBA_admission_linear_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/regression/hard/taweilo_mba-admission-dataset/MBA_processed.csv",
+              "target_column": "admission",
+              "filepath": "/app/data/uploads/datasets/regression/hard/taweilo_mba-admission-dataset/MBA.csv"
+            },
+            "planner_parameters": {
+              "model_path": "/app/data/models/MBA_admission_linear_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/regression/hard/taweilo_mba-admission-dataset/MBA_processed.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Evaluate the trained regression model."
+      }
+    ],
+    "mcp_servers": [],
+    "validation": {
+      "status": "warning",
+      "issue_count": 4,
+      "blocking_issue_count": 0,
+      "issues": [
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server ''",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server ''",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'train_regression_model' has unresolved required parameters: random_state",
+          "phase_number": 2,
+          "tool_name": "train_regression_model",
+          "missing_parameters": [
+            "random_state"
+          ]
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server ''",
+          "phase_number": 3
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_preprocessor",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "model_trainer",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_evaluator",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      }
+    ]
+  }
+}

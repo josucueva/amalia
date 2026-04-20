@@ -1,0 +1,339 @@
+{
+  "dataset_id": "classification__mid__uciml_pima-indians-diabetes-database__diabetes",
+  "filename": "diabetes.csv",
+  "file_path": "/app/data/uploads/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes.csv",
+  "task_type": "classification",
+  "tier": "mid",
+  "target_column": null,
+  "generated_at": "2026-04-11T02:18:34.453175+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a classification model to predict Outcome based on various features",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_loader",
+            "agent_name": "data_loader"
+          }
+        },
+        "planner_mcp_server": "Data Loading Server",
+        "resolved_mcp_server": {
+          "id": "python-data_loading",
+          "name": "Data Loading Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "load_csv",
+            "description": "Load the CSV dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes.csv",
+              "encoding": "utf-8",
+              "delimiter": ","
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes.csv",
+              "encoding": "utf-8",
+              "delimiter": ","
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "get_column_info",
+            "description": "Get column information for the dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes.csv",
+              "column_name": "Outcome"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes.csv",
+              "column_name": "Outcome"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "infer_data_types",
+            "description": "Infer data types for the dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "get_basic_stats",
+            "description": "Get basic statistics for the dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Load and analyze the dataset to ensure it's ready for modeling"
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "data_preprocessor",
+          "name": "data_preprocessor",
+          "yaml_path": "config/agents/data_preprocessor.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_preprocessor",
+            "agent_name": "data_preprocessor"
+          }
+        },
+        "planner_mcp_server": "Data Preparation Server",
+        "resolved_mcp_server": {
+          "id": "python-data_preparation",
+          "name": "Data Preparation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "handle_missing_values",
+            "description": "Handle missing values in the dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes.csv",
+              "strategy": "mean",
+              "columns": [
+                "Pregnancies",
+                "Glucose",
+                "BloodPressure",
+                "SkinThickness",
+                "Insulin",
+                "BMI",
+                "DiabetesPedigreeFunction",
+                "Age"
+              ],
+              "output_filepath": "/app/data/processed/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes_processed.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes.csv",
+              "strategy": "mean",
+              "columns": [
+                "Pregnancies",
+                "Glucose",
+                "BloodPressure",
+                "SkinThickness",
+                "Insulin",
+                "BMI",
+                "DiabetesPedigreeFunction",
+                "Age"
+              ],
+              "output_filepath": "/app/data/processed/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes_processed.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "remove_duplicates",
+            "description": "Remove duplicates from the dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes.csv",
+              "subset": "all",
+              "keep": "first",
+              "output_filepath": "/app/data/processed/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes_processed_unique.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes.csv",
+              "subset": "all",
+              "keep": "first",
+              "output_filepath": "/app/data/processed/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes_processed_unique.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "feature_selection",
+            "description": "Select relevant features for the model",
+            "tool_parameters": {
+              "filepath": "/app/data/processed/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes_processed_unique.csv",
+              "target_column": "Outcome",
+              "method": "recursive feature elimination",
+              "k": 10
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/processed/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes_processed_unique.csv",
+              "target_column": "Outcome",
+              "method": "recursive feature elimination",
+              "k": 10
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "dimensionality_reduction",
+            "description": "Reduce dimensionality of the dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/processed/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes_processed_unique.csv",
+              "n_components": 5
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/processed/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes_processed_unique.csv",
+              "n_components": 5
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "generate_synthetic_data",
+            "description": "Generate synthetic data for the model",
+            "tool_parameters": {
+              "filepath": "/app/data/processed/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes_processed_unique.csv",
+              "target_column": "Outcome"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/processed/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes_processed_unique.csv",
+              "target_column": "Outcome"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "add_noise",
+            "description": "Add noise to the dataset for regularization",
+            "tool_parameters": {
+              "filepath": "/app/data/processed/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes_processed_unique.csv",
+              "columns": [
+                "Pregnancies",
+                "Glucose",
+                "BloodPressure",
+                "SkinThickness",
+                "Insulin"
+              ],
+              "noise_level": 0.1
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/processed/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes_processed_unique.csv",
+              "columns": [
+                "Pregnancies",
+                "Glucose",
+                "BloodPressure",
+                "SkinThickness",
+                "Insulin"
+              ],
+              "noise_level": 0.1
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "train_classification_model",
+            "description": "Train a classification model on the preprocessed dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/processed/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes_processed_unique.csv",
+              "target_column": "Outcome",
+              "model_type": "logistic regression",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "C": 1,
+                "penalty": "l1"
+              },
+              "model_save_path": "/app/models/classification/mid/uciml_pima-indians-diabetes-database/model.pkl"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/processed/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes_processed_unique.csv",
+              "target_column": "Outcome",
+              "model_type": "logistic regression",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "C": 1,
+                "penalty": "l1"
+              },
+              "model_save_path": "/app/models/classification/mid/uciml_pima-indians-diabetes-database/model.pkl"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Preprocess the dataset and train a classification model on it"
+      }
+    ],
+    "mcp_servers": [
+      {
+        "id": "python-data_loading",
+        "name": "Data Loading Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/data_loading/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "CSV file loading, analysis, and validation tools"
+      },
+      {
+        "id": "python-data_preparation",
+        "name": "Data Preparation Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/data_preparation/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Data transformation, feature engineering, and dataset preparation tools"
+      }
+    ],
+    "validation": {
+      "status": "valid",
+      "issue_count": 0,
+      "blocking_issue_count": 0,
+      "issues": []
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "data_preprocessor",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      }
+    ]
+  }
+}
