@@ -1,0 +1,286 @@
+{
+  "dataset_id": "classification__easy__yasserh_wine-quality-dataset__WineQT",
+  "filename": "WineQT.csv",
+  "file_path": "/app/data/uploads/datasets/classification/easy/yasserh_wine-quality-dataset/WineQT.csv",
+  "task_type": "classification",
+  "tier": "easy",
+  "target_column": null,
+  "generated_at": "2026-04-11T02:00:20.331593+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a classification model using the WineQT.csv file",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/easy/yasserh_wine-quality-dataset/WineQT.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/easy/yasserh_wine-quality-dataset/WineQT.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_loader",
+            "agent_name": "Data Loader"
+          }
+        },
+        "planner_mcp_server": "Filesystem",
+        "resolved_mcp_server": {
+          "id": "filesystem",
+          "name": "Filesystem",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "load_csv",
+            "description": "Load the WineQT.csv file into memory",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/yasserh_wine-quality-dataset/WineQT.csv",
+              "encoding": "utf-8",
+              "delimiter": ","
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/yasserh_wine-quality-dataset/WineQT.csv",
+              "encoding": "utf-8",
+              "delimiter": ","
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Load the dataset into memory for further processing"
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "data_preprocessor",
+          "name": "data_preprocessor",
+          "yaml_path": "config/agents/data_preprocessor.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_preprocessor",
+            "agent_name": "Data Preprocessor"
+          }
+        },
+        "planner_mcp_server": "Data Preparation Server",
+        "resolved_mcp_server": {
+          "id": "python-data_preparation",
+          "name": "Data Preparation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "handle_missing_values",
+            "description": "Handle missing values in the dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/yasserh_wine-quality-dataset/WineQT.csv",
+              "strategy": "mean",
+              "columns": [
+                "fixed acidity",
+                "volatile acidity",
+                "citric acid",
+                "residual sugar",
+                "chlorides",
+                "free sulfur dioxide",
+                "total sulfur dioxide",
+                "density",
+                "pH",
+                "sulphates",
+                "alcohol"
+              ],
+              "output_filepath": "/app/data/uploads/datasets/classification/easy/yasserh_wine-quality-dataset/WineQT_prep.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/yasserh_wine-quality-dataset/WineQT.csv",
+              "strategy": "mean",
+              "columns": [
+                "fixed acidity",
+                "volatile acidity",
+                "citric acid",
+                "residual sugar",
+                "chlorides",
+                "free sulfur dioxide",
+                "total sulfur dioxide",
+                "density",
+                "pH",
+                "sulphates",
+                "alcohol"
+              ],
+              "output_filepath": "/app/data/uploads/datasets/classification/easy/yasserh_wine-quality-dataset/WineQT_prep.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "encode_categorical",
+            "description": "Encode the categorical variable 'quality'",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/yasserh_wine-quality-dataset/WineQT.csv",
+              "columns": [
+                "quality"
+              ],
+              "method": "onehot",
+              "output_filepath": "/app/data/uploads/datasets/classification/easy/yasserh_wine-quality-dataset/WineQT_prep.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/yasserh_wine-quality-dataset/WineQT.csv",
+              "columns": [
+                "quality"
+              ],
+              "method": "onehot",
+              "output_filepath": "/app/data/uploads/datasets/classification/easy/yasserh_wine-quality-dataset/WineQT_prep.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Preprocess the dataset to handle missing values and encode categorical variables"
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": "model_trainer",
+          "name": "model_trainer",
+          "yaml_path": "config/agents/model_trainer.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_trainer",
+            "agent_name": "Model Trainer"
+          }
+        },
+        "planner_mcp_server": "Model Training Server",
+        "resolved_mcp_server": {
+          "id": "python-model_training",
+          "name": "Model Training Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "train_classification_model",
+            "description": "Train a classification model on the preprocessed dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/yasserh_wine-quality-dataset/WineQT_prep.csv",
+              "target_column": "quality",
+              "model_type": "logistic regression",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "C": 1,
+                "penalty": "l2"
+              },
+              "model_save_path": "/app/data/uploads/datasets/classification/easy/yasserh_wine-quality-dataset/model.pkl"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/yasserh_wine-quality-dataset/WineQT_prep.csv",
+              "target_column": "quality",
+              "model_type": "logistic regression",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "C": 1,
+                "penalty": "l2"
+              },
+              "model_save_path": "/app/data/uploads/datasets/classification/easy/yasserh_wine-quality-dataset/model.pkl"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Train a classification model on the preprocessed dataset to make predictions"
+      }
+    ],
+    "mcp_servers": [
+      {
+        "id": "filesystem",
+        "name": "Filesystem",
+        "command": "npx",
+        "args": [
+          "-y",
+          "@modelcontextprotocol/server-filesystem",
+          "/app"
+        ],
+        "env": {},
+        "is_available": true,
+        "description": "Access and manage project files under /app (catalog, configs, data)"
+      },
+      {
+        "id": "python-data_preparation",
+        "name": "Data Preparation Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/data_preparation/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Data transformation, feature engineering, and dataset preparation tools"
+      },
+      {
+        "id": "python-model_training",
+        "name": "Model Training Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_training/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Machine learning model training, hyperparameter tuning, and optimization"
+      }
+    ],
+    "validation": {
+      "status": "valid",
+      "issue_count": 0,
+      "blocking_issue_count": 0,
+      "issues": []
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "data_preprocessor",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_trainer",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      }
+    ]
+  }
+}

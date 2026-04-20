@@ -1,0 +1,501 @@
+{
+  "dataset_id": "regression__mid__hrokrin_the-largest-diamond-dataset-currely-on-kaggle__diamonds",
+  "filename": "diamonds.csv",
+  "file_path": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds.csv",
+  "task_type": "regression",
+  "tier": "mid",
+  "target_column": null,
+  "generated_at": "2026-04-11T05:35:53.359189+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a regression model to predict diamond total sales price based on cut, color, clarity, carat weight, and other diamond characteristics.",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_loader",
+            "agent_name": "Data Loader"
+          }
+        },
+        "planner_mcp_server": "Data Loading Server",
+        "resolved_mcp_server": {
+          "id": "python-data_loading",
+          "name": "Data Loading Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "read_file_head",
+            "description": "Read dataset header and first rows to verify structure and content",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds.csv",
+              "n_rows": 10
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds.csv",
+              "n_rows": 10
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "load_csv",
+            "description": "Load the full CSV dataset for analysis",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds.csv",
+              "encoding": "utf-8",
+              "delimiter": ","
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds.csv",
+              "encoding": null,
+              "delimiter": null
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "infer_data_types",
+            "description": "Infer data types for all columns to confirm column_types from analysis",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Initial data loading and verification to confirm dataset structure, column types, and ensure data is accessible for preprocessing."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "data_preprocessor",
+          "name": "data_preprocessor",
+          "yaml_path": "config/agents/data_preprocessor.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_preprocessor",
+            "agent_name": "data_preprocessor"
+          }
+        },
+        "planner_mcp_server": "Data Preparation Server",
+        "resolved_mcp_server": {
+          "id": "python-data_preparation",
+          "name": "Data Preparation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "encode_categorical",
+            "description": "Encode categorical variables (cut, color, clarity, cut_quality, lab, symmetry, polish, eye_clean, culet_size, culet_condition, girdle_min, girdle_max, fluor_color, fluor_intensity, fancy_color_dominant_color, fancy_color_secondary_color, fancy_color_overtone, fancy_color_intensity) for regression modeling",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds.csv",
+              "columns": [
+                "cut",
+                "color",
+                "clarity",
+                "cut_quality",
+                "lab",
+                "symmetry",
+                "polish",
+                "eye_clean",
+                "culet_size",
+                "culet_condition",
+                "girdle_min",
+                "girdle_max",
+                "fluor_color",
+                "fluor_intensity",
+                "fancy_color_dominant_color",
+                "fancy_color_secondary_color",
+                "fancy_color_overtone",
+                "fancy_color_intensity"
+              ],
+              "method": "onehot",
+              "output_filepath": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds_encoded.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds.csv",
+              "columns": [
+                "cut",
+                "color",
+                "clarity",
+                "cut_quality",
+                "lab",
+                "symmetry",
+                "polish",
+                "eye_clean",
+                "culet_size",
+                "culet_condition",
+                "girdle_min",
+                "girdle_max",
+                "fluor_color",
+                "fluor_intensity",
+                "fancy_color_dominant_color",
+                "fancy_color_secondary_color",
+                "fancy_color_overtone",
+                "fancy_color_intensity"
+              ],
+              "method": "onehot",
+              "output_filepath": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds_encoded.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "scale_features",
+            "description": "Scale numerical features (carat_weight, depth_percent, table_percent, meas_length, meas_width, meas_depth) to normalize their ranges",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds_encoded.csv",
+              "columns": [
+                "carat_weight",
+                "depth_percent",
+                "table_percent",
+                "meas_length",
+                "meas_width",
+                "meas_depth"
+              ],
+              "method": "standard",
+              "output_filepath": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds_scaled.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds_encoded.csv",
+              "columns": [
+                "carat_weight",
+                "depth_percent",
+                "table_percent",
+                "meas_length",
+                "meas_width",
+                "meas_depth"
+              ],
+              "method": "standard",
+              "output_filepath": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds_scaled.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "split_dataset",
+            "description": "Split the preprocessed dataset into training and testing sets for model development",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds_scaled.csv",
+              "train_ratio": 0.8,
+              "random_state": 42,
+              "shuffle": true
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds_scaled.csv",
+              "train_ratio": 0.8,
+              "random_state": 42,
+              "shuffle": true
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Preprocessing is needed to encode 18 categorical columns and scale 6 numerical features for regression modeling. Dataset splitting prepares data for training and evaluation."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": "model_trainer",
+          "name": "model_trainer",
+          "yaml_path": "config/agents/model_trainer.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_trainer",
+            "agent_name": "model_trainer"
+          }
+        },
+        "planner_mcp_server": "Model Training Server",
+        "resolved_mcp_server": {
+          "id": "python-model_training",
+          "name": "Model Training Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "train_regression_model",
+            "description": "Train a regression model to predict total_sales_price using preprocessed features",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds_scaled.csv",
+              "target_column": "total_sales_price",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "n_estimators": 100,
+                "max_depth": null,
+                "min_samples_split": 2,
+                "min_samples_leaf": 1
+              },
+              "model_save_path": "/app/data/models/diamonds_regression_model.pkl"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds_scaled.csv",
+              "target_column": "total_sales_price",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": null,
+              "model_save_path": "/app/data/models/diamonds_regression_model.pkl"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "compare_models",
+            "description": "Compare multiple regression algorithms to select the best performing model",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds_scaled.csv",
+              "target_column": "total_sales_price",
+              "task": "regression",
+              "test_size": 0.2,
+              "random_state": 42
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds_scaled.csv",
+              "target_column": "total_sales_price",
+              "task": "regression",
+              "test_size": 0.2,
+              "random_state": 42
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Training regression models to predict diamond prices. Random Forest is chosen as baseline due to its robustness with mixed data types. Model comparison helps identify the best algorithm."
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": "model_evaluator",
+          "name": "model_evaluator",
+          "yaml_path": "config/agents/model_evaluator.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_evaluator",
+            "agent_name": "model_evaluator"
+          }
+        },
+        "planner_mcp_server": "Model Evaluation Server",
+        "resolved_mcp_server": {
+          "id": "python-model_evaluation",
+          "name": "Model Evaluation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "evaluate_regression_model",
+            "description": "Evaluate the trained regression model using appropriate metrics (RMSE, MAE, R\u00b2)",
+            "tool_parameters": {
+              "model_path": "/app/data/models/diamonds_regression_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds_scaled_test.csv",
+              "target_column": "total_sales_price",
+              "filepath": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds.csv"
+            },
+            "planner_parameters": {
+              "model_path": "/app/data/models/diamonds_regression_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds_scaled_test.csv",
+              "target_column": "total_sales_price"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "calculate_residuals",
+            "description": "Calculate and analyze prediction residuals to understand model error patterns",
+            "tool_parameters": {
+              "model_path": "/app/data/models/diamonds_regression_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds_scaled_test.csv",
+              "target_column": "total_sales_price"
+            },
+            "planner_parameters": {
+              "model_path": "/app/data/models/diamonds_regression_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds_scaled_test.csv",
+              "target_column": "total_sales_price"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "save_evaluation_results",
+            "description": "Save evaluation metrics and results for future reference and comparison",
+            "tool_parameters": {
+              "metrics": null,
+              "task_type": "regression",
+              "model_name": "diamonds_price_predictor",
+              "dataset_name": "diamonds_dataset",
+              "notes": "Regression model for diamond price prediction with 18 categorical and 6 numerical features",
+              "tags": [
+                "diamonds",
+                "regression",
+                "price_prediction"
+              ],
+              "pipeline": "diamonds_regression_pipeline",
+              "registry_path": "/app/data/evaluation_results/"
+            },
+            "planner_parameters": {
+              "metrics": null,
+              "task_type": "regression",
+              "model_name": "diamonds_price_predictor",
+              "dataset_name": "diamonds_dataset",
+              "notes": "Regression model for diamond price prediction with 18 categorical and 6 numerical features",
+              "tags": [
+                "diamonds",
+                "regression",
+                "price_prediction"
+              ],
+              "pipeline": "diamonds_regression_pipeline",
+              "registry_path": "/app/data/evaluation_results/"
+            },
+            "missing_required_parameters": [
+              "metrics"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Comprehensive evaluation of the regression model using standard regression metrics, residual analysis to understand error patterns, and saving results for documentation."
+      }
+    ],
+    "mcp_servers": [
+      {
+        "id": "python-data_loading",
+        "name": "Data Loading Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/data_loading/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "CSV file loading, analysis, and validation tools"
+      },
+      {
+        "id": "python-data_preparation",
+        "name": "Data Preparation Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/data_preparation/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Data transformation, feature engineering, and dataset preparation tools"
+      },
+      {
+        "id": "python-model_evaluation",
+        "name": "Model Evaluation Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_evaluation/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Model evaluation, metrics calculation, and error analysis tools"
+      },
+      {
+        "id": "python-model_training",
+        "name": "Model Training Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_training/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Machine learning model training, hyperparameter tuning, and optimization"
+      }
+    ],
+    "validation": {
+      "status": "warning",
+      "issue_count": 1,
+      "blocking_issue_count": 0,
+      "issues": [
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'save_evaluation_results' has unresolved required parameters: metrics",
+          "phase_number": 4,
+          "tool_name": "save_evaluation_results",
+          "missing_parameters": [
+            "metrics"
+          ]
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "data_preprocessor",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_trainer",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "model_evaluator",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      }
+    ]
+  }
+}

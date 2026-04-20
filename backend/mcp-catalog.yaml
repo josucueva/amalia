@@ -412,9 +412,10 @@ servers:
         inputs:
           - filepath: "str"
           - target_column: "str"
-          - model_type: "str (default: 'random_forest')"
-          - test_size: "float (default: 0.2)"
-          - random_state: "int (default: 42)"
+          - model_type: "str"
+          - test_size: "float"
+          - random_state: "int"
+          - hyperparameters: "Dict[str, Any]"
           - model_save_path: "Optional[str]"
         outputs:
           - success: "bool"
@@ -425,9 +426,10 @@ servers:
         inputs:
           - filepath: "str"
           - target_column: "str"
-          - model_type: "str (default: 'random_forest')"
-          - test_size: "float (default: 0.2)"
-          - random_state: "int (default: 42)"
+          - model_type: "str"
+          - test_size: "float"
+          - random_state: "int"
+          - hyperparameters: "Dict[str, Any]"
           - model_save_path: "Optional[str]"
         outputs:
           - success: "bool"

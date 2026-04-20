@@ -1,0 +1,355 @@
+{
+  "dataset_id": "classification__hard__hetulmehta_website-classification__website_classification",
+  "filename": "website_classification.csv",
+  "file_path": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification.csv",
+  "task_type": "classification",
+  "tier": "hard",
+  "target_column": null,
+  "generated_at": "2026-04-13T21:21:37.236054+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a classification model to predict website categories from cleaned text data.",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_loader",
+            "agent_name": "Data Loader"
+          }
+        },
+        "planner_mcp_server": "Data Loading Server",
+        "resolved_mcp_server": {
+          "id": "python-data_loading",
+          "name": "Data Loading Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "load_csv",
+            "description": "Load the dataset to verify structure and prepare for preprocessing",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification.csv",
+              "encoding": "utf-8",
+              "delimiter": ","
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification.csv",
+              "encoding": null,
+              "delimiter": null
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "read_file_head",
+            "description": "Confirm dataset structure and column names",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification.csv",
+              "n_rows": 10
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification.csv",
+              "n_rows": 10
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Initial dataset loading and verification to ensure proper structure before preprocessing."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "data_preprocessor",
+          "name": "data_preprocessor",
+          "yaml_path": "config/agents/data_preprocessor.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_preprocessor",
+            "agent_name": "data_preprocessor"
+          }
+        },
+        "planner_mcp_server": "Data Preparation Server",
+        "resolved_mcp_server": {
+          "id": "python-data_preparation",
+          "name": "Data Preparation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "rename_columns",
+            "description": "Rename the unnamed index column to 'id' for clarity",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification.csv",
+              "column_mapping": {
+                "": "id"
+              },
+              "output_filepath": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification_preprocessed.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification.csv",
+              "column_mapping": {
+                "": "id"
+              },
+              "output_filepath": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification_preprocessed.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "split_dataset",
+            "description": "Split data into training and testing sets for model development",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification_preprocessed.csv",
+              "train_ratio": 0.8,
+              "random_state": 42,
+              "shuffle": true
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification_preprocessed.csv",
+              "train_ratio": 0.8,
+              "random_state": 42,
+              "shuffle": true
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Preprocess dataset by renaming columns and splitting into train/test sets. No missing values or duplicates detected per DATASET_ANALYSIS_JSON."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": "model_trainer",
+          "name": "model_trainer",
+          "yaml_path": "config/agents/model_trainer.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_trainer",
+            "agent_name": "model_trainer"
+          }
+        },
+        "planner_mcp_server": "Model Training Server",
+        "resolved_mcp_server": {
+          "id": "python-model_training",
+          "name": "Model Training Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "train_classification_model",
+            "description": "Train a classification model using cleaned website text to predict category",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification_preprocessed_train.csv",
+              "target_column": "Category",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "n_estimators": 100,
+                "max_depth": null,
+                "min_samples_split": 2,
+                "min_samples_leaf": 1
+              },
+              "model_save_path": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification_model.pkl"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification_preprocessed_train.csv",
+              "target_column": "Category",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": null,
+              "model_save_path": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification_model.pkl"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Train a classification model using Random Forest algorithm, suitable for text classification with multiple categories."
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": "model_evaluator",
+          "name": "model_evaluator",
+          "yaml_path": "config/agents/model_evaluator.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_evaluator",
+            "agent_name": "model_evaluator"
+          }
+        },
+        "planner_mcp_server": "Model Evaluation Server",
+        "resolved_mcp_server": {
+          "id": "python-model_evaluation",
+          "name": "Model Evaluation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "evaluate_classification_model",
+            "description": "Evaluate the trained model on test data using classification metrics",
+            "tool_parameters": {
+              "model_path": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification_preprocessed_test.csv",
+              "target_column": "Category",
+              "filepath": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification.csv"
+            },
+            "planner_parameters": {
+              "model_path": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification_preprocessed_test.csv",
+              "target_column": "Category"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "get_classification_report",
+            "description": "Generate detailed classification report with precision, recall, and F1 scores",
+            "tool_parameters": {
+              "model_path": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification_preprocessed_test.csv",
+              "target_column": "Category"
+            },
+            "planner_parameters": {
+              "model_path": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification_preprocessed_test.csv",
+              "target_column": "Category"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Evaluate model performance using appropriate classification metrics and generate comprehensive reports."
+      }
+    ],
+    "mcp_servers": [
+      {
+        "id": "python-data_loading",
+        "name": "Data Loading Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/data_loading/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "CSV file loading, analysis, and validation tools"
+      },
+      {
+        "id": "python-data_preparation",
+        "name": "Data Preparation Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/data_preparation/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Data transformation, feature engineering, and dataset preparation tools"
+      },
+      {
+        "id": "python-model_evaluation",
+        "name": "Model Evaluation Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_evaluation/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Model evaluation, metrics calculation, and error analysis tools"
+      },
+      {
+        "id": "python-model_training",
+        "name": "Model Training Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_training/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Machine learning model training, hyperparameter tuning, and optimization"
+      }
+    ],
+    "validation": {
+      "status": "valid",
+      "issue_count": 0,
+      "blocking_issue_count": 0,
+      "issues": []
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "data_preprocessor",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_trainer",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "model_evaluator",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      }
+    ]
+  }
+}

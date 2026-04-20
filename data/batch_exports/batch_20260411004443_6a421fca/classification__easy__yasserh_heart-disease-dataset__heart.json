@@ -1,0 +1,233 @@
+{
+  "dataset_id": "classification__easy__yasserh_heart-disease-dataset__heart",
+  "filename": "heart.csv",
+  "file_path": "/app/data/uploads/datasets/classification/easy/yasserh_heart-disease-dataset/heart.csv",
+  "task_type": "classification",
+  "tier": "easy",
+  "target_column": null,
+  "generated_at": "2026-04-11T00:55:03.459308+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a classification model to predict target variable based on given features",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/easy/yasserh_heart-disease-dataset/heart.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/easy/yasserh_heart-disease-dataset/heart.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": null,
+            "agent_name": "data_loader"
+          }
+        },
+        "planner_mcp_server": "filesystem",
+        "resolved_mcp_server": {
+          "id": "filesystem",
+          "name": "Filesystem",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "load_csv",
+            "description": "Load the heart disease dataset from CSV file",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/yasserh_heart-disease-dataset/heart.csv",
+              "encoding": "utf-8",
+              "delimiter": ","
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/yasserh_heart-disease-dataset/heart.csv",
+              "encoding": "utf-8",
+              "delimiter": ","
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Load the dataset into memory"
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "data_preprocessor",
+          "name": "data_preprocessor",
+          "yaml_path": "config/agents/data_preprocessor.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": null,
+            "agent_name": "data_preprocessor"
+          }
+        },
+        "planner_mcp_server": "filesystem",
+        "resolved_mcp_server": {
+          "id": "filesystem",
+          "name": "Filesystem",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "detect_missing_values",
+            "description": "Detect missing values in the dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/yasserh_heart-disease-dataset/heart.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/yasserh_heart-disease-dataset/heart.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "infer_data_types",
+            "description": "Infer data types for each column in the dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/yasserh_heart-disease-dataset/heart.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/yasserh_heart-disease-dataset/heart.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Preprocess the dataset to handle missing values and infer data types"
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": "model_trainer",
+          "name": "model_trainer",
+          "yaml_path": "config/agents/model_trainer.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": null,
+            "agent_name": "model_trainer"
+          }
+        },
+        "planner_mcp_server": "python-model_training",
+        "resolved_mcp_server": {
+          "id": "python-model_training",
+          "name": "Model Training Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "train_classification_model",
+            "description": "Train a classification model on the preprocessed dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/yasserh_heart-disease-dataset/heart.csv",
+              "target_column": "target",
+              "model_type": "Logistic Regression",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "C": 1.0,
+                "penalty": "l2"
+              },
+              "model_save_path": "/app/models/heart_disease_classifier.pkl"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/yasserh_heart-disease-dataset/heart.csv",
+              "target_column": "target",
+              "model_type": "Logistic Regression",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "C": 1.0,
+                "penalty": "l2"
+              },
+              "model_save_path": "/app/models/heart_disease_classifier.pkl"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Train a classification model on the preprocessed dataset"
+      }
+    ],
+    "mcp_servers": [
+      {
+        "id": "filesystem",
+        "name": "Filesystem",
+        "command": "npx",
+        "args": [
+          "-y",
+          "@modelcontextprotocol/server-filesystem",
+          "/app"
+        ],
+        "env": {},
+        "is_available": true,
+        "description": "Access and manage project files under /app (catalog, configs, data)"
+      },
+      {
+        "id": "python-model_training",
+        "name": "Model Training Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_training/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Machine learning model training, hyperparameter tuning, and optimization"
+      }
+    ],
+    "validation": {
+      "status": "valid",
+      "issue_count": 0,
+      "blocking_issue_count": 0,
+      "issues": []
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "data_preprocessor",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_trainer",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      }
+    ]
+  }
+}

@@ -52,6 +52,101 @@ class AgentPipelineService:
         self.agent_registry = agent_registry
         self.model_service = ModelService()
         self.mcp_server_service = mcp_server_service
+        self.target_column_catalog = self._load_target_column_catalog()
+
+    def _load_target_column_catalog(self) -> List[Dict[str, Any]]:
+        """Load dataset target-column mapping generated offline from prior runs."""
+        catalog_paths = [
+            Path("/app/data/target_column_catalog.json"),
+            Path("data/target_column_catalog.json"),
+            Path("../data/target_column_catalog.json"),
+            Path("backend/data/target_column_catalog.json"),
+        ]
+
+        for path in catalog_paths:
+            if not path.exists():
+                continue
+            try:
+                with open(path, "r", encoding="utf-8") as handle:
+                    payload = json.load(handle)
+                if isinstance(payload, list):
+                    logger.info(
+                        "Loaded target-column catalog",
+                        path=str(path),
+                        entries=len(payload),
+                    )
+                    return payload
+            except Exception as exc:
+                logger.warning(
+                    "Failed to load target-column catalog",
+                    path=str(path),
+                    error=str(exc),
+                )
+
+        return []
+
+    def _dataset_relative_path(self, path_value: Optional[str]) -> str:
+        """Normalize a path to stable dataset-relative form for matching."""
+        if not path_value:
+            return ""
+
+        normalized = str(path_value).replace("\\", "/").strip().lower()
+        marker = "data/uploads/datasets/"
+        index = normalized.find(marker)
+        if index >= 0:
+            return normalized[index:]
+        return normalized
+
+    def _lookup_target_column_for_file(
+        self,
+        file_path: Optional[str],
+        resolved_path: Optional[Path],
+    ) -> Optional[Dict[str, Any]]:
+        """Resolve known target metadata from catalog without reading full files."""
+        if not self.target_column_catalog:
+            return None
+
+        candidates: List[str] = []
+        if file_path:
+            candidates.append(file_path)
+        if resolved_path:
+            candidates.append(str(resolved_path))
+
+        candidate_relatives = {
+            self._dataset_relative_path(candidate)
+            for candidate in candidates
+            if candidate
+        }
+
+        file_name = Path(str(resolved_path or file_path or "")).name.lower()
+        for entry in self.target_column_catalog:
+            if not isinstance(entry, dict):
+                continue
+            target_column = entry.get("target_column")
+            if not target_column:
+                continue
+
+            entry_relative = self._dataset_relative_path(entry.get("file_path"))
+            if entry_relative and entry_relative in candidate_relatives:
+                return {
+                    "target_column": str(target_column),
+                    "task_type": entry.get("task_type"),
+                    "confidence": entry.get("confidence"),
+                    "dataset_id": entry.get("dataset_id"),
+                    "source": "target_column_catalog_path_match",
+                }
+
+            entry_filename = str(entry.get("filename") or "").lower()
+            if file_name and entry_filename and file_name == entry_filename:
+                return {
+                    "target_column": str(target_column),
+                    "task_type": entry.get("task_type"),
+                    "confidence": entry.get("confidence"),
+                    "dataset_id": entry.get("dataset_id"),
+                    "source": "target_column_catalog_filename_match",
+                }
+
+        return None
 
     async def _execute_tool_calls(
         self, mcp_service: MCPService, tool_calls: List[Dict[str, Any]]
@@ -693,6 +788,8 @@ class AgentPipelineService:
         if not resolved:
             return None
 
+        catalog_target = self._lookup_target_column_for_file(file_path, resolved)
+
         encodings = ["utf-8", "latin-1"]
         last_error: Optional[Exception] = None
         for encoding in encodings:
@@ -703,16 +800,24 @@ class AgentPipelineService:
                         return None
 
                     rows = []
-                    total_rows = 0
                     for row in reader:
-                        total_rows += 1
-                        if len(rows) < 100:
-                            rows.append(row)
+                        if len(rows) >= 100:
+                            break
+                        rows.append(row)
 
                 fieldnames = list(reader.fieldnames)
                 column_types = self._infer_column_types(rows, fieldnames)
-                target_column = self._guess_target_column(fieldnames)
-                task_type = self._infer_task_type_from_sample(rows, target_column)
+                inferred_target = self._guess_target_column(fieldnames)
+                target_column = (
+                    str(catalog_target.get("target_column"))
+                    if catalog_target and catalog_target.get("target_column")
+                    else inferred_target
+                )
+                task_type = (
+                    str(catalog_target.get("task_type"))
+                    if catalog_target and catalog_target.get("task_type")
+                    else self._infer_task_type_from_sample(rows, target_column)
+                )
                 missing_by_column = {
                     col: sum(1 for row in rows if str(row.get(col, "")).strip() == "")
                     for col in fieldnames
@@ -721,11 +826,19 @@ class AgentPipelineService:
                 return {
                     "file_path": file_path,
                     "file_name": Path(resolved).name,
-                    "rows": total_rows,
+                    "rows": len(rows),
                     "columns": len(fieldnames),
                     "column_names": fieldnames,
                     "column_types": column_types,
                     "target_column": target_column,
+                    "target_column_source": (
+                        catalog_target.get("source")
+                        if catalog_target
+                        else "sample_inference"
+                    ),
+                    "target_column_confidence": (
+                        catalog_target.get("confidence") if catalog_target else "low"
+                    ),
                     "task_type": task_type,
                     "data_quality": {
                         "missing_values_per_column": missing_by_column,
@@ -1068,7 +1181,8 @@ class AgentPipelineService:
                     {
                         "tool_name": tool_name,
                         "description": tool.get("description"),
-                        "tool_parameters": (
+                        "tool_parameters": replication_parameters,
+                        "planner_parameters": (
                             planner_parameters
                             if isinstance(planner_parameters, dict)
                             else {}
@@ -1628,6 +1742,12 @@ class AgentPipelineService:
             if task_type == "classification":
                 return "random_forest"
 
+        if param_name == "hyperparameters":
+            return self._default_hyperparameters_for_model(
+                model_type=selected_model_type,
+                task_type=task_type,
+            )
+
         if param_name == "columns":
             if "encode" in lowered_tool and categorical_columns:
                 return categorical_columns
@@ -1670,6 +1790,63 @@ class AgentPipelineService:
             return 0.01
 
         return None
+
+    def _default_hyperparameters_for_model(
+        self,
+        model_type: Optional[str],
+        task_type: Optional[str],
+    ) -> Dict[str, Any]:
+        """Return stable, replayable default hyperparameters for model training."""
+        normalized = str(model_type or "").strip().lower()
+        task = str(task_type or "classification").strip().lower()
+
+        if not normalized:
+            normalized = "random_forest" if task != "regression" else "random_forest_regressor"
+
+        if normalized in {"random_forest", "random_forest_classifier"}:
+            return {
+                "n_estimators": 100,
+                "max_depth": None,
+                "min_samples_split": 2,
+                "min_samples_leaf": 1,
+            }
+
+        if normalized in {"random_forest_regressor"}:
+            return {
+                "n_estimators": 100,
+                "max_depth": None,
+                "min_samples_split": 2,
+                "min_samples_leaf": 1,
+            }
+
+        if normalized in {"logistic", "logistic_regression"}:
+            return {"max_iter": 1000, "C": 1.0, "solver": "lbfgs"}
+
+        if normalized in {"decision_tree", "decision_tree_classifier", "decision_tree_regressor"}:
+            return {"max_depth": None, "min_samples_split": 2, "min_samples_leaf": 1}
+
+        if normalized in {"gradient_boosting", "gradient_boosting_classifier", "gradient_boosting_regressor"}:
+            return {"n_estimators": 100, "learning_rate": 0.1, "max_depth": 3}
+
+        if normalized in {"svm", "svc", "svr"}:
+            return {"C": 1.0, "kernel": "rbf", "gamma": "scale"}
+
+        if normalized in {"knn", "kneighbors"}:
+            return {"n_neighbors": 5, "weights": "uniform", "metric": "minkowski"}
+
+        if normalized in {"naive_bayes", "gaussian_nb"}:
+            return {"var_smoothing": 1e-9}
+
+        if normalized in {"linear", "linear_regression"}:
+            return {"fit_intercept": True}
+
+        if normalized in {"ridge"}:
+            return {"alpha": 1.0}
+
+        if normalized in {"lasso"}:
+            return {"alpha": 1.0}
+
+        return {}
 
     def _catalog_parameters_for_tool(
         self,

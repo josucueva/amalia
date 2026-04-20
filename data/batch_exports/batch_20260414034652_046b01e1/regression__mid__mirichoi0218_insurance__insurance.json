@@ -1,0 +1,391 @@
+{
+  "dataset_id": "regression__mid__mirichoi0218_insurance__insurance",
+  "filename": "insurance.csv",
+  "file_path": "/app/data/uploads/datasets/regression/mid/mirichoi0218_insurance/insurance.csv",
+  "task_type": "regression",
+  "tier": "mid",
+  "target_column": null,
+  "generated_at": "2026-04-14T04:37:04.151983+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a regression model to predict insurance charges",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/regression/mid/mirichoi0218_insurance/insurance.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/regression/mid/mirichoi0218_insurance/insurance.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_loader",
+            "agent_name": "Data Loader"
+          }
+        },
+        "planner_mcp_server": "Filesystem",
+        "resolved_mcp_server": {
+          "id": "filesystem",
+          "name": "Filesystem",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "load_csv",
+            "description": "Load insurance.csv into the system",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/mirichoi0218_insurance/insurance.csv",
+              "encoding": "utf-8",
+              "delimiter": ","
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/mirichoi0218_insurance/insurance.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "read_file_head",
+            "description": "Read header and first rows of insurance.csv",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/mirichoi0218_insurance/insurance.csv",
+              "n_rows": 10
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/mirichoi0218_insurance/insurance.csv",
+              "n_rows": 10
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "get_column_info",
+            "description": "Get column names, types, and count of insurance.csv",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/mirichoi0218_insurance/insurance.csv",
+              "column_name": "charges"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/mirichoi0218_insurance/insurance.csv",
+              "column_name": "charges"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "infer_data_types",
+            "description": "Determine data types for all columns in insurance.csv",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/mirichoi0218_insurance/insurance.csv"
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "get_basic_stats",
+            "description": "Calculate basic statistics for all columns in insurance.csv",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/mirichoi0218_insurance/insurance.csv"
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Prepare the dataset by loading, reading its structure, and understanding its data types and distributions"
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "data_preprocessor",
+          "name": "data_preprocessor",
+          "yaml_path": "config/agents/data_preprocessor.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_preprocessor",
+            "agent_name": "Data Preprocessor"
+          }
+        },
+        "planner_mcp_server": "Filesystem",
+        "resolved_mcp_server": {
+          "id": "filesystem",
+          "name": "Filesystem",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "handle_missing_values",
+            "description": "Impute missing values in the 'sex' and 'smoker' columns",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/mirichoi0218_insurance/insurance.csv",
+              "strategy": "median",
+              "columns": [
+                "sex",
+                "smoker"
+              ],
+              "output_filepath": "/app/preprocessed_data/insurance_preprocessed.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/mirichoi0218_insurance/insurance.csv",
+              "strategy": "median",
+              "columns": [
+                "sex",
+                "smoker"
+              ],
+              "output_filepath": "/app/preprocessed_data/insurance_preprocessed.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "encode_categorical",
+            "description": "One-hot encode the 'sex' and 'smoker' columns",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/mirichoi0218_insurance/insurance.csv",
+              "columns": [
+                "sex",
+                "smoker"
+              ],
+              "method": "onehot",
+              "output_filepath": "/app/preprocessed_data/insurance_preprocessed.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/mirichoi0218_insurance/insurance.csv",
+              "columns": [
+                "sex",
+                "smoker"
+              ],
+              "method": "onehot",
+              "output_filepath": "/app/preprocessed_data/insurance_preprocessed.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "remove_duplicates",
+            "description": "Remove duplicate rows from the preprocessed dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/mirichoi0218_insurance/insurance.csv",
+              "subset": null,
+              "keep": false,
+              "output_filepath": "/app/preprocessed_data/insurance_preprocessed.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/mirichoi0218_insurance/insurance.csv",
+              "subset": null,
+              "keep": false,
+              "output_filepath": "/app/preprocessed_data/insurance_preprocessed.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "scale_features",
+            "description": "Standardize the 'bmi' column",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/mirichoi0218_insurance/insurance.csv",
+              "columns": [
+                "bmi"
+              ],
+              "method": "standardize",
+              "output_filepath": "/app/preprocessed_data/insurance_preprocessed.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/mirichoi0218_insurance/insurance.csv",
+              "columns": [
+                "bmi"
+              ],
+              "method": "standardize",
+              "output_filepath": "/app/preprocessed_data/insurance_preprocessed.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "split_dataset",
+            "description": "Split the preprocessed dataset into training and testing sets",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/mirichoi0218_insurance/insurance.csv",
+              "train_ratio": "0.8",
+              "random_state": 42,
+              "shuffle": "True",
+              "target_column": "charges",
+              "test_size": 0.2
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/mirichoi0218_insurance/insurance.csv",
+              "target_column": "charges",
+              "test_size": 0.2,
+              "random_state": 42
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Preprocess the dataset by handling missing values, encoding categorical variables, removing duplicates, and scaling features"
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": null,
+          "name": "Model Training Server",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_training_server",
+            "agent_name": "Model Training Server"
+          }
+        },
+        "planner_mcp_server": "Filesystem",
+        "resolved_mcp_server": {
+          "id": "filesystem",
+          "name": "Filesystem",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "train_regression_model",
+            "description": "Train a regression model on the preprocessed dataset",
+            "tool_parameters": {
+              "filepath": "/app/preprocessed_data/insurance_preprocessed.csv",
+              "target_column": "charges",
+              "model_type": "Linear Regression",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "n_estimators": 100,
+                "max_depth": null,
+                "min_samples_split": 2,
+                "min_samples_leaf": 1
+              },
+              "model_save_path": null
+            },
+            "planner_parameters": {
+              "filepath": "/app/preprocessed_data/insurance_preprocessed.csv",
+              "target_column": "charges",
+              "model_type": "Linear Regression",
+              "test_size": 0.2,
+              "random_state": 42
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "save_evaluation_results",
+            "description": "Save the evaluation metrics of the trained regression model",
+            "tool_parameters": {
+              "metrics": null,
+              "task_type": "regression",
+              "model_name": "Linear Regression Model",
+              "dataset_name": "Insurance Dataset",
+              "notes": null,
+              "tags": null,
+              "pipeline": null,
+              "registry_path": "/app/model_registry"
+            },
+            "planner_parameters": {
+              "metrics": null,
+              "task_type": "regression",
+              "model_name": "Linear Regression Model",
+              "dataset_name": "Insurance Dataset",
+              "notes": null,
+              "tags": null,
+              "pipeline": null,
+              "registry_path": "/app/model_registry"
+            },
+            "missing_required_parameters": [
+              "metrics"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Train a regression model on the preprocessed dataset and save its evaluation metrics"
+      }
+    ],
+    "mcp_servers": [
+      {
+        "id": "filesystem",
+        "name": "Filesystem",
+        "command": "npx",
+        "args": [
+          "-y",
+          "@modelcontextprotocol/server-filesystem",
+          "/app"
+        ],
+        "env": {},
+        "is_available": true,
+        "description": "Access and manage project files under /app (catalog, configs, data)"
+      }
+    ],
+    "validation": {
+      "status": "uncertain",
+      "issue_count": 2,
+      "blocking_issue_count": 1,
+      "issues": [
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_training_server' name='Model Training Server'",
+          "phase_number": 3
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'save_evaluation_results' has unresolved required parameters: metrics",
+          "phase_number": 3,
+          "tool_name": "save_evaluation_results",
+          "missing_parameters": [
+            "metrics"
+          ]
+        }
+      ],
+      "allow_persist_with_issues": true
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "data_preprocessor",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_training_server",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      }
+    ]
+  }
+}

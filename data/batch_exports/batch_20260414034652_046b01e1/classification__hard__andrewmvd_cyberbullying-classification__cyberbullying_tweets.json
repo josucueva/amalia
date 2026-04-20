@@ -1,0 +1,112 @@
+{
+  "dataset_id": "classification__hard__andrewmvd_cyberbullying-classification__cyberbullying_tweets",
+  "filename": "cyberbullying_tweets.csv",
+  "file_path": "/app/data/uploads/datasets/classification/hard/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+  "task_type": "classification",
+  "tier": "hard",
+  "target_column": null,
+  "generated_at": "2026-04-14T03:59:17.604388+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a classification model to predict cyberbullying types from tweets",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/hard/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/hard/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": null,
+            "agent_name": "data_loader"
+          }
+        },
+        "planner_mcp_server": "",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": null,
+        "rationale": "Load the dataset from the uploads directory"
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "model_trainer",
+          "name": "model_trainer",
+          "yaml_path": "config/agents/model_trainer.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": null,
+            "agent_name": "model_trainer"
+          }
+        },
+        "planner_mcp_server": "",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": "random_forest",
+        "rationale": "Train a classification model using the loaded data"
+      }
+    ],
+    "mcp_servers": [],
+    "validation": {
+      "status": "uncertain",
+      "issue_count": 4,
+      "blocking_issue_count": 2,
+      "issues": [
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server ''",
+          "phase_number": 1
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server ''",
+          "phase_number": 2
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 2
+        }
+      ],
+      "allow_persist_with_issues": true
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "model_trainer",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      }
+    ]
+  }
+}

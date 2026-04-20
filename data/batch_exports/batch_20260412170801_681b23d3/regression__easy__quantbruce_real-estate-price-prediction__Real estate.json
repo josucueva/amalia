@@ -1,0 +1,292 @@
+{
+  "dataset_id": "regression__easy__quantbruce_real-estate-price-prediction__Real estate",
+  "filename": "Real estate.csv",
+  "file_path": "/app/data/uploads/datasets/regression/easy/quantbruce_real-estate-price-prediction/Real estate.csv",
+  "task_type": "regression",
+  "tier": "easy",
+  "target_column": null,
+  "generated_at": "2026-04-12T18:41:12.350983+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a regression model to predict 'Y house price of unit area' using the Real estate dataset.",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/regression/easy/quantbruce_real-estate-price-prediction/Real estate.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/regression/easy/quantbruce_real-estate-price-prediction/Real estate.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_loader",
+            "agent_name": "data_loader"
+          }
+        },
+        "planner_mcp_server": "",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "read_file_head",
+            "description": "Read the first few rows of the dataset to understand its structure.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/quantbruce_real-estate-price-prediction/Real estate.csv",
+              "n_rows": 100
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/quantbruce_real-estate-price-prediction/Real estate.csv",
+              "n_rows": 100
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "This phase is needed to understand the dataset and identify any data quality issues."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "data_preprocessor",
+          "name": "data_preprocessor",
+          "yaml_path": "config/agents/data_preprocessor.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_preprocessor",
+            "agent_name": "data_preprocessor"
+          }
+        },
+        "planner_mcp_server": "",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "detect_missing_values",
+            "description": "Check for missing values in the dataset.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/quantbruce_real-estate-price-prediction/Real estate.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/quantbruce_real-estate-price-prediction/Real estate.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "detect_duplicates",
+            "description": "Check for duplicate rows in the dataset.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/quantbruce_real-estate-price-prediction/Real estate.csv",
+              "subset": null
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/quantbruce_real-estate-price-prediction/Real estate.csv",
+              "subset": null
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "scale_features",
+            "description": "Scale the features to have a common range for better model training.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/quantbruce_real-estate-price-prediction/Real estate.csv",
+              "columns": [
+                "X1 transaction date",
+                "X2 house age",
+                "X3 distance to the nearest MRT station",
+                "X4 number of convenience stores",
+                "X5 latitude",
+                "X6 longitude"
+              ],
+              "method": "standard",
+              "output_filepath": null
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/quantbruce_real-estate-price-prediction/Real estate.csv",
+              "columns": [
+                "X1 transaction date",
+                "X2 house age",
+                "X3 distance to the nearest MRT station",
+                "X4 number of convenience stores",
+                "X5 latitude",
+                "X6 longitude"
+              ],
+              "method": "standard"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "These checks and transformations are needed to ensure data quality and improve model performance."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": "model_trainer",
+          "name": "model_trainer",
+          "yaml_path": "config/agents/model_trainer.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "train_regression_model",
+            "agent_name": "model_trainer"
+          }
+        },
+        "planner_mcp_server": "",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "train_regression_model",
+            "description": "Train a regression model using the preprocessed dataset.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/quantbruce_real-estate-price-prediction/Real estate.csv",
+              "target_column": "Y house price of unit area",
+              "model_type": "linear",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "n_estimators": 100,
+                "max_depth": null,
+                "min_samples_split": 2,
+                "min_samples_leaf": 1
+              },
+              "model_save_path": null
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/quantbruce_real-estate-price-prediction/Real estate.csv",
+              "target_column": "Y house price of unit area",
+              "model_type": "linear",
+              "test_size": 0.2,
+              "random_state": 42
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "This phase is needed to train a regression model that can predict 'Y house price of unit area'."
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": "model_evaluator",
+          "name": "model_evaluator",
+          "yaml_path": "config/agents/model_evaluator.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "evaluate_regression_model",
+            "agent_name": "model_evaluator"
+          }
+        },
+        "planner_mcp_server": "",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "evaluate_regression_model",
+            "description": "Evaluate the performance of the trained regression model.",
+            "tool_parameters": {
+              "model_path": "/path/to/trained/model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/regression/easy/quantbruce_real-estate-price-prediction/Real estate.csv",
+              "target_column": "Y house price of unit area",
+              "filepath": "/app/data/uploads/datasets/regression/easy/quantbruce_real-estate-price-prediction/Real estate.csv"
+            },
+            "planner_parameters": {
+              "model_path": "/path/to/trained/model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/regression/easy/quantbruce_real-estate-price-prediction/Real estate.csv",
+              "target_column": "Y house price of unit area"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "This phase is needed to evaluate the performance of the trained regression model."
+      }
+    ],
+    "mcp_servers": [],
+    "validation": {
+      "status": "warning",
+      "issue_count": 4,
+      "blocking_issue_count": 0,
+      "issues": [
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server ''",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server ''",
+          "phase_number": 2
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server ''",
+          "phase_number": 3
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server ''",
+          "phase_number": 4
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "data_preprocessor",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_trainer",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "model_evaluator",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      }
+    ]
+  }
+}

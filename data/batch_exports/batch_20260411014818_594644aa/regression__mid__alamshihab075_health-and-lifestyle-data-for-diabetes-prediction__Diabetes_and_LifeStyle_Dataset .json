@@ -1,0 +1,30 @@
+{
+  "dataset_id": "regression__mid__alamshihab075_health-and-lifestyle-data-for-diabetes-prediction__Diabetes_and_LifeStyle_Dataset ",
+  "filename": "Diabetes_and_LifeStyle_Dataset .csv",
+  "file_path": "/app/data/uploads/datasets/regression/mid/alamshihab075_health-and-lifestyle-data-for-diabetes-prediction/Diabetes_and_LifeStyle_Dataset .csv",
+  "task_type": "regression",
+  "tier": "mid",
+  "target_column": null,
+  "generated_at": "2026-04-11T02:39:35.782034+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a regression model to predict diagnosed_diabetes from various lifestyle and health-related factors",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/regression/mid/alamshihab075_health-and-lifestyle-data-for-diabetes-prediction/Diabetes_and_LifeStyle_Dataset .csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/regression/mid/alamshihab075_health-and-lifestyle-data-for-diabetes-prediction/Diabetes_and_LifeStyle_Dataset .csv"
+    },
+    "steps": [],
+    "mcp_servers": [],
+    "validation": {
+      "status": "valid",
+      "issue_count": 0,
+      "blocking_issue_count": 0,
+      "issues": []
+    },
+    "nodes": [],
+    "connections": []
+  }
+}

@@ -1,0 +1,370 @@
+{
+  "dataset_id": "regression__easy__ranitsarkar01_porter-delivery-time-estimation__dataset",
+  "filename": "dataset.csv",
+  "file_path": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset.csv",
+  "task_type": "regression",
+  "tier": "easy",
+  "target_column": null,
+  "generated_at": "2026-04-11T05:12:11.746659+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a regression model to predict total_outstanding_orders using the delivery time estimation dataset",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_preprocessor",
+          "name": "data_preprocessor",
+          "yaml_path": "config/agents/data_preprocessor.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_preprocessor",
+            "agent_name": "data_preprocessor"
+          }
+        },
+        "planner_mcp_server": "Data Preparation Server",
+        "resolved_mcp_server": {
+          "id": "python-data_preparation",
+          "name": "Data Preparation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "handle_missing_values",
+            "description": "Handle missing values in market_id, store_primary_category, and order_protocol columns",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset.csv",
+              "strategy": "mean",
+              "columns": [
+                "market_id",
+                "order_protocol"
+              ],
+              "output_filepath": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset_cleaned.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset.csv",
+              "strategy": "mean",
+              "columns": [
+                "market_id",
+                "order_protocol"
+              ],
+              "output_filepath": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset_cleaned.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "encode_categorical",
+            "description": "Encode categorical variables: store_id, store_primary_category, and datetime columns",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset_cleaned.csv",
+              "columns": [
+                "store_id",
+                "store_primary_category",
+                "created_at",
+                "actual_delivery_time"
+              ],
+              "method": "onehot",
+              "output_filepath": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset_encoded.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset_cleaned.csv",
+              "columns": [
+                "store_id",
+                "store_primary_category",
+                "created_at",
+                "actual_delivery_time"
+              ],
+              "method": "onehot",
+              "output_filepath": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset_encoded.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "scale_features",
+            "description": "Scale numerical features for better model performance",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset_encoded.csv",
+              "columns": [
+                "total_items",
+                "subtotal",
+                "num_distinct_items",
+                "min_item_price",
+                "max_item_price",
+                "total_onshift_partners",
+                "total_busy_partners"
+              ],
+              "method": "standard",
+              "output_filepath": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset_scaled.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset_encoded.csv",
+              "columns": [
+                "total_items",
+                "subtotal",
+                "num_distinct_items",
+                "min_item_price",
+                "max_item_price",
+                "total_onshift_partners",
+                "total_busy_partners"
+              ],
+              "method": "standard",
+              "output_filepath": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset_scaled.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Preprocessing is needed to handle missing values (market_id: 1, store_primary_category: 19, order_protocol: 1), encode categorical variables (store_id, store_primary_category, datetime columns), and scale numerical features for regression modeling."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "model_trainer",
+          "name": "model_trainer",
+          "yaml_path": "config/agents/model_trainer.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_trainer",
+            "agent_name": "model_trainer"
+          }
+        },
+        "planner_mcp_server": "Model Training Server",
+        "resolved_mcp_server": {
+          "id": "python-model_training",
+          "name": "Model Training Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "train_regression_model",
+            "description": "Train a regression model to predict total_outstanding_orders",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset_scaled.csv",
+              "target_column": "total_outstanding_orders",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "n_estimators": 100,
+                "max_depth": null,
+                "min_samples_split": 2,
+                "min_samples_leaf": 1
+              },
+              "model_save_path": "/app/data/uploads/models/total_outstanding_orders_regression_model.pkl"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset_scaled.csv",
+              "target_column": "total_outstanding_orders",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": null,
+              "model_save_path": "/app/data/uploads/models/total_outstanding_orders_regression_model.pkl"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Train a regression model (Random Forest chosen for robustness with mixed data types) to predict the target variable total_outstanding_orders using the preprocessed dataset."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": "model_evaluator",
+          "name": "model_evaluator",
+          "yaml_path": "config/agents/model_evaluator.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_evaluator",
+            "agent_name": "model_evaluator"
+          }
+        },
+        "planner_mcp_server": "Model Evaluation Server",
+        "resolved_mcp_server": {
+          "id": "python-model_evaluation",
+          "name": "Model Evaluation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "evaluate_regression_model",
+            "description": "Evaluate the trained regression model on test data",
+            "tool_parameters": {
+              "model_path": "/app/data/uploads/models/total_outstanding_orders_regression_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset_scaled.csv",
+              "target_column": "total_outstanding_orders",
+              "filepath": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset.csv"
+            },
+            "planner_parameters": {
+              "model_path": "/app/data/uploads/models/total_outstanding_orders_regression_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset_scaled.csv",
+              "target_column": "total_outstanding_orders"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "calculate_residuals",
+            "description": "Calculate residuals to analyze prediction errors",
+            "tool_parameters": {
+              "model_path": "/app/data/uploads/models/total_outstanding_orders_regression_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset_scaled.csv",
+              "target_column": "total_outstanding_orders"
+            },
+            "planner_parameters": {
+              "model_path": "/app/data/uploads/models/total_outstanding_orders_regression_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset_scaled.csv",
+              "target_column": "total_outstanding_orders"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "save_evaluation_results",
+            "description": "Save evaluation metrics and results for future reference",
+            "tool_parameters": {
+              "metrics": null,
+              "task_type": "regression",
+              "model_name": "total_outstanding_orders_regression_model",
+              "dataset_name": "porter-delivery-time-estimation",
+              "notes": "Regression model for predicting total_outstanding_orders with 14 features including delivery metrics",
+              "tags": [
+                "regression",
+                "delivery",
+                "time_estimation"
+              ],
+              "pipeline": "data_preprocessing -> random_forest_regression",
+              "registry_path": "/app/data/uploads/evaluation_results/"
+            },
+            "planner_parameters": {
+              "metrics": null,
+              "task_type": "regression",
+              "model_name": "total_outstanding_orders_regression_model",
+              "dataset_name": "porter-delivery-time-estimation",
+              "notes": "Regression model for predicting total_outstanding_orders with 14 features including delivery metrics",
+              "tags": [
+                "regression",
+                "delivery",
+                "time_estimation"
+              ],
+              "pipeline": "data_preprocessing -> random_forest_regression",
+              "registry_path": "/app/data/uploads/evaluation_results/"
+            },
+            "missing_required_parameters": [
+              "metrics"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Evaluate model performance using regression metrics (RMSE, MAE, R\u00b2), analyze residuals for error patterns, and save evaluation results for tracking and comparison."
+      }
+    ],
+    "mcp_servers": [
+      {
+        "id": "python-data_preparation",
+        "name": "Data Preparation Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/data_preparation/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Data transformation, feature engineering, and dataset preparation tools"
+      },
+      {
+        "id": "python-model_evaluation",
+        "name": "Model Evaluation Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_evaluation/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Model evaluation, metrics calculation, and error analysis tools"
+      },
+      {
+        "id": "python-model_training",
+        "name": "Model Training Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_training/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Machine learning model training, hyperparameter tuning, and optimization"
+      }
+    ],
+    "validation": {
+      "status": "warning",
+      "issue_count": 1,
+      "blocking_issue_count": 0,
+      "issues": [
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'save_evaluation_results' has unresolved required parameters: metrics",
+          "phase_number": 3,
+          "tool_name": "save_evaluation_results",
+          "missing_parameters": [
+            "metrics"
+          ]
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_preprocessor",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "model_trainer",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_evaluator",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      }
+    ]
+  }
+}

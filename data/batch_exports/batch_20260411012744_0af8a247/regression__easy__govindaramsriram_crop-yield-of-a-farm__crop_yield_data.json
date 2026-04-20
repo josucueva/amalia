@@ -1,0 +1,306 @@
+{
+  "dataset_id": "regression__easy__govindaramsriram_crop-yield-of-a-farm__crop_yield_data",
+  "filename": "crop_yield_data.csv",
+  "file_path": "/app/data/uploads/datasets/regression/easy/govindaramsriram_crop-yield-of-a-farm/crop_yield_data.csv",
+  "task_type": "regression",
+  "tier": "easy",
+  "target_column": null,
+  "generated_at": "2026-04-11T01:41:37.568338+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a regression model for predicting crop yields",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/regression/easy/govindaramsriram_crop-yield-of-a-farm/crop_yield_data.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/regression/easy/govindaramsriram_crop-yield-of-a-farm/crop_yield_data.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": null,
+          "name": "",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": null,
+            "agent_name": null
+          }
+        },
+        "planner_mcp_server": "",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": null,
+        "rationale": null
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": null,
+          "name": "",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": null,
+            "agent_name": null
+          }
+        },
+        "planner_mcp_server": "",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": null,
+        "rationale": null
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": null,
+          "name": "",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": null,
+            "agent_name": null
+          }
+        },
+        "planner_mcp_server": "",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": null,
+        "rationale": null
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": null,
+          "name": "",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": null,
+            "agent_name": null
+          }
+        },
+        "planner_mcp_server": "",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": null,
+        "rationale": null
+      },
+      {
+        "phase_number": 5,
+        "agent": {
+          "id": null,
+          "name": "",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": null,
+            "agent_name": null
+          }
+        },
+        "planner_mcp_server": "",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": null,
+        "rationale": null
+      },
+      {
+        "phase_number": 6,
+        "agent": {
+          "id": null,
+          "name": "",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": null,
+            "agent_name": null
+          }
+        },
+        "planner_mcp_server": "",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": null,
+        "rationale": null
+      }
+    ],
+    "mcp_servers": [],
+    "validation": {
+      "status": "uncertain",
+      "issue_count": 18,
+      "blocking_issue_count": 12,
+      "issues": [
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='' name=''",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server ''",
+          "phase_number": 1
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 1
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='' name=''",
+          "phase_number": 2
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server ''",
+          "phase_number": 2
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 2
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='' name=''",
+          "phase_number": 3
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server ''",
+          "phase_number": 3
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 3
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='' name=''",
+          "phase_number": 4
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server ''",
+          "phase_number": 4
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 4
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='' name=''",
+          "phase_number": 5
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server ''",
+          "phase_number": 5
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 5
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='' name=''",
+          "phase_number": 6
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server ''",
+          "phase_number": 6
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 6
+        }
+      ],
+      "allow_persist_with_issues": true
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "unresolved_phase_1",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "unresolved_phase_2",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "unresolved_phase_3",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "unresolved_phase_4",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-5",
+        "agentId": "unresolved_phase_5",
+        "position": {
+          "x": 1100,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-6",
+        "agentId": "unresolved_phase_6",
+        "position": {
+          "x": 1320,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      },
+      {
+        "id": "conn-4",
+        "fromInstanceId": "phase-4",
+        "toInstanceId": "phase-5"
+      },
+      {
+        "id": "conn-5",
+        "fromInstanceId": "phase-5",
+        "toInstanceId": "phase-6"
+      }
+    ]
+  }
+}

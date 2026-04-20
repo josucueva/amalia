@@ -1,0 +1,400 @@
+{
+  "dataset_id": "classification__mid__andrewmvd_cyberbullying-classification__cyberbullying_tweets",
+  "filename": "cyberbullying_tweets.csv",
+  "file_path": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+  "task_type": "classification",
+  "tier": "mid",
+  "target_column": null,
+  "generated_at": "2026-04-11T02:11:09.916993+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Train a classification model to accurately classify new tweets as cyberbullying or not",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_loader",
+            "agent_name": "Data Loader"
+          }
+        },
+        "planner_mcp_server": "Filesystem",
+        "resolved_mcp_server": {
+          "id": "filesystem",
+          "name": "Filesystem",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "read_file_head",
+            "description": "Read file header and first rows for analysis",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+              "n_rows": 10
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+              "n_rows": 10
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "validate_csv_structure",
+            "description": "Validate CSV structure and column names",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+              "expected_columns": [
+                "tweet_text",
+                "cyberbullying_type"
+              ]
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+              "expected_columns": [
+                "tweet_text",
+                "cyberbullying_type"
+              ]
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "analyze_csv",
+            "description": "Analyze CSV data for quality and distribution insights",
+            "tool_parameters": {
+              "filename": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv"
+            },
+            "planner_parameters": {
+              "filename": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "infer_data_types",
+            "description": "Infer data types for each column based on content",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "get_basic_stats",
+            "description": "Generate basic statistics for the dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "detect_missing_values",
+            "description": "Detect missing values per column and report rates",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "detect_duplicates",
+            "description": "Detect duplicate rows and report counts",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+              "subset": 10
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+              "subset": 10
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "handle_missing_values",
+            "description": "Handle missing values per column based on analysis",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+              "strategy": "mean",
+              "columns": [
+                "tweet_text",
+                "cyberbullying_type"
+              ],
+              "output_filepath": null
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+              "strategy": "mean",
+              "columns": [
+                "tweet_text",
+                "cyberbullying_type"
+              ]
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "remove_duplicates",
+            "description": "Remove duplicate rows to ensure data quality",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+              "subset": 10,
+              "keep": "first",
+              "output_filepath": null
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+              "subset": 10,
+              "keep": "first"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "encode_categorical",
+            "description": "Encode categorical variables for modeling",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+              "columns": [
+                "tweet_text",
+                "cyberbullying_type"
+              ],
+              "method": "onehot",
+              "output_filepath": null
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+              "columns": [
+                "tweet_text",
+                "cyberbullying_type"
+              ]
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "feature_selection",
+            "description": "Select relevant features for modeling based on importance",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+              "target_column": "cyberbullying_type",
+              "method": "information_gain",
+              "k": 10
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+              "target_column": "cyberbullying_type",
+              "method": "information_gain",
+              "k": 10
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "dimensionality_reduction",
+            "description": "Reduce dimensionality of the data for modeling",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+              "n_components": 10
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+              "n_components": 10
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "generate_synthetic_data",
+            "description": "Generate synthetic data for modeling based on patterns",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+              "target_column": "cyberbullying_type"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+              "target_column": "cyberbullying_type"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "add_noise",
+            "description": "Add noise to the data for modeling based on distribution",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+              "columns": [
+                "tweet_text",
+                "cyberbullying_type"
+              ],
+              "noise_level": 0.1
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+              "columns": [
+                "tweet_text",
+                "cyberbullying_type"
+              ],
+              "noise_level": 0.1
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "train_classification_model",
+            "description": "Train a classification model to classify new tweets as cyberbullying or not",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+              "target_column": "cyberbullying_type",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "n_estimators": 100,
+                "max_depth": 10
+              },
+              "model_save_path": "/app/models/classification_model.pkl"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+              "target_column": "cyberbullying_type",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "n_estimators": 100,
+                "max_depth": 10
+              },
+              "model_save_path": "/app/models/classification_model.pkl"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "evaluate_classification_model",
+            "description": "Evaluate the performance of the trained classification model on test data",
+            "tool_parameters": {
+              "model_path": "/app/models/classification_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/test_tweets.csv",
+              "target_column": "cyberbullying_type",
+              "filepath": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv"
+            },
+            "planner_parameters": {
+              "model_path": "/app/models/classification_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/test_tweets.csv",
+              "target_column": "cyberbullying_type"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "get_classification_report",
+            "description": "Generate a classification report for the trained model on test data",
+            "tool_parameters": {
+              "model_path": "/app/models/classification_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/test_tweets.csv",
+              "target_column": "cyberbullying_type"
+            },
+            "planner_parameters": {
+              "model_path": "/app/models/classification_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/test_tweets.csv",
+              "target_column": "cyberbullying_type"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "calculate_confusion_matrix",
+            "description": "Calculate the confusion matrix for the trained model on test data",
+            "tool_parameters": {
+              "model_path": "/app/models/classification_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/test_tweets.csv",
+              "target_column": "cyberbullying_type",
+              "normalize": true
+            },
+            "planner_parameters": {
+              "model_path": "/app/models/classification_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/test_tweets.csv",
+              "target_column": "cyberbullying_type",
+              "normalize": true
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "predict_with_model",
+            "description": "Use the trained model to predict new data as cyberbullying or not",
+            "tool_parameters": {
+              "model_path": "/app/models/classification_model.pkl",
+              "input_data_path": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/new_tweets.csv",
+              "output_path": "/app/predictions/classification_predictions.csv"
+            },
+            "planner_parameters": {
+              "model_path": "/app/models/classification_model.pkl",
+              "input_data_path": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/new_tweets.csv",
+              "output_path": "/app/predictions/classification_predictions.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": null
+      }
+    ],
+    "mcp_servers": [
+      {
+        "id": "filesystem",
+        "name": "Filesystem",
+        "command": "npx",
+        "args": [
+          "-y",
+          "@modelcontextprotocol/server-filesystem",
+          "/app"
+        ],
+        "env": {},
+        "is_available": true,
+        "description": "Access and manage project files under /app (catalog, configs, data)"
+      }
+    ],
+    "validation": {
+      "status": "valid",
+      "issue_count": 0,
+      "blocking_issue_count": 0,
+      "issues": []
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      }
+    ],
+    "connections": []
+  }
+}

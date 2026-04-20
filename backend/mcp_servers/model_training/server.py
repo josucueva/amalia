@@ -28,6 +28,7 @@ def train_classification_model(
     model_type: str = "random_forest",
     test_size: float = 0.2,
     random_state: int = 42,
+    hyperparameters: Optional[Dict[str, Any]] = None,
     model_save_path: Optional[str] = None
 ) -> dict:
     """Train a classification model.
@@ -38,6 +39,7 @@ def train_classification_model(
         model_type: Type of model ('logistic', 'decision_tree', 'random_forest', 'svm', 'knn', 'naive_bayes', 'gradient_boosting')
         test_size: Proportion of test set (0.0 to 1.0)
         random_state: Random seed for reproducibility
+        hyperparameters: Optional model-specific hyperparameters
         model_save_path: Optional path to save trained model
         
     Returns:
@@ -64,22 +66,45 @@ def train_classification_model(
         X, y, test_size=test_size, random_state=random_state
     )
     
+    hp = dict(hyperparameters or {})
+
     # Select and train model
-    models = {
-        "logistic": LogisticRegression(max_iter=1000, random_state=random_state),
-        "decision_tree": DecisionTreeClassifier(random_state=random_state),
-        "random_forest": RandomForestClassifier(n_estimators=100, random_state=random_state),
-        "svm": SVC(random_state=random_state),
-        "knn": KNeighborsClassifier(),
-        "naive_bayes": GaussianNB(),
-        "gradient_boosting": GradientBoostingClassifier(random_state=random_state)
-    }
-    
-    if model_type not in models:
+    if model_type == "logistic":
+        kwargs = {"max_iter": 1000, "random_state": random_state}
+        kwargs.update(hp)
+        model = LogisticRegression(**kwargs)
+    elif model_type == "decision_tree":
+        kwargs = {"random_state": random_state}
+        kwargs.update(hp)
+        model = DecisionTreeClassifier(**kwargs)
+    elif model_type == "random_forest":
+        kwargs = {"n_estimators": 100, "random_state": random_state}
+        kwargs.update(hp)
+        model = RandomForestClassifier(**kwargs)
+    elif model_type == "svm":
+        kwargs = {"random_state": random_state}
+        kwargs.update(hp)
+        model = SVC(**kwargs)
+    elif model_type == "knn":
+        model = KNeighborsClassifier(**hp)
+    elif model_type == "naive_bayes":
+        model = GaussianNB(**hp)
+    elif model_type == "gradient_boosting":
+        kwargs = {"random_state": random_state}
+        kwargs.update(hp)
+        model = GradientBoostingClassifier(**kwargs)
+    else:
         return {"error": f"Unknown model type: {model_type}"}
-    
-    model = models[model_type]
-    model.fit(X_train, y_train)
+
+    # Fit with defensive handling for invalid hyperparameter names/types.
+    try:
+        model.fit(X_train, y_train)
+    except TypeError as exc:
+        return {
+            "error": f"Invalid hyperparameters for model '{model_type}': {str(exc)}",
+            "model_type": model_type,
+            "hyperparameters": hp,
+        }
     
     # Evaluate
     train_score = float(model.score(X_train, y_train))
@@ -113,6 +138,7 @@ def train_regression_model(
     model_type: str = "random_forest",
     test_size: float = 0.2,
     random_state: int = 42,
+    hyperparameters: Optional[Dict[str, Any]] = None,
     model_save_path: Optional[str] = None
 ) -> dict:
     """Train a regression model.
@@ -123,6 +149,7 @@ def train_regression_model(
         model_type: Type of model ('linear', 'ridge', 'lasso', 'decision_tree', 'random_forest', 'svr', 'knn', 'gradient_boosting')
         test_size: Proportion of test set (0.0 to 1.0)
         random_state: Random seed for reproducibility
+        hyperparameters: Optional model-specific hyperparameters
         model_save_path: Optional path to save trained model
         
     Returns:
@@ -149,23 +176,47 @@ def train_regression_model(
         X, y, test_size=test_size, random_state=random_state
     )
     
+    hp = dict(hyperparameters or {})
+
     # Select and train model
-    models = {
-        "linear": LinearRegression(),
-        "ridge": Ridge(random_state=random_state),
-        "lasso": Lasso(random_state=random_state),
-        "decision_tree": DecisionTreeRegressor(random_state=random_state),
-        "random_forest": RandomForestRegressor(n_estimators=100, random_state=random_state),
-        "svr": SVR(),
-        "knn": KNeighborsRegressor(),
-        "gradient_boosting": GradientBoostingRegressor(random_state=random_state)
-    }
-    
-    if model_type not in models:
+    if model_type == "linear":
+        model = LinearRegression(**hp)
+    elif model_type == "ridge":
+        kwargs = {"random_state": random_state}
+        kwargs.update(hp)
+        model = Ridge(**kwargs)
+    elif model_type == "lasso":
+        kwargs = {"random_state": random_state}
+        kwargs.update(hp)
+        model = Lasso(**kwargs)
+    elif model_type == "decision_tree":
+        kwargs = {"random_state": random_state}
+        kwargs.update(hp)
+        model = DecisionTreeRegressor(**kwargs)
+    elif model_type == "random_forest":
+        kwargs = {"n_estimators": 100, "random_state": random_state}
+        kwargs.update(hp)
+        model = RandomForestRegressor(**kwargs)
+    elif model_type == "svr":
+        model = SVR(**hp)
+    elif model_type == "knn":
+        model = KNeighborsRegressor(**hp)
+    elif model_type == "gradient_boosting":
+        kwargs = {"random_state": random_state}
+        kwargs.update(hp)
+        model = GradientBoostingRegressor(**kwargs)
+    else:
         return {"error": f"Unknown model type: {model_type}"}
-    
-    model = models[model_type]
-    model.fit(X_train, y_train)
+
+    # Fit with defensive handling for invalid hyperparameter names/types.
+    try:
+        model.fit(X_train, y_train)
+    except TypeError as exc:
+        return {
+            "error": f"Invalid hyperparameters for model '{model_type}': {str(exc)}",
+            "model_type": model_type,
+            "hyperparameters": hp,
+        }
     
     # Evaluate
     train_r2 = float(model.score(X_train, y_train))

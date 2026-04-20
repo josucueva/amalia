@@ -1,0 +1,450 @@
+{
+  "dataset_id": "classification__easy__uciml_glass__glass",
+  "filename": "glass.csv",
+  "file_path": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass.csv",
+  "task_type": "classification",
+  "tier": "easy",
+  "target_column": null,
+  "generated_at": "2026-04-11T01:58:04.467023+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a classification model to classify the type of glass based on its physical properties.",
+    "complexity": "simple",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_loader",
+            "agent_name": "Data Loader"
+          }
+        },
+        "planner_mcp_server": "Filesystem",
+        "resolved_mcp_server": {
+          "id": "filesystem",
+          "name": "Filesystem",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "read_file_head",
+            "description": "Read the header of the CSV file.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass.csv",
+              "n_rows": 10
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass.csv",
+              "n_rows": 10
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "get_column_info",
+            "description": "Get information about the columns in the CSV file.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass.csv",
+              "column_name": "Type"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass.csv",
+              "column_name": "Type"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "infer_data_types",
+            "description": "Infer the data types of the columns in the CSV file.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "get_basic_stats",
+            "description": "Get basic statistics about the data in the CSV file.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "This phase is needed to load and preprocess the data."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "data_preprocessor",
+          "name": "data_preprocessor",
+          "yaml_path": "config/agents/data_preprocessor.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_preprocessor",
+            "agent_name": "Data Preprocessor"
+          }
+        },
+        "planner_mcp_server": "Data Preparation Server",
+        "resolved_mcp_server": {
+          "id": "python-data_preparation",
+          "name": "Data Preparation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "handle_missing_values",
+            "description": "Handle missing values in the data.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass.csv",
+              "strategy": "",
+              "columns": [],
+              "output_filepath": ""
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass.csv",
+              "strategy": "",
+              "columns": [],
+              "output_filepath": ""
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "remove_duplicates",
+            "description": "Remove duplicate rows from the data.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass.csv",
+              "subset": "",
+              "keep": false,
+              "output_filepath": ""
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass.csv",
+              "subset": "",
+              "keep": false,
+              "output_filepath": ""
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "encode_categorical",
+            "description": "Encode categorical variables in the data.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass.csv",
+              "columns": [
+                "Type"
+              ],
+              "method": "",
+              "output_filepath": ""
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass.csv",
+              "columns": [
+                "Type"
+              ],
+              "method": "",
+              "output_filepath": ""
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "split_dataset",
+            "description": "Split the data into training and testing sets.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass.csv",
+              "train_ratio": 0.8,
+              "random_state": 42,
+              "shuffle": true
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass.csv",
+              "train_ratio": 0.8,
+              "random_state": 42,
+              "shuffle": true
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "filter_rows",
+            "description": "Filter the data based on a condition.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass.csv",
+              "column": "Type",
+              "condition": "",
+              "value": "",
+              "output_filepath": ""
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass.csv",
+              "column": "Type",
+              "condition": "",
+              "value": "",
+              "output_filepath": ""
+            },
+            "missing_required_parameters": [
+              "condition",
+              "value"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "This phase is needed to preprocess the data for model training."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": null,
+          "name": "Model Training Server",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_training_server",
+            "agent_name": "Model Training Server"
+          }
+        },
+        "planner_mcp_server": "Model Training Server",
+        "resolved_mcp_server": {
+          "id": "python-model_training",
+          "name": "Model Training Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "train_classification_model",
+            "description": "Train a classification model.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass.csv",
+              "target_column": "Type",
+              "model_type": "Random Forest",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {},
+              "model_save_path": ""
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass.csv",
+              "target_column": "Type",
+              "model_type": "Random Forest",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {},
+              "model_save_path": ""
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "This phase is needed to train a classification model."
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": null,
+          "name": "Model Evaluation Server",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_evaluation_server",
+            "agent_name": "Model Evaluation Server"
+          }
+        },
+        "planner_mcp_server": "Model Evaluation Server",
+        "resolved_mcp_server": {
+          "id": "python-model_evaluation",
+          "name": "Model Evaluation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "evaluate_classification_model",
+            "description": "Evaluate the performance of a classification model.",
+            "tool_parameters": {
+              "model_path": "",
+              "test_data_path": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass.csv",
+              "target_column": "Type",
+              "filepath": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass.csv"
+            },
+            "planner_parameters": {
+              "model_path": "",
+              "test_data_path": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass.csv",
+              "target_column": "Type"
+            },
+            "missing_required_parameters": [
+              "model_path"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "This phase is needed to evaluate the performance of the trained model."
+      }
+    ],
+    "mcp_servers": [
+      {
+        "id": "filesystem",
+        "name": "Filesystem",
+        "command": "npx",
+        "args": [
+          "-y",
+          "@modelcontextprotocol/server-filesystem",
+          "/app"
+        ],
+        "env": {},
+        "is_available": true,
+        "description": "Access and manage project files under /app (catalog, configs, data)"
+      },
+      {
+        "id": "python-data_preparation",
+        "name": "Data Preparation Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/data_preparation/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Data transformation, feature engineering, and dataset preparation tools"
+      },
+      {
+        "id": "python-model_evaluation",
+        "name": "Model Evaluation Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_evaluation/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Model evaluation, metrics calculation, and error analysis tools"
+      },
+      {
+        "id": "python-model_training",
+        "name": "Model Training Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_training/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Machine learning model training, hyperparameter tuning, and optimization"
+      }
+    ],
+    "validation": {
+      "status": "uncertain",
+      "issue_count": 4,
+      "blocking_issue_count": 2,
+      "issues": [
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'filter_rows' has unresolved required parameters: condition, value",
+          "phase_number": 2,
+          "tool_name": "filter_rows",
+          "missing_parameters": [
+            "condition",
+            "value"
+          ]
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_training_server' name='Model Training Server'",
+          "phase_number": 3
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_evaluation_server' name='Model Evaluation Server'",
+          "phase_number": 4
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'evaluate_classification_model' has unresolved required parameters: model_path",
+          "phase_number": 4,
+          "tool_name": "evaluate_classification_model",
+          "missing_parameters": [
+            "model_path"
+          ]
+        }
+      ],
+      "allow_persist_with_issues": true
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "data_preprocessor",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_training_server",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "model_evaluation_server",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      }
+    ]
+  }
+}

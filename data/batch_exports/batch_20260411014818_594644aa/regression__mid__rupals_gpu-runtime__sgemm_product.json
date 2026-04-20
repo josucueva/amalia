@@ -1,0 +1,183 @@
+{
+  "dataset_id": "regression__mid__rupals_gpu-runtime__sgemm_product",
+  "filename": "sgemm_product.csv",
+  "file_path": "/app/data/uploads/datasets/regression/mid/rupals_gpu-runtime/sgemm_product.csv",
+  "task_type": "regression",
+  "tier": "mid",
+  "target_column": null,
+  "generated_at": "2026-04-11T02:46:02.568773+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a regression model using the provided dataset",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/regression/mid/rupals_gpu-runtime/sgemm_product.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/regression/mid/rupals_gpu-runtime/sgemm_product.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": null,
+            "agent_name": "Data Loader"
+          }
+        },
+        "planner_mcp_server": "Data Loading Server",
+        "resolved_mcp_server": {
+          "id": "python-data_loading",
+          "name": "Data Loading Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "load_csv",
+            "description": null,
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/rupals_gpu-runtime/sgemm_product.csv",
+              "encoding": "utf-8",
+              "delimiter": ","
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "read_file_head",
+            "description": null,
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/rupals_gpu-runtime/sgemm_product.csv",
+              "n_rows": "10"
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": null
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "model_trainer",
+          "name": "model_trainer",
+          "yaml_path": "config/agents/model_trainer.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": null,
+            "agent_name": "Model Trainer"
+          }
+        },
+        "planner_mcp_server": "Model Training Server",
+        "resolved_mcp_server": {
+          "id": "python-model_training",
+          "name": "Model Training Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "train_regression_model",
+            "description": null,
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/rupals_gpu-runtime/sgemm_product.csv",
+              "target_column": "Run4 (ms)",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": null,
+              "hyperparameters": {
+                "n_estimators": 100,
+                "max_depth": null,
+                "min_samples_split": 2,
+                "min_samples_leaf": 1
+              },
+              "model_save_path": null
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [
+              "random_state"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": null
+      }
+    ],
+    "mcp_servers": [
+      {
+        "id": "python-data_loading",
+        "name": "Data Loading Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/data_loading/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "CSV file loading, analysis, and validation tools"
+      },
+      {
+        "id": "python-model_training",
+        "name": "Model Training Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_training/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Machine learning model training, hyperparameter tuning, and optimization"
+      }
+    ],
+    "validation": {
+      "status": "warning",
+      "issue_count": 1,
+      "blocking_issue_count": 0,
+      "issues": [
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'train_regression_model' has unresolved required parameters: random_state",
+          "phase_number": 2,
+          "tool_name": "train_regression_model",
+          "missing_parameters": [
+            "random_state"
+          ]
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "model_trainer",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      }
+    ]
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "dataset_id": "classification__easy__fedesoriano_stellar-classification-dataset-sdss17__star_classification",
+  "filename": "star_classification.csv",
+  "file_path": "/app/data/uploads/datasets/classification/easy/fedesoriano_stellar-classification-dataset-sdss17/star_classification.csv",
+  "task_type": "classification",
+  "tier": "easy",
+  "target_column": null,
+  "generated_at": "2026-04-11T00:47:09.958868+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a classification model for the star_classification.csv dataset",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/easy/fedesoriano_stellar-classification-dataset-sdss17/star_classification.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/easy/fedesoriano_stellar-classification-dataset-sdss17/star_classification.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_loader_agent",
+            "agent_name": "Data Loader"
+          }
+        },
+        "planner_mcp_server": "Mathematics Server",
+        "resolved_mcp_server": {
+          "id": "python-mathematics",
+          "name": "Mathematics Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "analyze_csv",
+            "description": "Analyze the dataset and extract relevant information",
+            "tool_parameters": {
+              "filename": "/app/data/uploads/datasets/classification/easy/fedesoriano_stellar-classification-dataset-sdss17/star_classification.csv"
+            },
+            "planner_parameters": {
+              "filename": "/app/data/uploads/datasets/classification/easy/fedesoriano_stellar-classification-dataset-sdss17/star_classification.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "train_classification_model",
+            "description": "Train a classification model on the dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/fedesoriano_stellar-classification-dataset-sdss17/star_classification.csv",
+              "target_column": "class",
+              "model_type": "logistic_regression",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "C": 1.0,
+                "penalty": "l2"
+              },
+              "model_save_path": "/app/models/classification_model.sav"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/fedesoriano_stellar-classification-dataset-sdss17/star_classification.csv",
+              "target_column": "class",
+              "model_type": "logistic_regression",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "C": 1.0,
+                "penalty": "l2"
+              },
+              "model_save_path": "/app/models/classification_model.sav"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "This phase involves loading the dataset and training a classification model on it."
+      }
+    ],
+    "mcp_servers": [
+      {
+        "id": "python-mathematics",
+        "name": "Mathematics Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/mathematics/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Mathematical operations and statistical calculations"
+      }
+    ],
+    "validation": {
+      "status": "valid",
+      "issue_count": 0,
+      "blocking_issue_count": 0,
+      "issues": []
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      }
+    ],
+    "connections": []
+  }
+}

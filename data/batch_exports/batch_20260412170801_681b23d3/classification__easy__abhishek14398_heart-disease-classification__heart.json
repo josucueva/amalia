@@ -1,0 +1,208 @@
+{
+  "dataset_id": "classification__easy__abhishek14398_heart-disease-classification__heart",
+  "filename": "heart.csv",
+  "file_path": "/app/data/uploads/datasets/classification/easy/abhishek14398_heart-disease-classification/heart.csv",
+  "task_type": "classification",
+  "tier": "easy",
+  "target_column": null,
+  "generated_at": "2026-04-12T17:10:16.513576+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a classification model using heart.csv dataset",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/easy/abhishek14398_heart-disease-classification/heart.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/easy/abhishek14398_heart-disease-classification/heart.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_loader",
+            "agent_name": "data_loader"
+          }
+        },
+        "planner_mcp_server": "",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "load_csv",
+            "description": "Load the heart.csv dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/abhishek14398_heart-disease-classification/heart.csv",
+              "encoding": "utf-8",
+              "delimiter": ","
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Load the dataset to begin processing"
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "model_trainer",
+          "name": "model_trainer",
+          "yaml_path": "config/agents/model_trainer.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_trainer",
+            "agent_name": "model_trainer"
+          }
+        },
+        "planner_mcp_server": "",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "train_classification_model",
+            "description": "Train a classification model on the heart dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/abhishek14398_heart-disease-classification/heart.csv",
+              "target_column": "target",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": null,
+              "hyperparameters": {
+                "n_estimators": 100,
+                "max_depth": null,
+                "min_samples_split": 2,
+                "min_samples_leaf": 1
+              },
+              "model_save_path": null
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [
+              "random_state"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Train a classification model for predicting heart disease"
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": "model_evaluator",
+          "name": "model_evaluator",
+          "yaml_path": "config/agents/model_evaluator.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_evaluator",
+            "agent_name": "model_evaluator"
+          }
+        },
+        "planner_mcp_server": "",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "evaluate_classification_model",
+            "description": "Evaluate the trained classification model",
+            "tool_parameters": {
+              "model_path": null,
+              "test_data_path": "/app/data/uploads/datasets/classification/easy/abhishek14398_heart-disease-classification/heart.csv",
+              "target_column": "target",
+              "filepath": "/app/data/uploads/datasets/classification/easy/abhishek14398_heart-disease-classification/heart.csv"
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [
+              "model_path"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Evaluate the performance of the trained model"
+      }
+    ],
+    "mcp_servers": [],
+    "validation": {
+      "status": "warning",
+      "issue_count": 5,
+      "blocking_issue_count": 0,
+      "issues": [
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server ''",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server ''",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'train_classification_model' has unresolved required parameters: random_state",
+          "phase_number": 2,
+          "tool_name": "train_classification_model",
+          "missing_parameters": [
+            "random_state"
+          ]
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server ''",
+          "phase_number": 3
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'evaluate_classification_model' has unresolved required parameters: model_path",
+          "phase_number": 3,
+          "tool_name": "evaluate_classification_model",
+          "missing_parameters": [
+            "model_path"
+          ]
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "model_trainer",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_evaluator",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      }
+    ]
+  }
+}

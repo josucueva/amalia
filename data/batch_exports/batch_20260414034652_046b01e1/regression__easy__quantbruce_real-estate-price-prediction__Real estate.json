@@ -1,0 +1,153 @@
+{
+  "dataset_id": "regression__easy__quantbruce_real-estate-price-prediction__Real estate",
+  "filename": "Real estate.csv",
+  "file_path": "/app/data/uploads/datasets/regression/easy/quantbruce_real-estate-price-prediction/Real estate.csv",
+  "task_type": "regression",
+  "tier": "easy",
+  "target_column": null,
+  "generated_at": "2026-04-14T04:18:08.666809+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a regression model for house prices based on various real estate features",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/regression/easy/quantbruce_real-estate-price-prediction/Real estate.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/regression/easy/quantbruce_real-estate-price-prediction/Real estate.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_preprocessor",
+          "name": "data_preprocessor",
+          "yaml_path": "config/agents/data_preprocessor.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": null,
+            "agent_name": "data_preprocessor"
+          }
+        },
+        "planner_mcp_server": "",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": null,
+        "rationale": "Clean and preprocess the data before feature engineering"
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "data_preprocessor",
+          "name": "data_preprocessor",
+          "yaml_path": "config/agents/data_preprocessor.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": null,
+            "agent_name": "data_preprocessor"
+          }
+        },
+        "planner_mcp_server": "",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": null,
+        "rationale": "Engineer new features from existing ones to improve model performance"
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": "model_trainer",
+          "name": "model_trainer",
+          "yaml_path": "config/agents/model_trainer.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": null,
+            "agent_name": "model_trainer"
+          }
+        },
+        "planner_mcp_server": "",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": "random_forest",
+        "rationale": "Train a regression model using the preprocessed data and evaluate its performance"
+      }
+    ],
+    "mcp_servers": [],
+    "validation": {
+      "status": "uncertain",
+      "issue_count": 6,
+      "blocking_issue_count": 3,
+      "issues": [
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server ''",
+          "phase_number": 1
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server ''",
+          "phase_number": 2
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 2
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server ''",
+          "phase_number": 3
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 3
+        }
+      ],
+      "allow_persist_with_issues": true
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_preprocessor",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "data_preprocessor",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_trainer",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      }
+    ]
+  }
+}

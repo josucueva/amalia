@@ -1,0 +1,421 @@
+{
+  "dataset_id": "classification__easy__mahmoudshaheen1134_heart-disease-data__heart disease",
+  "filename": "heart disease.csv",
+  "file_path": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/heart disease.csv",
+  "task_type": "classification",
+  "tier": "easy",
+  "target_column": null,
+  "generated_at": "2026-04-11T00:49:25.099247+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a classification model to predict heart disease based on the provided CSV file.",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/heart disease.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/heart disease.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_loader",
+            "agent_name": "data_loader"
+          }
+        },
+        "planner_mcp_server": "Data Loading Server",
+        "resolved_mcp_server": {
+          "id": "python-data_loading",
+          "name": "Data Loading Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "load_csv",
+            "description": "Load the CSV file.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/heart disease.csv",
+              "encoding": "utf-8",
+              "delimiter": ","
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/heart disease.csv",
+              "encoding": "utf-8",
+              "delimiter": ","
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Load the CSV file into memory."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "data_preprocessor",
+          "name": "data_preprocessor",
+          "yaml_path": "config/agents/data_preprocessor.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_preprocessor",
+            "agent_name": "data_preprocessor"
+          }
+        },
+        "planner_mcp_server": "Data Preparation Server",
+        "resolved_mcp_server": {
+          "id": "python-data_preparation",
+          "name": "Data Preparation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "handle_missing_values",
+            "description": "Handle missing values in the dataset.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/heart disease.csv",
+              "strategy": "mean",
+              "columns": [
+                "age",
+                "sex",
+                "cp",
+                "trestbps",
+                "chol",
+                "fbs",
+                "restecg",
+                "thalach",
+                "exang",
+                "oldpeak",
+                "slope",
+                "ca",
+                "thal"
+              ],
+              "output_filepath": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/processed_heart disease.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/heart disease.csv",
+              "strategy": "mean",
+              "columns": [
+                "age",
+                "sex",
+                "cp",
+                "trestbps",
+                "chol",
+                "fbs",
+                "restecg",
+                "thalach",
+                "exang",
+                "oldpeak",
+                "slope",
+                "ca",
+                "thal"
+              ],
+              "output_filepath": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/processed_heart disease.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "encode_categorical",
+            "description": "Encode categorical variables in the dataset.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/processed_heart disease.csv",
+              "columns": [
+                "sex",
+                "cp",
+                "slope",
+                "ca"
+              ],
+              "method": "one-hot-encoding",
+              "output_filepath": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/preprocessed_heart disease.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/processed_heart disease.csv",
+              "columns": [
+                "sex",
+                "cp",
+                "slope",
+                "ca"
+              ],
+              "method": "one-hot-encoding",
+              "output_filepath": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/preprocessed_heart disease.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "scale_features",
+            "description": "Scale features in the dataset.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/preprocessed_heart disease.csv",
+              "columns": [
+                "age",
+                "trestbps",
+                "chol",
+                "thalach",
+                "exang"
+              ],
+              "method": "standard",
+              "output_filepath": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/scaled_heart disease.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/preprocessed_heart disease.csv",
+              "columns": [
+                "age",
+                "trestbps",
+                "chol",
+                "thalach",
+                "exang"
+              ],
+              "output_filepath": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/scaled_heart disease.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "split_dataset",
+            "description": "Split the dataset into training and testing sets.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/scaled_heart disease.csv",
+              "train_ratio": 0.8,
+              "random_state": 42,
+              "shuffle": true
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/scaled_heart disease.csv",
+              "train_ratio": 0.8,
+              "random_state": 42,
+              "shuffle": true
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Preprocess the dataset by handling missing values, encoding categorical variables, scaling features, and splitting it into training and testing sets."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": null,
+          "name": "model_training",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_training",
+            "agent_name": "model_training"
+          }
+        },
+        "planner_mcp_server": "Model Training Server",
+        "resolved_mcp_server": {
+          "id": "python-model_training",
+          "name": "Model Training Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "train_classification_model",
+            "description": "Train a classification model on the preprocessed dataset.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/scaled_heart disease.csv",
+              "target_column": "target",
+              "model_type": "logistic regression",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "C": 1,
+                "penalty": "l2"
+              },
+              "model_save_path": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/trained_model.pkl"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/scaled_heart disease.csv",
+              "target_column": "target",
+              "model_type": "logistic regression",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "C": 1,
+                "penalty": "l2"
+              },
+              "model_save_path": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/trained_model.pkl"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "logistic",
+        "rationale": "Train a classification model on the preprocessed dataset using logistic regression."
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": null,
+          "name": "model_evaluation",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_evaluation",
+            "agent_name": "model_evaluation"
+          }
+        },
+        "planner_mcp_server": "Model Evaluation Server",
+        "resolved_mcp_server": {
+          "id": "python-model_evaluation",
+          "name": "Model Evaluation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "evaluate_classification_model",
+            "description": "Evaluate the performance of the trained classification model.",
+            "tool_parameters": {
+              "model_path": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/trained_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/scaled_heart disease.csv",
+              "target_column": "target",
+              "filepath": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/heart disease.csv"
+            },
+            "planner_parameters": {
+              "model_path": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/trained_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/scaled_heart disease.csv",
+              "target_column": "target"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Evaluate the performance of the trained classification model on the testing set."
+      }
+    ],
+    "mcp_servers": [
+      {
+        "id": "python-data_loading",
+        "name": "Data Loading Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/data_loading/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "CSV file loading, analysis, and validation tools"
+      },
+      {
+        "id": "python-data_preparation",
+        "name": "Data Preparation Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/data_preparation/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Data transformation, feature engineering, and dataset preparation tools"
+      },
+      {
+        "id": "python-model_evaluation",
+        "name": "Model Evaluation Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_evaluation/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Model evaluation, metrics calculation, and error analysis tools"
+      },
+      {
+        "id": "python-model_training",
+        "name": "Model Training Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_training/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Machine learning model training, hyperparameter tuning, and optimization"
+      }
+    ],
+    "validation": {
+      "status": "uncertain",
+      "issue_count": 2,
+      "blocking_issue_count": 2,
+      "issues": [
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_training' name='model_training'",
+          "phase_number": 3
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_evaluation' name='model_evaluation'",
+          "phase_number": 4
+        }
+      ],
+      "allow_persist_with_issues": true
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "data_preprocessor",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_training",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "model_evaluation",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      }
+    ]
+  }
+}

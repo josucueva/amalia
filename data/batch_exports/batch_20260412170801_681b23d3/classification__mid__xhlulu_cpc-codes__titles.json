@@ -1,0 +1,397 @@
+{
+  "dataset_id": "classification__mid__xhlulu_cpc-codes__titles",
+  "filename": "titles.csv",
+  "file_path": "/app/data/uploads/datasets/classification/mid/xhlulu_cpc-codes/titles.csv",
+  "task_type": "classification",
+  "tier": "mid",
+  "target_column": null,
+  "generated_at": "2026-04-12T18:28:41.870328+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a classification model using the 'titles.csv' dataset.",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/mid/xhlulu_cpc-codes/titles.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/mid/xhlulu_cpc-codes/titles.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_loader",
+            "agent_name": "data_loader"
+          }
+        },
+        "planner_mcp_server": "python-data_loading",
+        "resolved_mcp_server": {
+          "id": "python-data_loading",
+          "name": "Data Loading Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "load_csv",
+            "description": "Load the dataset into a pandas DataFrame.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/xhlulu_cpc-codes/titles.csv",
+              "encoding": "utf-8",
+              "delimiter": ","
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/xhlulu_cpc-codes/titles.csv",
+              "encoding": null,
+              "delimiter": ","
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "detect_missing_values",
+            "description": "Identify missing values in the dataset.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/xhlulu_cpc-codes/titles.csv"
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Load the dataset and identify missing values."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "missing_values_detector",
+          "name": "missing_values_detector",
+          "yaml_path": "config/agents/missing_values_detector.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "missing_values_detector",
+            "agent_name": "missing_values_detector"
+          }
+        },
+        "planner_mcp_server": "",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": null,
+        "rationale": "Analyze missing values and recommend handling strategies."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": "data_preprocessor",
+          "name": "data_preprocessor",
+          "yaml_path": "config/agents/data_preprocessor.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_preprocessor",
+            "agent_name": "data_preprocessor"
+          }
+        },
+        "planner_mcp_server": "python-data_preparation",
+        "resolved_mcp_server": {
+          "id": "python-data_preparation",
+          "name": "Data Preparation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "handle_missing_values",
+            "description": "Handle missing values in the target column.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/xhlulu_cpc-codes/titles.csv",
+              "strategy": "mean",
+              "columns": [
+                "class"
+              ],
+              "output_filepath": null
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/xhlulu_cpc-codes/titles.csv",
+              "strategy": null,
+              "columns": [
+                "class"
+              ],
+              "output_filepath": null
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "remove_duplicates",
+            "description": "Remove duplicate rows.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/xhlulu_cpc-codes/titles.csv",
+              "subset": null,
+              "keep": "first",
+              "output_filepath": null
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/xhlulu_cpc-codes/titles.csv",
+              "subset": null,
+              "keep": null,
+              "output_filepath": null
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Preprocess the dataset by handling missing values and removing duplicates."
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": "model_trainer",
+          "name": "model_trainer",
+          "yaml_path": "config/agents/model_trainer.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_trainer",
+            "agent_name": "model_trainer"
+          }
+        },
+        "planner_mcp_server": "python-model_training",
+        "resolved_mcp_server": {
+          "id": "python-model_training",
+          "name": "Model Training Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "train_classification_model",
+            "description": "Train a classification model.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/xhlulu_cpc-codes/titles.csv",
+              "target_column": "class",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": null,
+              "hyperparameters": {},
+              "model_save_path": null
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/xhlulu_cpc-codes/titles.csv",
+              "target_column": "class",
+              "model_type": null,
+              "test_size": null,
+              "random_state": null,
+              "hyperparameters": {},
+              "model_save_path": null
+            },
+            "missing_required_parameters": [
+              "random_state"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Train a classification model using the preprocessed dataset."
+      },
+      {
+        "phase_number": 5,
+        "agent": {
+          "id": "model_evaluator",
+          "name": "model_evaluator",
+          "yaml_path": "config/agents/model_evaluator.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "evaluate_classification_model",
+            "agent_name": "model_evaluator"
+          }
+        },
+        "planner_mcp_server": "python-model_evaluation",
+        "resolved_mcp_server": {
+          "id": "python-model_evaluation",
+          "name": "Model Evaluation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "evaluate_classification_model",
+            "description": "Evaluate the trained classification model.",
+            "tool_parameters": {
+              "model_path": null,
+              "test_data_path": "/app/data/uploads/datasets/classification/mid/xhlulu_cpc-codes/titles.csv",
+              "target_column": "class",
+              "filepath": "/app/data/uploads/datasets/classification/mid/xhlulu_cpc-codes/titles.csv"
+            },
+            "planner_parameters": {
+              "model_path": null,
+              "test_data_path": "/app/data/uploads/datasets/classification/mid/xhlulu_cpc-codes/titles.csv",
+              "target_column": "class"
+            },
+            "missing_required_parameters": [
+              "model_path"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Evaluate the performance of the trained classification model."
+      }
+    ],
+    "mcp_servers": [
+      {
+        "id": "python-data_loading",
+        "name": "Data Loading Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/data_loading/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "CSV file loading, analysis, and validation tools"
+      },
+      {
+        "id": "python-data_preparation",
+        "name": "Data Preparation Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/data_preparation/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Data transformation, feature engineering, and dataset preparation tools"
+      },
+      {
+        "id": "python-model_evaluation",
+        "name": "Model Evaluation Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_evaluation/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Model evaluation, metrics calculation, and error analysis tools"
+      },
+      {
+        "id": "python-model_training",
+        "name": "Model Training Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_training/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Machine learning model training, hyperparameter tuning, and optimization"
+      }
+    ],
+    "validation": {
+      "status": "uncertain",
+      "issue_count": 4,
+      "blocking_issue_count": 1,
+      "issues": [
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server ''",
+          "phase_number": 2
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'train_classification_model' has unresolved required parameters: random_state",
+          "phase_number": 4,
+          "tool_name": "train_classification_model",
+          "missing_parameters": [
+            "random_state"
+          ]
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'evaluate_classification_model' has unresolved required parameters: model_path",
+          "phase_number": 5,
+          "tool_name": "evaluate_classification_model",
+          "missing_parameters": [
+            "model_path"
+          ]
+        }
+      ],
+      "allow_persist_with_issues": true
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "missing_values_detector",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "data_preprocessor",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "model_trainer",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-5",
+        "agentId": "model_evaluator",
+        "position": {
+          "x": 1100,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      },
+      {
+        "id": "conn-4",
+        "fromInstanceId": "phase-4",
+        "toInstanceId": "phase-5"
+      }
+    ]
+  }
+}

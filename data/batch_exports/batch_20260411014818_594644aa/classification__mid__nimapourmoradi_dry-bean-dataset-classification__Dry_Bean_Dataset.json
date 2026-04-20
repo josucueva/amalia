@@ -1,0 +1,334 @@
+{
+  "dataset_id": "classification__mid__nimapourmoradi_dry-bean-dataset-classification__Dry_Bean_Dataset",
+  "filename": "Dry_Bean_Dataset.csv",
+  "file_path": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv",
+  "task_type": "classification",
+  "tier": "mid",
+  "target_column": null,
+  "generated_at": "2026-04-11T02:16:00.585049+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a classification model to classify dry beans into different classes based on their features",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_loader",
+            "agent_name": "Data Loader"
+          }
+        },
+        "planner_mcp_server": "Filesystem",
+        "resolved_mcp_server": {
+          "id": "filesystem",
+          "name": "Filesystem",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "load_csv",
+            "description": "Load CSV file",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv",
+              "encoding": "utf-8",
+              "delimiter": ","
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv",
+              "encoding": "utf-8",
+              "delimiter": ","
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Load the dataset into memory"
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "data_preprocessor",
+          "name": "data_preprocessor",
+          "yaml_path": "config/agents/data_preprocessor.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_preprocessor",
+            "agent_name": "Data Preprocessor"
+          }
+        },
+        "planner_mcp_server": "Filesystem",
+        "resolved_mcp_server": {
+          "id": "filesystem",
+          "name": "Filesystem",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "infer_data_types",
+            "description": "Infer data types of each column",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv"
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "detect_missing_values",
+            "description": "Detect missing values in the dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv"
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "remove_duplicates",
+            "description": "Remove duplicate rows from the dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv",
+              "subset": null,
+              "keep": true,
+              "output_filepath": null
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv",
+              "subset": null,
+              "keep": true
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "scale_features",
+            "description": "Scale features of the dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv",
+              "columns": [
+                "\ufeffArea",
+                "Perimeter"
+              ],
+              "method": "standardization",
+              "output_filepath": null
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv",
+              "columns": [
+                "\ufeffArea",
+                "Perimeter"
+              ],
+              "method": "standardization"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "encode_categorical",
+            "description": "Encode categorical variables in the dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv",
+              "columns": [
+                "Class"
+              ],
+              "method": "one-hot encoding",
+              "output_filepath": null
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv",
+              "columns": [
+                "Class"
+              ],
+              "method": "one-hot encoding"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Preprocess the dataset to prepare it for model training"
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": "model_trainer",
+          "name": "model_trainer",
+          "yaml_path": "config/agents/model_trainer.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_trainer",
+            "agent_name": "Model Trainer"
+          }
+        },
+        "planner_mcp_server": "Filesystem",
+        "resolved_mcp_server": {
+          "id": "filesystem",
+          "name": "Filesystem",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "train_classification_model",
+            "description": "Train a classification model on the preprocessed dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv",
+              "target_column": "Class",
+              "model_type": "Logistic Regression",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "n_estimators": 100,
+                "max_depth": null,
+                "min_samples_split": 2,
+                "min_samples_leaf": 1
+              },
+              "model_save_path": null
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv",
+              "target_column": "Class",
+              "model_type": "Logistic Regression",
+              "test_size": 0.2,
+              "random_state": 42
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Train a classification model on the preprocessed dataset"
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": null,
+          "name": "Model Evaluation",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_evaluation",
+            "agent_name": "Model Evaluation"
+          }
+        },
+        "planner_mcp_server": "Filesystem",
+        "resolved_mcp_server": {
+          "id": "filesystem",
+          "name": "Filesystem",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "evaluate_classification_model",
+            "description": "Evaluate the performance of the trained classification model",
+            "tool_parameters": {
+              "model_path": "/app/models/classification/dry_beans.logreg",
+              "test_data_path": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv",
+              "target_column": "Class",
+              "filepath": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv"
+            },
+            "planner_parameters": {
+              "model_path": "/app/models/classification/dry_beans.logreg",
+              "test_data_path": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv",
+              "target_column": "Class"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Evaluate the performance of the trained classification model"
+      }
+    ],
+    "mcp_servers": [
+      {
+        "id": "filesystem",
+        "name": "Filesystem",
+        "command": "npx",
+        "args": [
+          "-y",
+          "@modelcontextprotocol/server-filesystem",
+          "/app"
+        ],
+        "env": {},
+        "is_available": true,
+        "description": "Access and manage project files under /app (catalog, configs, data)"
+      }
+    ],
+    "validation": {
+      "status": "uncertain",
+      "issue_count": 1,
+      "blocking_issue_count": 1,
+      "issues": [
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_evaluation' name='Model Evaluation'",
+          "phase_number": 4
+        }
+      ],
+      "allow_persist_with_issues": true
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "data_preprocessor",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_trainer",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "model_evaluation",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      }
+    ]
+  }
+}

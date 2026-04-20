@@ -1,0 +1,332 @@
+{
+  "dataset_id": "classification__hard__prox37_twitter-multilabel-classification-dataset__mLabel_tweets",
+  "filename": "mLabel_tweets.csv",
+  "file_path": "/app/data/uploads/datasets/classification/hard/prox37_twitter-multilabel-classification-dataset/mLabel_tweets.csv",
+  "task_type": "classification",
+  "tier": "hard",
+  "target_column": null,
+  "generated_at": "2026-04-11T04:50:44.686929+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a multilabel text classification model to predict tweet labels based on tweet content.",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/hard/prox37_twitter-multilabel-classification-dataset/mLabel_tweets.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/hard/prox37_twitter-multilabel-classification-dataset/mLabel_tweets.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_loader",
+            "agent_name": "Data Loader"
+          }
+        },
+        "planner_mcp_server": "Data Loading Server",
+        "resolved_mcp_server": {
+          "id": "python-data_loading",
+          "name": "Data Loading Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "load_csv",
+            "description": "Load the dataset to confirm structure and prepare for preprocessing",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/prox37_twitter-multilabel-classification-dataset/mLabel_tweets.csv",
+              "encoding": "utf-8",
+              "delimiter": ","
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/prox37_twitter-multilabel-classification-dataset/mLabel_tweets.csv",
+              "encoding": null,
+              "delimiter": null
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "get_basic_stats",
+            "description": "Get basic statistics about the dataset including row count and column distributions",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/prox37_twitter-multilabel-classification-dataset/mLabel_tweets.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/prox37_twitter-multilabel-classification-dataset/mLabel_tweets.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Initial dataset loading and validation to confirm the structure matches the analysis JSON and prepare for preprocessing."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "data_preprocessor",
+          "name": "data_preprocessor",
+          "yaml_path": "config/agents/data_preprocessor.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_preprocessor",
+            "agent_name": "data_preprocessor"
+          }
+        },
+        "planner_mcp_server": "Data Preparation Server",
+        "resolved_mcp_server": {
+          "id": "python-data_preparation",
+          "name": "Data Preparation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "split_dataset",
+            "description": "Split the dataset into training and testing sets for model development",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/prox37_twitter-multilabel-classification-dataset/mLabel_tweets.csv",
+              "train_ratio": 0.8,
+              "random_state": 42,
+              "shuffle": true
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/prox37_twitter-multilabel-classification-dataset/mLabel_tweets.csv",
+              "train_ratio": 0.8,
+              "random_state": 42,
+              "shuffle": true
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Split the data into training and testing sets to enable proper model evaluation. No missing values or duplicates need handling based on dataset analysis."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": "model_trainer",
+          "name": "model_trainer",
+          "yaml_path": "config/agents/model_trainer.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_trainer",
+            "agent_name": "model_trainer"
+          }
+        },
+        "planner_mcp_server": "Model Training Server",
+        "resolved_mcp_server": {
+          "id": "python-model_training",
+          "name": "Model Training Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "train_classification_model",
+            "description": "Train a classification model on the tweet text to predict labels",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/prox37_twitter-multilabel-classification-dataset/mLabel_tweets.csv",
+              "target_column": "labels",
+              "model_type": "logistic_regression",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "max_iter": 1000,
+                "C": 1.0,
+                "solver": "lbfgs"
+              },
+              "model_save_path": "/app/data/models/tweet_classifier.pkl"
+            },
+            "planner_parameters": {
+              "filepath": null,
+              "target_column": "labels",
+              "model_type": "logistic_regression",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": null,
+              "model_save_path": "/app/data/models/tweet_classifier.pkl"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "logistic",
+        "rationale": "Train a classification model using the tweet text as features and labels as target. Logistic regression is a good starting point for text classification."
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": "model_evaluator",
+          "name": "model_evaluator",
+          "yaml_path": "config/agents/model_evaluator.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_evaluator",
+            "agent_name": "model_evaluator"
+          }
+        },
+        "planner_mcp_server": "Model Evaluation Server",
+        "resolved_mcp_server": {
+          "id": "python-model_evaluation",
+          "name": "Model Evaluation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "evaluate_classification_model",
+            "description": "Evaluate the trained model on the test set using appropriate classification metrics",
+            "tool_parameters": {
+              "model_path": "/app/data/models/tweet_classifier.pkl",
+              "test_data_path": "/app/data/uploads/datasets/classification/hard/prox37_twitter-multilabel-classification-dataset/mLabel_tweets.csv",
+              "target_column": "labels",
+              "filepath": "/app/data/uploads/datasets/classification/hard/prox37_twitter-multilabel-classification-dataset/mLabel_tweets.csv"
+            },
+            "planner_parameters": {
+              "model_path": "/app/data/models/tweet_classifier.pkl",
+              "test_data_path": null,
+              "target_column": "labels"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "get_classification_report",
+            "description": "Generate a detailed classification report with precision, recall, and F1 scores",
+            "tool_parameters": {
+              "model_path": "/app/data/models/tweet_classifier.pkl",
+              "test_data_path": "/app/data/uploads/datasets/classification/hard/prox37_twitter-multilabel-classification-dataset/mLabel_tweets.csv",
+              "target_column": "labels"
+            },
+            "planner_parameters": {
+              "model_path": "/app/data/models/tweet_classifier.pkl",
+              "test_data_path": null,
+              "target_column": "labels"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "random_forest",
+        "rationale": "Evaluate model performance on the test set to assess accuracy and other classification metrics for the multilabel prediction task."
+      }
+    ],
+    "mcp_servers": [
+      {
+        "id": "python-data_loading",
+        "name": "Data Loading Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/data_loading/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "CSV file loading, analysis, and validation tools"
+      },
+      {
+        "id": "python-data_preparation",
+        "name": "Data Preparation Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/data_preparation/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Data transformation, feature engineering, and dataset preparation tools"
+      },
+      {
+        "id": "python-model_evaluation",
+        "name": "Model Evaluation Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_evaluation/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Model evaluation, metrics calculation, and error analysis tools"
+      },
+      {
+        "id": "python-model_training",
+        "name": "Model Training Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_training/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Machine learning model training, hyperparameter tuning, and optimization"
+      }
+    ],
+    "validation": {
+      "status": "valid",
+      "issue_count": 0,
+      "blocking_issue_count": 0,
+      "issues": []
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "data_preprocessor",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_trainer",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "model_evaluator",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      }
+    ]
+  }
+}
