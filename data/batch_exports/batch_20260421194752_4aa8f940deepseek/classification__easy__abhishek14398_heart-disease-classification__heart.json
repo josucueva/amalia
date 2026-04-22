@@ -1,0 +1,430 @@
+{
+  "dataset_id": "classification__easy__abhishek14398_heart-disease-classification__heart",
+  "filename": "heart.csv",
+  "file_path": "/app/data/uploads/datasets/classification/easy/abhishek14398_heart-disease-classification/heart.csv",
+  "task_type": "classification",
+  "tier": "easy",
+  "target_column": null,
+  "generated_at": "2026-04-21T19:49:16.568285+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a classification model to predict heart disease (target column) from patient medical features.",
+    "complexity": "simple",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/easy/abhishek14398_heart-disease-classification/heart.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/easy/abhishek14398_heart-disease-classification/heart.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_loader",
+            "agent_name": "Data Loader"
+          }
+        },
+        "planner_mcp_server": "Data Loading Server",
+        "resolved_mcp_server": {
+          "id": "python-data_loading",
+          "name": "Data Loading Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "read_file_head",
+            "description": "Read dataset header and first rows to confirm structure",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/abhishek14398_heart-disease-classification/heart.csv",
+              "n_rows": 10
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/abhishek14398_heart-disease-classification/heart.csv",
+              "n_rows": 10
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "infer_data_types",
+            "description": "Confirm column data types match dataset analysis",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/abhishek14398_heart-disease-classification/heart.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/abhishek14398_heart-disease-classification/heart.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Initial dataset inspection to verify file structure and column types before processing."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "missing_values_detector",
+          "name": "missing_values_detector",
+          "yaml_path": "config/agents/missing_values_detector.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "missing_values_detector",
+            "agent_name": "missing_values_detector"
+          }
+        },
+        "planner_mcp_server": "Data Loading Server",
+        "resolved_mcp_server": {
+          "id": "python-data_loading",
+          "name": "Data Loading Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "detect_missing_values",
+            "description": "Verify no missing values exist as indicated by dataset analysis",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/abhishek14398_heart-disease-classification/heart.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/abhishek14398_heart-disease-classification/heart.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "logistic",
+        "rationale": "Confirm data quality regarding missing values before model training."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": "data_preprocessor",
+          "name": "data_preprocessor",
+          "yaml_path": "config/agents/data_preprocessor.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_preprocessor",
+            "agent_name": "data_preprocessor"
+          }
+        },
+        "planner_mcp_server": "Data Preparation Server",
+        "resolved_mcp_server": {
+          "id": "python-data_preparation",
+          "name": "Data Preparation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "split_dataset",
+            "description": "Split dataset into training and testing sets for model evaluation",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/abhishek14398_heart-disease-classification/heart.csv",
+              "train_ratio": 0.8,
+              "random_state": 42,
+              "shuffle": true
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/abhishek14398_heart-disease-classification/heart.csv",
+              "train_ratio": 0.8,
+              "random_state": 42,
+              "shuffle": true
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "logistic",
+        "rationale": "Create train-test split for proper model evaluation. No scaling/encoding needed as all features appear numeric."
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": "model_trainer",
+          "name": "model_trainer",
+          "yaml_path": "config/agents/model_trainer.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_trainer",
+            "agent_name": "model_trainer"
+          }
+        },
+        "planner_mcp_server": "Model Training Server",
+        "resolved_mcp_server": {
+          "id": "python-model_training",
+          "name": "Model Training Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "train_classification_model",
+            "description": "Train a Random Forest classifier on the heart disease dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/abhishek14398_heart-disease-classification/heart.csv",
+              "target_column": "target",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "max_iter": 1000,
+                "C": 1.0,
+                "solver": "lbfgs"
+              },
+              "model_save_path": null
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/abhishek14398_heart-disease-classification/heart.csv",
+              "target_column": "target",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": null,
+              "model_save_path": null
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "logistic",
+        "rationale": "Random Forest is robust for classification with mixed feature types and provides good interpretability through feature importance."
+      },
+      {
+        "phase_number": 5,
+        "agent": {
+          "id": "model_evaluator",
+          "name": "model_evaluator",
+          "yaml_path": "config/agents/model_evaluator.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_evaluator",
+            "agent_name": "model_evaluator"
+          }
+        },
+        "planner_mcp_server": "Model Evaluation Server",
+        "resolved_mcp_server": {
+          "id": "python-model_evaluation",
+          "name": "Model Evaluation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "evaluate_classification_model",
+            "description": "Evaluate the trained model on test data",
+            "tool_parameters": {
+              "model_path": null,
+              "test_data_path": "/app/data/uploads/datasets/classification/easy/abhishek14398_heart-disease-classification/heart.csv",
+              "target_column": "target",
+              "filepath": "/app/data/uploads/datasets/classification/easy/abhishek14398_heart-disease-classification/heart.csv"
+            },
+            "planner_parameters": {
+              "model_path": null,
+              "test_data_path": null,
+              "target_column": "target"
+            },
+            "missing_required_parameters": [
+              "model_path"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "get_classification_report",
+            "description": "Generate detailed classification metrics (precision, recall, F1-score)",
+            "tool_parameters": {
+              "model_path": null,
+              "test_data_path": "/app/data/uploads/datasets/classification/easy/abhishek14398_heart-disease-classification/heart.csv",
+              "target_column": "target"
+            },
+            "planner_parameters": {
+              "model_path": null,
+              "test_data_path": null,
+              "target_column": "target"
+            },
+            "missing_required_parameters": [
+              "model_path"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "calculate_confusion_matrix",
+            "description": "Compute confusion matrix to visualize model performance",
+            "tool_parameters": {
+              "model_path": null,
+              "test_data_path": "/app/data/uploads/datasets/classification/easy/abhishek14398_heart-disease-classification/heart.csv",
+              "target_column": "target",
+              "normalize": null
+            },
+            "planner_parameters": {
+              "model_path": null,
+              "test_data_path": null,
+              "target_column": "target",
+              "normalize": null
+            },
+            "missing_required_parameters": [
+              "model_path"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "logistic",
+        "rationale": "Comprehensive evaluation of model performance using standard classification metrics."
+      }
+    ],
+    "mcp_servers": [
+      {
+        "id": "python-data_loading",
+        "name": "Data Loading Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/data_loading/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "CSV file loading, analysis, and validation tools"
+      },
+      {
+        "id": "python-data_preparation",
+        "name": "Data Preparation Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/data_preparation/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Data transformation, feature engineering, and dataset preparation tools"
+      },
+      {
+        "id": "python-model_evaluation",
+        "name": "Model Evaluation Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_evaluation/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Model evaluation, metrics calculation, and error analysis tools"
+      },
+      {
+        "id": "python-model_training",
+        "name": "Model Training Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_training/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Machine learning model training, hyperparameter tuning, and optimization"
+      }
+    ],
+    "validation": {
+      "status": "warning",
+      "issue_count": 3,
+      "blocking_issue_count": 0,
+      "issues": [
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'evaluate_classification_model' has unresolved required parameters: model_path",
+          "phase_number": 5,
+          "tool_name": "evaluate_classification_model",
+          "missing_parameters": [
+            "model_path"
+          ]
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'get_classification_report' has unresolved required parameters: model_path",
+          "phase_number": 5,
+          "tool_name": "get_classification_report",
+          "missing_parameters": [
+            "model_path"
+          ]
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'calculate_confusion_matrix' has unresolved required parameters: model_path",
+          "phase_number": 5,
+          "tool_name": "calculate_confusion_matrix",
+          "missing_parameters": [
+            "model_path"
+          ]
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "missing_values_detector",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "data_preprocessor",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "model_trainer",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-5",
+        "agentId": "model_evaluator",
+        "position": {
+          "x": 1100,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      },
+      {
+        "id": "conn-4",
+        "fromInstanceId": "phase-4",
+        "toInstanceId": "phase-5"
+      }
+    ]
+  }
+}

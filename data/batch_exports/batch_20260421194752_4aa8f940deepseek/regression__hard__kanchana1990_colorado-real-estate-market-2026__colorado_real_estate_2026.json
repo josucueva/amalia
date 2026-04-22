@@ -1,0 +1,468 @@
+{
+  "dataset_id": "regression__hard__kanchana1990_colorado-real-estate-market-2026__colorado_real_estate_2026",
+  "filename": "colorado_real_estate_2026.csv",
+  "file_path": "/app/data/uploads/datasets/regression/hard/kanchana1990_colorado-real-estate-market-2026/colorado_real_estate_2026.csv",
+  "task_type": "regression",
+  "tier": "hard",
+  "target_column": null,
+  "generated_at": "2026-04-21T20:56:58.780485+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a regression model to predict garage count from Colorado real estate data with 100 rows and 11 columns, handling significant missing values in multiple columns.",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/regression/hard/kanchana1990_colorado-real-estate-market-2026/colorado_real_estate_2026.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/regression/hard/kanchana1990_colorado-real-estate-market-2026/colorado_real_estate_2026.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_loader",
+            "agent_name": "Data Loader"
+          }
+        },
+        "planner_mcp_server": "Data Loading Server",
+        "resolved_mcp_server": {
+          "id": "python-data_loading",
+          "name": "Data Loading Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "read_file_head",
+            "description": "Read dataset header and first rows to confirm structure",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/kanchana1990_colorado-real-estate-market-2026/colorado_real_estate_2026.csv",
+              "n_rows": 10
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/kanchana1990_colorado-real-estate-market-2026/colorado_real_estate_2026.csv",
+              "n_rows": 10
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "detect_missing_values",
+            "description": "Quantify missing values per column to inform preprocessing strategy",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/kanchana1990_colorado-real-estate-market-2026/colorado_real_estate_2026.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/kanchana1990_colorado-real-estate-market-2026/colorado_real_estate_2026.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "infer_data_types",
+            "description": "Confirm column data types for proper feature engineering",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/kanchana1990_colorado-real-estate-market-2026/colorado_real_estate_2026.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/kanchana1990_colorado-real-estate-market-2026/colorado_real_estate_2026.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Initial data inspection to validate dataset structure, confirm missing value patterns (especially sub_type with 86% missing, stories with 26% missing, garage with 14% missing), and verify data types before preprocessing."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "data_preprocessor",
+          "name": "data_preprocessor",
+          "yaml_path": "config/agents/data_preprocessor.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_preprocessor",
+            "agent_name": "data_preprocessor"
+          }
+        },
+        "planner_mcp_server": "Data Preparation Server",
+        "resolved_mcp_server": {
+          "id": "python-data_preparation",
+          "name": "Data Preparation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "handle_missing_values",
+            "description": "Address missing values in target (garage) and features using appropriate strategies",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/kanchana1990_colorado-real-estate-market-2026/colorado_real_estate_2026.csv",
+              "strategy": "median",
+              "columns": [
+                "sqft",
+                "stories",
+                "beds",
+                "baths",
+                "baths_full",
+                "baths_full_calc",
+                "garage"
+              ],
+              "output_filepath": "/app/data/uploads/datasets/regression/hard/kanchana1990_colorado-real-estate-market-2026/colorado_real_estate_2026_preprocessed.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/kanchana1990_colorado-real-estate-market-2026/colorado_real_estate_2026.csv",
+              "strategy": "median",
+              "columns": [
+                "sqft",
+                "stories",
+                "beds",
+                "baths",
+                "baths_full",
+                "baths_full_calc",
+                "garage"
+              ],
+              "output_filepath": "/app/data/uploads/datasets/regression/hard/kanchana1990_colorado-real-estate-market-2026/colorado_real_estate_2026_preprocessed.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "encode_categorical",
+            "description": "Convert categorical columns (type, sub_type, text) to numerical representations",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/kanchana1990_colorado-real-estate-market-2026/colorado_real_estate_2026_preprocessed.csv",
+              "columns": [
+                "type",
+                "sub_type",
+                "text"
+              ],
+              "method": "one_hot",
+              "output_filepath": "/app/data/uploads/datasets/regression/hard/kanchana1990_colorado-real-estate-market-2026/colorado_real_estate_2026_encoded.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/kanchana1990_colorado-real-estate-market-2026/colorado_real_estate_2026_preprocessed.csv",
+              "columns": [
+                "type",
+                "sub_type",
+                "text"
+              ],
+              "method": "one_hot",
+              "output_filepath": "/app/data/uploads/datasets/regression/hard/kanchana1990_colorado-real-estate-market-2026/colorado_real_estate_2026_encoded.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "split_dataset",
+            "description": "Split cleaned dataset into training and testing sets for model development",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/kanchana1990_colorado-real-estate-market-2026/colorado_real_estate_2026_encoded.csv",
+              "train_ratio": 0.8,
+              "random_state": 42,
+              "shuffle": true
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/kanchana1990_colorado-real-estate-market-2026/colorado_real_estate_2026_encoded.csv",
+              "train_ratio": 0.8,
+              "random_state": 42,
+              "shuffle": true
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "linear",
+        "rationale": "Preprocessing phase to handle missing values (using median for numerical columns), encode categorical variables (type, sub_type, text), and create train-test split. The sub_type column has 86% missing but will be encoded for potential signal in remaining values."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": "model_trainer",
+          "name": "model_trainer",
+          "yaml_path": "config/agents/model_trainer.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_trainer",
+            "agent_name": "model_trainer"
+          }
+        },
+        "planner_mcp_server": "Model Training Server",
+        "resolved_mcp_server": {
+          "id": "python-model_training",
+          "name": "Model Training Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "train_regression_model",
+            "description": "Train a Random Forest regression model to predict garage count, robust to outliers and feature interactions",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/kanchana1990_colorado-real-estate-market-2026/colorado_real_estate_2026_encoded_train.csv",
+              "target_column": "garage",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "fit_intercept": true
+              },
+              "model_save_path": "/app/data/uploads/models/colorado_garage_rf_model.pkl"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/kanchana1990_colorado-real-estate-market-2026/colorado_real_estate_2026_encoded_train.csv",
+              "target_column": "garage",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": null,
+              "model_save_path": "/app/data/uploads/models/colorado_garage_rf_model.pkl"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "get_feature_importance",
+            "description": "Identify which features most influence garage count predictions",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/kanchana1990_colorado-real-estate-market-2026/colorado_real_estate_2026_encoded_train.csv",
+              "target_column": "garage",
+              "model_type": "random_forest",
+              "task": "regression",
+              "top_n": 10
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/kanchana1990_colorado-real-estate-market-2026/colorado_real_estate_2026_encoded_train.csv",
+              "target_column": "garage",
+              "model_type": "random_forest",
+              "task": "regression",
+              "top_n": 10
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "linear",
+        "rationale": "Model training with Random Forest selected for its ability to handle mixed data types, non-linear relationships, and provide feature importance. Random Forest is robust to outliers and missing value imputation effects compared to linear models."
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": "model_evaluator",
+          "name": "model_evaluator",
+          "yaml_path": "config/agents/model_evaluator.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_evaluator",
+            "agent_name": "model_evaluator"
+          }
+        },
+        "planner_mcp_server": "Model Evaluation Server",
+        "resolved_mcp_server": {
+          "id": "python-model_evaluation",
+          "name": "Model Evaluation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "evaluate_regression_model",
+            "description": "Evaluate model performance on test set using regression metrics (RMSE, MAE, R\u00b2)",
+            "tool_parameters": {
+              "model_path": "/app/data/uploads/models/colorado_garage_rf_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/regression/hard/kanchana1990_colorado-real-estate-market-2026/colorado_real_estate_2026_encoded_test.csv",
+              "target_column": "garage",
+              "filepath": "/app/data/uploads/datasets/regression/hard/kanchana1990_colorado-real-estate-market-2026/colorado_real_estate_2026.csv"
+            },
+            "planner_parameters": {
+              "model_path": "/app/data/uploads/models/colorado_garage_rf_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/regression/hard/kanchana1990_colorado-real-estate-market-2026/colorado_real_estate_2026_encoded_test.csv",
+              "target_column": "garage"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "calculate_residuals",
+            "description": "Analyze prediction errors to identify systematic biases or patterns",
+            "tool_parameters": {
+              "model_path": "/app/data/uploads/models/colorado_garage_rf_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/regression/hard/kanchana1990_colorado-real-estate-market-2026/colorado_real_estate_2026_encoded_test.csv",
+              "target_column": "garage"
+            },
+            "planner_parameters": {
+              "model_path": "/app/data/uploads/models/colorado_garage_rf_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/regression/hard/kanchana1990_colorado-real-estate-market-2026/colorado_real_estate_2026_encoded_test.csv",
+              "target_column": "garage"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "save_evaluation_results",
+            "description": "Persist evaluation metrics and model metadata for future reference",
+            "tool_parameters": {
+              "metrics": null,
+              "task_type": "regression",
+              "model_name": "random_forest_garage_predictor",
+              "dataset_name": "colorado_real_estate_2026",
+              "notes": "Dataset with 100 rows, significant missing values in sub_type (86%), stories (26%), garage (14%). Target: garage count.",
+              "tags": [
+                "real_estate",
+                "colorado",
+                "regression",
+                "random_forest"
+              ],
+              "pipeline": "data_loader\u2192data_preprocessor\u2192model_trainer\u2192model_evaluator",
+              "registry_path": "/app/data/uploads/evaluation_results/"
+            },
+            "planner_parameters": {
+              "metrics": null,
+              "task_type": "regression",
+              "model_name": "random_forest_garage_predictor",
+              "dataset_name": "colorado_real_estate_2026",
+              "notes": "Dataset with 100 rows, significant missing values in sub_type (86%), stories (26%), garage (14%). Target: garage count.",
+              "tags": [
+                "real_estate",
+                "colorado",
+                "regression",
+                "random_forest"
+              ],
+              "pipeline": "data_loader\u2192data_preprocessor\u2192model_trainer\u2192model_evaluator",
+              "registry_path": "/app/data/uploads/evaluation_results/"
+            },
+            "missing_required_parameters": [
+              "metrics"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Comprehensive model evaluation to assess predictive performance, analyze error patterns, and document results. Given the small dataset size (100 rows) and missing values, careful evaluation is needed to ensure model reliability."
+      }
+    ],
+    "mcp_servers": [
+      {
+        "id": "python-data_loading",
+        "name": "Data Loading Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/data_loading/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "CSV file loading, analysis, and validation tools"
+      },
+      {
+        "id": "python-data_preparation",
+        "name": "Data Preparation Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/data_preparation/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Data transformation, feature engineering, and dataset preparation tools"
+      },
+      {
+        "id": "python-model_evaluation",
+        "name": "Model Evaluation Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_evaluation/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Model evaluation, metrics calculation, and error analysis tools"
+      },
+      {
+        "id": "python-model_training",
+        "name": "Model Training Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_training/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Machine learning model training, hyperparameter tuning, and optimization"
+      }
+    ],
+    "validation": {
+      "status": "warning",
+      "issue_count": 1,
+      "blocking_issue_count": 0,
+      "issues": [
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'save_evaluation_results' has unresolved required parameters: metrics",
+          "phase_number": 4,
+          "tool_name": "save_evaluation_results",
+          "missing_parameters": [
+            "metrics"
+          ]
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "data_preprocessor",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_trainer",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "model_evaluator",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      }
+    ]
+  }
+}

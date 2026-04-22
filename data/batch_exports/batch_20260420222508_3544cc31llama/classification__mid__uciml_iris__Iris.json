@@ -1,0 +1,309 @@
+{
+  "dataset_id": "classification__mid__uciml_iris__Iris",
+  "filename": "Iris.csv",
+  "file_path": "/app/data/uploads/datasets/classification/mid/uciml_iris/Iris.csv",
+  "task_type": "classification",
+  "tier": "mid",
+  "target_column": null,
+  "generated_at": "2026-04-20T22:51:29.065642+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a classification model on the Iris.csv file",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/mid/uciml_iris/Iris.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/mid/uciml_iris/Iris.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_loader",
+            "agent_name": "data_loader"
+          }
+        },
+        "planner_mcp_server": "Data Loading Server",
+        "resolved_mcp_server": {
+          "id": "python-data_loading",
+          "name": "Data Loading Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "load_csv",
+            "description": "Load the Iris.csv file",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/uciml_iris/Iris.csv",
+              "encoding": "utf-8",
+              "delimiter": ","
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/uciml_iris/Iris.csv",
+              "encoding": "utf-8",
+              "delimiter": ","
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "infer_data_types",
+            "description": "Determine the data types of each column",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/uciml_iris/Iris.csv"
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "get_column_info",
+            "description": "Get information about the Species column",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/uciml_iris/Iris.csv",
+              "column_name": "Species"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/uciml_iris/Iris.csv",
+              "column_name": "Species"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "detect_missing_values",
+            "description": "Detect missing values in the dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/uciml_iris/Iris.csv"
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "validate_csv_structure",
+            "description": "Validate the structure of the Iris.csv file",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/uciml_iris/Iris.csv",
+              "expected_columns": [
+                "Id",
+                "SepalLengthCm",
+                "SepalWidthCm",
+                "PetalLengthCm",
+                "PetalWidthCm",
+                "Species"
+              ]
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/uciml_iris/Iris.csv",
+              "expected_columns": [
+                "Id",
+                "SepalLengthCm",
+                "SepalWidthCm",
+                "PetalLengthCm",
+                "PetalWidthCm",
+                "Species"
+              ]
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "handle_missing_values",
+            "description": "Handle missing values in the dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/uciml_iris/Iris.csv",
+              "strategy": "mean",
+              "columns": [
+                "Id",
+                "SepalLengthCm",
+                "SepalWidthCm",
+                "PetalLengthCm",
+                "PetalWidthCm"
+              ],
+              "output_filepath": "/app/data/uploads/datasets/classification/mid/uciml_iris/Iris_handled.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/uciml_iris/Iris.csv",
+              "strategy": "mean",
+              "columns": [
+                "Id",
+                "SepalLengthCm",
+                "SepalWidthCm",
+                "PetalLengthCm",
+                "PetalWidthCm"
+              ],
+              "output_filepath": "/app/data/uploads/datasets/classification/mid/uciml_iris/Iris_handled.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "remove_duplicates",
+            "description": "Remove duplicate rows from the dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/uciml_iris/Iris.csv",
+              "subset": null,
+              "keep": "first",
+              "output_filepath": null
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "encode_categorical",
+            "description": "Encode the categorical Species column",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/uciml_iris/Iris_handled.csv",
+              "columns": [
+                "Species"
+              ],
+              "method": "one-hot-encoding",
+              "output_filepath": "/app/data/uploads/datasets/classification/mid/uciml_iris/Iris_encoded.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/uciml_iris/Iris_handled.csv",
+              "columns": [
+                "Species"
+              ],
+              "method": "one-hot-encoding",
+              "output_filepath": "/app/data/uploads/datasets/classification/mid/uciml_iris/Iris_encoded.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "split_dataset",
+            "description": "Split the dataset into training and testing sets",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/uciml_iris/Iris_encoded.csv",
+              "train_ratio": 0.7,
+              "random_state": 42,
+              "shuffle": true
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/uciml_iris/Iris_encoded.csv",
+              "train_ratio": 0.7,
+              "random_state": 42,
+              "shuffle": true
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "train_classification_model",
+            "description": "Train a classification model on the training set",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/uciml_iris/Iris_encoded_train.csv",
+              "target_column": "Species",
+              "model_type": "random_forest",
+              "test_size": 0.3,
+              "random_state": 42,
+              "hyperparameters": {
+                "n_estimators": 100,
+                "max_depth": 10
+              },
+              "model_save_path": "/app/models/classification/random_forest.pkl"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/uciml_iris/Iris_encoded_train.csv",
+              "target_column": "Species",
+              "model_type": "random_forest",
+              "test_size": 0.3,
+              "random_state": 42,
+              "hyperparameters": {
+                "n_estimators": 100,
+                "max_depth": 10
+              },
+              "model_save_path": "/app/models/classification/random_forest.pkl"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "evaluate_classification_model",
+            "description": "Evaluate the performance of the classification model on the testing set",
+            "tool_parameters": {
+              "model_path": "/app/models/classification/random_forest.pkl",
+              "test_data_path": "/app/data/uploads/datasets/classification/mid/uciml_iris/Iris_encoded_test.csv",
+              "target_column": "Species",
+              "filepath": "/app/data/uploads/datasets/classification/mid/uciml_iris/Iris.csv"
+            },
+            "planner_parameters": {
+              "model_path": "/app/models/classification/random_forest.pkl",
+              "test_data_path": "/app/data/uploads/datasets/classification/mid/uciml_iris/Iris_encoded_test.csv",
+              "target_column": "Species"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "get_classification_report",
+            "description": "Get the classification report of the model on the testing set",
+            "tool_parameters": {
+              "model_path": null,
+              "test_data_path": "/app/data/uploads/datasets/classification/mid/uciml_iris/Iris.csv",
+              "target_column": "Species"
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [
+              "model_path"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "logistic",
+        "rationale": null
+      }
+    ],
+    "mcp_servers": [
+      {
+        "id": "python-data_loading",
+        "name": "Data Loading Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/data_loading/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "CSV file loading, analysis, and validation tools"
+      }
+    ],
+    "validation": {
+      "status": "warning",
+      "issue_count": 1,
+      "blocking_issue_count": 0,
+      "issues": [
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'get_classification_report' has unresolved required parameters: model_path",
+          "phase_number": 1,
+          "tool_name": "get_classification_report",
+          "missing_parameters": [
+            "model_path"
+          ]
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      }
+    ],
+    "connections": []
+  }
+}

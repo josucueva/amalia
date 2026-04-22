@@ -1,0 +1,415 @@
+{
+  "dataset_id": "regression__mid__rupals_gpu-runtime__sgemm_product",
+  "filename": "sgemm_product.csv",
+  "file_path": "/app/data/uploads/datasets/regression/mid/rupals_gpu-runtime/sgemm_product.csv",
+  "task_type": "regression",
+  "tier": "mid",
+  "target_column": null,
+  "generated_at": "2026-04-21T19:33:27.180884+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a regression model for predicting 'Run4 (ms)' using the provided dataset",
+    "complexity": "simple",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/regression/mid/rupals_gpu-runtime/sgemm_product.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/regression/mid/rupals_gpu-runtime/sgemm_product.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_loader",
+            "agent_name": "data_loader"
+          }
+        },
+        "planner_mcp_server": "python-data_loading",
+        "resolved_mcp_server": {
+          "id": "python-data_loading",
+          "name": "Data Loading Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "load_csv",
+            "description": "Load the dataset for analysis and preprocessing",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/rupals_gpu-runtime/sgemm_product.csv",
+              "encoding": "utf-8",
+              "delimiter": ","
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/rupals_gpu-runtime/sgemm_product.csv",
+              "encoding": null,
+              "delimiter": null
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "get_column_info",
+            "description": "Obtain column information for preprocessing steps",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/rupals_gpu-runtime/sgemm_product.csv",
+              "column_name": null
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/rupals_gpu-runtime/sgemm_product.csv",
+              "column_name": null
+            },
+            "missing_required_parameters": [
+              "column_name"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "detect_missing_values",
+            "description": "Check for missing values in the dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/rupals_gpu-runtime/sgemm_product.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/rupals_gpu-runtime/sgemm_product.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": null
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "data_preprocessor",
+          "name": "data_preprocessor",
+          "yaml_path": "config/agents/data_preprocessor.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_preprocessor",
+            "agent_name": "data_preprocessor"
+          }
+        },
+        "planner_mcp_server": "",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "filter_rows",
+            "description": "Remove rows with missing values in target column 'Run4 (ms)'",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/rupals_gpu-runtime/sgemm_product.csv",
+              "column": null,
+              "condition": null,
+              "value": null,
+              "output_filepath": null
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/rupals_gpu-runtime/sgemm_product.csv",
+              "column": null,
+              "condition": null,
+              "value": null,
+              "output_filepath": null
+            },
+            "missing_required_parameters": [
+              "column",
+              "condition",
+              "value"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "scale_features",
+            "description": "Scale features to have mean=0 and standard deviation=1",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/rupals_gpu-runtime/sgemm_product.csv",
+              "columns": [
+                "MWG",
+                "NWG",
+                "KWG",
+                "MDIMC",
+                "NDIMC",
+                "MDIMA",
+                "NDIMB",
+                "KWI",
+                "VWM",
+                "VWN",
+                "STRM",
+                "STRN",
+                "SA",
+                "SB"
+              ],
+              "method": "standard",
+              "output_filepath": null
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/rupals_gpu-runtime/sgemm_product.csv",
+              "columns": [
+                "MWG",
+                "NWG",
+                "KWG",
+                "MDIMC",
+                "NDIMC",
+                "MDIMA",
+                "NDIMB",
+                "KWI",
+                "VWM",
+                "VWN",
+                "STRM",
+                "STRN",
+                "SA",
+                "SB"
+              ],
+              "method": null,
+              "output_filepath": null
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": null
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": "model_trainer",
+          "name": "model_trainer",
+          "yaml_path": "config/agents/model_trainer.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_trainer",
+            "agent_name": "model_trainer"
+          }
+        },
+        "planner_mcp_server": "python-model_training",
+        "resolved_mcp_server": {
+          "id": "python-model_training",
+          "name": "Model Training Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "train_regression_model",
+            "description": "Train a regression model on the preprocessed data",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/rupals_gpu-runtime/sgemm_product.csv",
+              "target_column": "Run4 (ms)",
+              "model_type": "linear",
+              "test_size": 0.2,
+              "random_state": null,
+              "hyperparameters": {
+                "fit_intercept": true
+              },
+              "model_save_path": null
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/rupals_gpu-runtime/sgemm_product.csv",
+              "target_column": "Run4 (ms)",
+              "model_type": "linear",
+              "test_size": null,
+              "random_state": null,
+              "hyperparameters": null,
+              "model_save_path": null
+            },
+            "missing_required_parameters": [
+              "random_state"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "linear",
+        "rationale": null
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": "model_evaluator",
+          "name": "model_evaluator",
+          "yaml_path": "config/agents/model_evaluator.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_evaluator",
+            "agent_name": "model_evaluator"
+          }
+        },
+        "planner_mcp_server": "python-model_evaluation",
+        "resolved_mcp_server": {
+          "id": "python-model_evaluation",
+          "name": "Model Evaluation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "evaluate_regression_model",
+            "description": "Evaluate the trained regression model on unseen data",
+            "tool_parameters": {
+              "model_path": null,
+              "test_data_path": "/app/data/uploads/datasets/regression/mid/rupals_gpu-runtime/sgemm_product.csv",
+              "target_column": "Run4 (ms)",
+              "filepath": "/app/data/uploads/datasets/regression/mid/rupals_gpu-runtime/sgemm_product.csv"
+            },
+            "planner_parameters": {
+              "model_path": null,
+              "test_data_path": "/app/data/uploads/datasets/regression/mid/rupals_gpu-runtime/sgemm_product.csv",
+              "target_column": "Run4 (ms)"
+            },
+            "missing_required_parameters": [
+              "model_path"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "linear",
+        "rationale": null
+      }
+    ],
+    "mcp_servers": [
+      {
+        "id": "python-data_loading",
+        "name": "Data Loading Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/data_loading/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "CSV file loading, analysis, and validation tools"
+      },
+      {
+        "id": "python-model_evaluation",
+        "name": "Model Evaluation Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_evaluation/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Model evaluation, metrics calculation, and error analysis tools"
+      },
+      {
+        "id": "python-model_training",
+        "name": "Model Training Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_training/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Machine learning model training, hyperparameter tuning, and optimization"
+      }
+    ],
+    "validation": {
+      "status": "warning",
+      "issue_count": 5,
+      "blocking_issue_count": 0,
+      "issues": [
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'get_column_info' has unresolved required parameters: column_name",
+          "phase_number": 1,
+          "tool_name": "get_column_info",
+          "missing_parameters": [
+            "column_name"
+          ]
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server ''",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'filter_rows' has unresolved required parameters: column, condition, value",
+          "phase_number": 2,
+          "tool_name": "filter_rows",
+          "missing_parameters": [
+            "column",
+            "condition",
+            "value"
+          ]
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'train_regression_model' has unresolved required parameters: random_state",
+          "phase_number": 3,
+          "tool_name": "train_regression_model",
+          "missing_parameters": [
+            "random_state"
+          ]
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'evaluate_regression_model' has unresolved required parameters: model_path",
+          "phase_number": 4,
+          "tool_name": "evaluate_regression_model",
+          "missing_parameters": [
+            "model_path"
+          ]
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "data_preprocessor",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_trainer",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "model_evaluator",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      }
+    ]
+  }
+}

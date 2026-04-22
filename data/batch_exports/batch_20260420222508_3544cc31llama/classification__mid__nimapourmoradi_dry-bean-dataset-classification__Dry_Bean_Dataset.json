@@ -1,0 +1,384 @@
+{
+  "dataset_id": "classification__mid__nimapourmoradi_dry-bean-dataset-classification__Dry_Bean_Dataset",
+  "filename": "Dry_Bean_Dataset.csv",
+  "file_path": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv",
+  "task_type": "classification",
+  "tier": "mid",
+  "target_column": null,
+  "generated_at": "2026-04-20T22:49:47.544403+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a classification model for the Dry_Bean_Dataset.csv",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_loader",
+            "agent_name": "data_loader"
+          }
+        },
+        "planner_mcp_server": "Filesystem",
+        "resolved_mcp_server": {
+          "id": "filesystem",
+          "name": "Filesystem",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "load_csv",
+            "description": "Load the CSV dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv",
+              "encoding": "utf-8",
+              "delimiter": ","
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv",
+              "encoding": "utf-8",
+              "delimiter": ","
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "infer_data_types",
+            "description": "Infer the data types of each column",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv"
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Load and infer data types for the dataset"
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "data_preprocessor",
+          "name": "data_preprocessor",
+          "yaml_path": "config/agents/data_preprocessor.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_preprocessor",
+            "agent_name": "data_preprocessor"
+          }
+        },
+        "planner_mcp_server": "Data Preparation Server",
+        "resolved_mcp_server": {
+          "id": "python-data_preparation",
+          "name": "Data Preparation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "handle_missing_values",
+            "description": "Handle missing values in the dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv",
+              "strategy": "mean",
+              "columns": [
+                "\ufeffArea",
+                "Perimeter",
+                "MajorAxisLength",
+                "MinorAxisLength",
+                "AspectRation",
+                "Eccentricity",
+                "ConvexArea",
+                "EquivDiameter",
+                "Extent",
+                "Solidity",
+                "roundness",
+                "Compactness",
+                "ShapeFactor1",
+                "ShapeFactor2",
+                "ShapeFactor3",
+                "ShapeFactor4"
+              ],
+              "output_filepath": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset_processed.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv",
+              "strategy": "mean",
+              "columns": [
+                "\ufeffArea",
+                "Perimeter",
+                "MajorAxisLength",
+                "MinorAxisLength",
+                "AspectRation",
+                "Eccentricity",
+                "ConvexArea",
+                "EquivDiameter",
+                "Extent",
+                "Solidity",
+                "roundness",
+                "Compactness",
+                "ShapeFactor1",
+                "ShapeFactor2",
+                "ShapeFactor3",
+                "ShapeFactor4"
+              ],
+              "output_filepath": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset_processed.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "rename_columns",
+            "description": "Rename the columns of the dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset_processed.csv",
+              "column_mapping": {
+                "\ufeffArea": "area",
+                "Perimeter": "perimeter"
+              },
+              "output_filepath": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset_processed_renamed.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset_processed.csv",
+              "column_mapping": {
+                "\ufeffArea": "area",
+                "Perimeter": "perimeter"
+              },
+              "output_filepath": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset_processed_renamed.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Preprocess the dataset to handle missing values and rename columns"
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": null,
+          "name": "model_training",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_training",
+            "agent_name": "model_training"
+          }
+        },
+        "planner_mcp_server": "Model Training Server",
+        "resolved_mcp_server": {
+          "id": "python-model_training",
+          "name": "Model Training Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "train_classification_model",
+            "description": "Train a classification model on the preprocessed dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset_processed_renamed.csv",
+              "target_column": "Class",
+              "model_type": "logistic",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "C": 1,
+                "penalty": "l2"
+              },
+              "model_save_path": "/app/models/classification/model.logistic"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset_processed_renamed.csv",
+              "target_column": "Class",
+              "model_type": "logistic",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "C": 1,
+                "penalty": "l2"
+              },
+              "model_save_path": "/app/models/classification/model.logistic"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "logistic",
+        "rationale": "Train a classification model on the preprocessed dataset"
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": null,
+          "name": "model_evaluation",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_evaluation",
+            "agent_name": "model_evaluation"
+          }
+        },
+        "planner_mcp_server": "Model Evaluation Server",
+        "resolved_mcp_server": {
+          "id": "python-model_evaluation",
+          "name": "Model Evaluation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "evaluate_classification_model",
+            "description": "Evaluate the performance of the trained classification model",
+            "tool_parameters": {
+              "model_path": "/app/models/classification/model.logistic",
+              "test_data_path": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset_processed_renamed.csv",
+              "target_column": "Class",
+              "filepath": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv"
+            },
+            "planner_parameters": {
+              "model_path": "/app/models/classification/model.logistic",
+              "test_data_path": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset_processed_renamed.csv",
+              "target_column": "Class"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "logistic",
+        "rationale": "Evaluate the performance of the trained classification model"
+      }
+    ],
+    "mcp_servers": [
+      {
+        "id": "filesystem",
+        "name": "Filesystem",
+        "command": "npx",
+        "args": [
+          "-y",
+          "@modelcontextprotocol/server-filesystem",
+          "/app"
+        ],
+        "env": {},
+        "is_available": true,
+        "description": "Access and manage project files under /app (catalog, configs, data)"
+      },
+      {
+        "id": "python-data_preparation",
+        "name": "Data Preparation Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/data_preparation/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Data transformation, feature engineering, and dataset preparation tools"
+      },
+      {
+        "id": "python-model_evaluation",
+        "name": "Model Evaluation Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_evaluation/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Model evaluation, metrics calculation, and error analysis tools"
+      },
+      {
+        "id": "python-model_training",
+        "name": "Model Training Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_training/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Machine learning model training, hyperparameter tuning, and optimization"
+      }
+    ],
+    "validation": {
+      "status": "uncertain",
+      "issue_count": 2,
+      "blocking_issue_count": 2,
+      "issues": [
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_training' name='model_training'",
+          "phase_number": 3
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_evaluation' name='model_evaluation'",
+          "phase_number": 4
+        }
+      ],
+      "allow_persist_with_issues": true
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "data_preprocessor",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_training",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "model_evaluation",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      }
+    ]
+  }
+}

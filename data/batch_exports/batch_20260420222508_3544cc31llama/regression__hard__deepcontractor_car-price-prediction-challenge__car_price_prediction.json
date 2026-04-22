@@ -1,0 +1,416 @@
+{
+  "dataset_id": "regression__hard__deepcontractor_car-price-prediction-challenge__car_price_prediction",
+  "filename": "car_price_prediction.csv",
+  "file_path": "/app/data/uploads/datasets/regression/hard/deepcontractor_car-price-prediction-challenge/car_price_prediction.csv",
+  "task_type": "regression",
+  "tier": "hard",
+  "target_column": null,
+  "generated_at": "2026-04-20T23:06:00.951224+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build and train a regression model using car_price_prediction.csv",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/regression/hard/deepcontractor_car-price-prediction-challenge/car_price_prediction.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/regression/hard/deepcontractor_car-price-prediction-challenge/car_price_prediction.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_loader",
+            "agent_name": "data_loader"
+          }
+        },
+        "planner_mcp_server": "Filesystem",
+        "resolved_mcp_server": {
+          "id": "filesystem",
+          "name": "Filesystem",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "get_server_info",
+            "description": "Get server info for data loading",
+            "tool_parameters": {
+              "tool": null,
+              "server": null,
+              "arguments": null,
+              "filepath": "/app/data/uploads/datasets/regression/hard/deepcontractor_car-price-prediction-challenge/car_price_prediction.csv"
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "read_file_head",
+            "description": "Read file head to check header and first rows",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/deepcontractor_car-price-prediction-challenge/car_price_prediction.csv",
+              "n_rows": 10
+            },
+            "planner_parameters": {
+              "n_rows": 10
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "infer_data_types",
+            "description": "Infer data types for each column",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/deepcontractor_car-price-prediction-challenge/car_price_prediction.csv"
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Load necessary information about the dataset"
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "statistics_analyzer",
+          "name": "statistics_analyzer",
+          "yaml_path": "config/agents/statistics_analyzer.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "statistics_analyzer",
+            "agent_name": "statistics_analyzer"
+          }
+        },
+        "planner_mcp_server": "Mathematics Server",
+        "resolved_mcp_server": {
+          "id": "python-mathematics",
+          "name": "Mathematics Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "analyze_csv",
+            "description": "Analyze the CSV file for distribution, correlations, outliers, etc.",
+            "tool_parameters": {
+              "filename": "/app/data/uploads/datasets/regression/hard/deepcontractor_car-price-prediction-challenge/car_price_prediction.csv"
+            },
+            "planner_parameters": {
+              "filename": "/app/data/uploads/datasets/regression/hard/deepcontractor_car-price-prediction-challenge/car_price_prediction.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Understand dataset characteristics"
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_loader",
+            "agent_name": "data_loader"
+          }
+        },
+        "planner_mcp_server": "Filesystem",
+        "resolved_mcp_server": {
+          "id": "filesystem",
+          "name": "Filesystem",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "handle_missing_values",
+            "description": "Handle missing values based on strategy",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/deepcontractor_car-price-prediction-challenge/car_price_prediction.csv",
+              "strategy": "mean",
+              "columns": [
+                "ID",
+                "Prod. year",
+                "Cylinders",
+                "Airbags"
+              ],
+              "output_filepath": null
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "remove_duplicates",
+            "description": "Remove duplicate rows from the dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/deepcontractor_car-price-prediction-challenge/car_price_prediction.csv",
+              "subset": null,
+              "keep": "first",
+              "output_filepath": null
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Clean and preprocess data"
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_loader",
+            "agent_name": "data_loader"
+          }
+        },
+        "planner_mcp_server": "Filesystem",
+        "resolved_mcp_server": {
+          "id": "filesystem",
+          "name": "Filesystem",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "scale_features",
+            "description": "Scale features for the model to work correctly",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/deepcontractor_car-price-prediction-challenge/car_price_prediction.csv",
+              "columns": [
+                "ID",
+                "Prod. year",
+                "Cylinders",
+                "Airbags"
+              ],
+              "method": "standard",
+              "output_filepath": null
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Prepares data for modeling by scaling"
+      },
+      {
+        "phase_number": 5,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_loader",
+            "agent_name": "data_loader"
+          }
+        },
+        "planner_mcp_server": "Filesystem",
+        "resolved_mcp_server": {
+          "id": "filesystem",
+          "name": "Filesystem",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "split_dataset",
+            "description": "Split the dataset into training and test sets",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/deepcontractor_car-price-prediction-challenge/car_price_prediction.csv",
+              "train_ratio": "0.8",
+              "random_state": "42",
+              "shuffle": "True",
+              "ratio": 0.8
+            },
+            "planner_parameters": {
+              "ratio": 0.8
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "linear",
+        "rationale": "Prepares data for model evaluation by splitting"
+      },
+      {
+        "phase_number": 6,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_loader",
+            "agent_name": "data_loader"
+          }
+        },
+        "planner_mcp_server": "Filesystem",
+        "resolved_mcp_server": {
+          "id": "filesystem",
+          "name": "Filesystem",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "train_regression_model",
+            "description": "Train a regression model on the training data",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/deepcontractor_car-price-prediction-challenge/car_price_prediction.csv",
+              "target_column": "Price",
+              "model_type": "gradient_boosting",
+              "test_size": 0.2,
+              "random_state": null,
+              "hyperparameters": {
+                "fit_intercept": true
+              },
+              "model_save_path": null
+            },
+            "planner_parameters": {
+              "model_type": "gradient_boosting"
+            },
+            "missing_required_parameters": [
+              "random_state"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "linear",
+        "rationale": "Trains a suitable regression model"
+      }
+    ],
+    "mcp_servers": [
+      {
+        "id": "filesystem",
+        "name": "Filesystem",
+        "command": "npx",
+        "args": [
+          "-y",
+          "@modelcontextprotocol/server-filesystem",
+          "/app"
+        ],
+        "env": {},
+        "is_available": true,
+        "description": "Access and manage project files under /app (catalog, configs, data)"
+      },
+      {
+        "id": "python-mathematics",
+        "name": "Mathematics Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/mathematics/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Mathematical operations and statistical calculations"
+      }
+    ],
+    "validation": {
+      "status": "warning",
+      "issue_count": 1,
+      "blocking_issue_count": 0,
+      "issues": [
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'train_regression_model' has unresolved required parameters: random_state",
+          "phase_number": 6,
+          "tool_name": "train_regression_model",
+          "missing_parameters": [
+            "random_state"
+          ]
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "statistics_analyzer",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "data_loader",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "data_loader",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-5",
+        "agentId": "data_loader",
+        "position": {
+          "x": 1100,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-6",
+        "agentId": "data_loader",
+        "position": {
+          "x": 1320,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      },
+      {
+        "id": "conn-4",
+        "fromInstanceId": "phase-4",
+        "toInstanceId": "phase-5"
+      },
+      {
+        "id": "conn-5",
+        "fromInstanceId": "phase-5",
+        "toInstanceId": "phase-6"
+      }
+    ]
+  }
+}

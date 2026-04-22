@@ -1,0 +1,385 @@
+{
+  "dataset_id": "classification__hard__hetulmehta_website-classification__website_classification",
+  "filename": "website_classification.csv",
+  "file_path": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification.csv",
+  "task_type": "classification",
+  "tier": "hard",
+  "target_column": null,
+  "generated_at": "2026-04-20T22:40:16.807408+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Train a classification model to classify websites into different categories",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_loader",
+            "agent_name": "Data Loader"
+          }
+        },
+        "planner_mcp_server": "Filesystem",
+        "resolved_mcp_server": {
+          "id": "filesystem",
+          "name": "Filesystem",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "load_csv",
+            "description": "Loads the CSV dataset into a structured format",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification.csv",
+              "encoding": "utf-8",
+              "delimiter": ","
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification.csv",
+              "encoding": "utf-8",
+              "delimiter": ","
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "get_column_info",
+            "description": "Retrieves information about the columns in the dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification.csv",
+              "column_name": "Category"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification.csv",
+              "column_name": "Category"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "infer_data_types",
+            "description": "Infers the data types of each column in the dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification.csv"
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "get_basic_stats",
+            "description": "Calculates basic statistics about the dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification.csv"
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Data loading and exploration"
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "data_preprocessor",
+          "name": "data_preprocessor",
+          "yaml_path": "config/agents/data_preprocessor.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_preprocessor",
+            "agent_name": "data_preprocessor"
+          }
+        },
+        "planner_mcp_server": "Data Preparation Server",
+        "resolved_mcp_server": {
+          "id": "python-data_preparation",
+          "name": "Data Preparation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "handle_missing_values",
+            "description": "Handles missing values in the dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification.csv",
+              "strategy": "mean",
+              "columns": [
+                "cleaned_website_text"
+              ],
+              "output_filepath": "/app/temporary_data/preprocessed_dataset.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification.csv",
+              "strategy": "mean",
+              "columns": [
+                "cleaned_website_text"
+              ],
+              "output_filepath": "/app/temporary_data/preprocessed_dataset.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "remove_duplicates",
+            "description": "Removes duplicate rows from the dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification.csv",
+              "subset": [
+                "cleaned_website_text",
+                "Category"
+              ],
+              "keep": "first",
+              "output_filepath": "/app/temporary_data/preprocessed_dataset.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification.csv",
+              "subset": [
+                "cleaned_website_text",
+                "Category"
+              ],
+              "keep": "first",
+              "output_filepath": "/app/temporary_data/preprocessed_dataset.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "encode_categorical",
+            "description": "Encodes categorical variables in the dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification.csv",
+              "columns": [
+                "Category"
+              ],
+              "method": "one-hot-encoding",
+              "output_filepath": "/app/temporary_data/preprocessed_dataset.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification.csv",
+              "columns": [
+                "Category"
+              ],
+              "method": "one-hot-encoding",
+              "output_filepath": "/app/temporary_data/preprocessed_dataset.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Data preprocessing"
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": "model_trainer",
+          "name": "model_trainer",
+          "yaml_path": "config/agents/model_trainer.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_trainer",
+            "agent_name": "model_trainer"
+          }
+        },
+        "planner_mcp_server": "Model Training Server",
+        "resolved_mcp_server": {
+          "id": "python-model_training",
+          "name": "Model Training Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "train_classification_model",
+            "description": "Trains a classification model on the preprocessed dataset",
+            "tool_parameters": {
+              "filepath": "/app/temporary_data/preprocessed_dataset.csv",
+              "target_column": "Category",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {},
+              "model_save_path": "/app/models/model.h5"
+            },
+            "planner_parameters": {
+              "filepath": "/app/temporary_data/preprocessed_dataset.csv",
+              "target_column": "Category",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {},
+              "model_save_path": "/app/models/model.h5"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "evaluate_classification_model",
+            "description": "Evaluates the performance of the trained classification model",
+            "tool_parameters": {
+              "model_path": "/app/models/model.h5",
+              "test_data_path": "/app/temporary_data/preprocessed_dataset.csv",
+              "target_column": "Category",
+              "filepath": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification.csv"
+            },
+            "planner_parameters": {
+              "model_path": "/app/models/model.h5",
+              "test_data_path": "/app/temporary_data/preprocessed_dataset.csv",
+              "target_column": "Category"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "get_classification_report",
+            "description": "Calculates the classification report for the trained model",
+            "tool_parameters": {
+              "model_path": "/app/models/model.h5",
+              "test_data_path": "/app/temporary_data/preprocessed_dataset.csv",
+              "target_column": "Category"
+            },
+            "planner_parameters": {
+              "model_path": "/app/models/model.h5",
+              "test_data_path": "/app/temporary_data/preprocessed_dataset.csv",
+              "target_column": "Category"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "calculate_confusion_matrix",
+            "description": "Calculates the confusion matrix for the trained model",
+            "tool_parameters": {
+              "model_path": "/app/models/model.h5",
+              "test_data_path": "/app/temporary_data/preprocessed_dataset.csv",
+              "target_column": "Category",
+              "normalize": true
+            },
+            "planner_parameters": {
+              "model_path": "/app/models/model.h5",
+              "test_data_path": "/app/temporary_data/preprocessed_dataset.csv",
+              "target_column": "Category",
+              "normalize": true
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "predict_with_model",
+            "description": "Uses the trained model to make predictions on new data",
+            "tool_parameters": {
+              "model_path": "/app/models/model.h5",
+              "input_data_path": "/app/temporary_data/preprocessed_dataset.csv",
+              "output_path": "/app/predictions/predictions.csv"
+            },
+            "planner_parameters": {
+              "model_path": "/app/models/model.h5",
+              "input_data_path": "/app/temporary_data/preprocessed_dataset.csv",
+              "output_path": "/app/predictions/predictions.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "logistic",
+        "rationale": "Model training and evaluation"
+      }
+    ],
+    "mcp_servers": [
+      {
+        "id": "filesystem",
+        "name": "Filesystem",
+        "command": "npx",
+        "args": [
+          "-y",
+          "@modelcontextprotocol/server-filesystem",
+          "/app"
+        ],
+        "env": {},
+        "is_available": true,
+        "description": "Access and manage project files under /app (catalog, configs, data)"
+      },
+      {
+        "id": "python-data_preparation",
+        "name": "Data Preparation Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/data_preparation/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Data transformation, feature engineering, and dataset preparation tools"
+      },
+      {
+        "id": "python-model_training",
+        "name": "Model Training Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_training/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Machine learning model training, hyperparameter tuning, and optimization"
+      }
+    ],
+    "validation": {
+      "status": "valid",
+      "issue_count": 0,
+      "blocking_issue_count": 0,
+      "issues": []
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "data_preprocessor",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_trainer",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      }
+    ]
+  }
+}

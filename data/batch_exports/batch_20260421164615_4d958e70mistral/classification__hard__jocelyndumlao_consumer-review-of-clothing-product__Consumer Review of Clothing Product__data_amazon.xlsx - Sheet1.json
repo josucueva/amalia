@@ -1,0 +1,242 @@
+{
+  "dataset_id": "classification__hard__jocelyndumlao_consumer-review-of-clothing-product__Consumer Review of Clothing Product__data_amazon.xlsx - Sheet1",
+  "filename": "data_amazon.xlsx - Sheet1.csv",
+  "file_path": "/app/data/uploads/datasets/classification/hard/jocelyndumlao_consumer-review-of-clothing-product/Consumer Review of Clothing Product/data_amazon.xlsx - Sheet1.csv",
+  "task_type": "classification",
+  "tier": "hard",
+  "target_column": null,
+  "generated_at": "2026-04-21T17:41:43.672470+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Preprocess the dataset and build a classification model for predicting 'Durability'",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/hard/jocelyndumlao_consumer-review-of-clothing-product/Consumer Review of Clothing Product/data_amazon.xlsx - Sheet1.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/hard/jocelyndumlao_consumer-review-of-clothing-product/Consumer Review of Clothing Product/data_amazon.xlsx - Sheet1.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_preprocessor",
+          "name": "data_preprocessor",
+          "yaml_path": "config/agents/data_preprocessor.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_preprocessor",
+            "agent_name": "data_preprocessor"
+          }
+        },
+        "planner_mcp_server": "",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "handle_missing_values",
+            "description": "Handle missing values in the 'Title' column by filling with a suitable value.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/jocelyndumlao_consumer-review-of-clothing-product/Consumer Review of Clothing Product/data_amazon.xlsx - Sheet1.csv",
+              "strategy": "fill_with_mode",
+              "columns": [
+                "Cons_rating",
+                "Materials",
+                "Construction",
+                "Color",
+                "Finishing"
+              ],
+              "output_filepath": null
+            },
+            "planner_parameters": {
+              "strategy": "fill_with_mode"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "remove_duplicates",
+            "description": "Remove duplicate rows if any exist.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/jocelyndumlao_consumer-review-of-clothing-product/Consumer Review of Clothing Product/data_amazon.xlsx - Sheet1.csv",
+              "subset": null,
+              "keep": "first",
+              "output_filepath": null
+            },
+            "planner_parameters": {
+              "keep": "first"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "The dataset contains missing values and potential duplicates."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "model_trainer",
+          "name": "model_trainer",
+          "yaml_path": "config/agents/model_trainer.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_trainer",
+            "agent_name": "model_trainer"
+          }
+        },
+        "planner_mcp_server": "",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "train_classification_model",
+            "description": "Train a classification model to predict 'Durability'.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/jocelyndumlao_consumer-review-of-clothing-product/Consumer Review of Clothing Product/data_amazon.xlsx - Sheet1.csv",
+              "target_column": "Durability",
+              "model_type": "gradient_boosting",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "max_iter": 1000,
+                "C": 1.0,
+                "solver": "lbfgs"
+              },
+              "model_save_path": null
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/jocelyndumlao_consumer-review-of-clothing-product/Consumer Review of Clothing Product/data_amazon.xlsx - Sheet1.csv",
+              "target_column": "Durability",
+              "model_type": "gradient_boosting",
+              "test_size": 0.2,
+              "random_state": 42
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "logistic",
+        "rationale": "The task is a classification problem with 'Durability' as the target."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": "model_evaluator",
+          "name": "model_evaluator",
+          "yaml_path": "config/agents/model_evaluator.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_evaluator",
+            "agent_name": "model_evaluator"
+          }
+        },
+        "planner_mcp_server": "",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "evaluate_classification_model",
+            "description": "Evaluate the trained classification model.",
+            "tool_parameters": {
+              "model_path": "/app/data/uploads/datasets/classification/hard/jocelyndumlao_consumer-review-of-clothing-product/Consumer Review of Clothing Product/trained_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/classification/hard/jocelyndumlao_consumer-review-of-clothing-product/Consumer Review of Clothing Product/test_set.csv",
+              "target_column": "Durability",
+              "filepath": "/app/data/uploads/datasets/classification/hard/jocelyndumlao_consumer-review-of-clothing-product/Consumer Review of Clothing Product/data_amazon.xlsx - Sheet1.csv"
+            },
+            "planner_parameters": {
+              "model_path": "/app/data/uploads/datasets/classification/hard/jocelyndumlao_consumer-review-of-clothing-product/Consumer Review of Clothing Product/trained_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/classification/hard/jocelyndumlao_consumer-review-of-clothing-product/Consumer Review of Clothing Product/test_set.csv",
+              "target_column": "Durability"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "get_classification_report",
+            "description": "Generate a classification report for the model.",
+            "tool_parameters": {
+              "model_path": null,
+              "test_data_path": "/app/data/uploads/datasets/classification/hard/jocelyndumlao_consumer-review-of-clothing-product/Consumer Review of Clothing Product/data_amazon.xlsx - Sheet1.csv",
+              "target_column": "Durability"
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [
+              "model_path"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "logistic",
+        "rationale": "Evaluate the performance of the trained classification model."
+      }
+    ],
+    "mcp_servers": [],
+    "validation": {
+      "status": "warning",
+      "issue_count": 4,
+      "blocking_issue_count": 0,
+      "issues": [
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server ''",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server ''",
+          "phase_number": 2
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server ''",
+          "phase_number": 3
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'get_classification_report' has unresolved required parameters: model_path",
+          "phase_number": 3,
+          "tool_name": "get_classification_report",
+          "missing_parameters": [
+            "model_path"
+          ]
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_preprocessor",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "model_trainer",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_evaluator",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      }
+    ]
+  }
+}

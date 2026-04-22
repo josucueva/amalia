@@ -23,6 +23,7 @@ from __future__ import annotations
 import argparse
 import json
 import pickle
+import re
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -117,10 +118,163 @@ def ensure_parent(path: Path) -> None:
 def normalize_model_type(model_type: Optional[str], task_type: str) -> str:
     mt = (model_type or "").strip().lower()
     if mt in {"", "none", "null"}:
-        return "random_forest"
-    if mt == "random_forest_regressor":
-        return "random_forest"
-    return mt
+        return ""
+
+    aliases = {
+        "random_forest_classifier": "random_forest",
+        "random_forest_regressor": "random_forest",
+        "linear_regression": "linear",
+        "logistic_regression": "logistic",
+        "svc": "svm",
+        "kneighbors": "knn",
+    }
+    return aliases.get(mt, mt)
+
+
+def collect_candidate_filepaths(
+    payload: Dict[str, Any],
+    workflow: Dict[str, Any],
+    primary_filepath: Optional[str],
+) -> List[str]:
+    candidates: List[str] = []
+    if primary_filepath:
+        candidates.append(str(primary_filepath))
+
+    payload_filepath = payload.get("file_path")
+    if payload_filepath:
+        candidates.append(str(payload_filepath))
+
+    for step in workflow.get("steps", []):
+        for tool in step.get("tools", []):
+            params = tool.get("tool_parameters") or {}
+            if not isinstance(params, dict):
+                continue
+            for key in ("filepath", "test_data_path", "input_data_path"):
+                value = params.get(key)
+                if value:
+                    candidates.append(str(value))
+
+    deduped: List[str] = []
+    seen = set()
+    for candidate in candidates:
+        marker = candidate.replace("\\", "/").strip().lower()
+        if not marker or marker in seen:
+            continue
+        seen.add(marker)
+        deduped.append(candidate)
+    return deduped
+
+
+def maybe_unwrap_transformed_filename(raw_path: str) -> Optional[str]:
+    normalized = str(raw_path).replace("\\", "/")
+    if not normalized.lower().endswith(".csv"):
+        return None
+
+    filename = Path(normalized).name
+    stem = Path(filename).stem
+    suffix_patterns = [
+        r"_scaled$",
+        r"_encoded$",
+        r"_preprocessed$",
+        r"_cleaned$",
+        r"_train$",
+        r"_test$",
+    ]
+    updated = stem
+    for pattern in suffix_patterns:
+        updated = re.sub(pattern, "", updated, flags=re.IGNORECASE)
+
+    if updated == stem:
+        return None
+    return str(Path(normalized).with_name(f"{updated}.csv"))
+
+
+def resolve_dataset_file(
+    requested_path: Optional[str],
+    candidates: List[str],
+) -> Tuple[Optional[Path], Optional[str]]:
+    checked: List[str] = []
+
+    def _attempt(raw: Optional[str]) -> Optional[Path]:
+        if not raw:
+            return None
+        checked.append(str(raw))
+        resolved = resolve_artifact_path(str(raw))
+        return resolved if resolved.exists() else None
+
+    direct = _attempt(requested_path)
+    if direct:
+        return direct, None
+
+    transformed_hint = maybe_unwrap_transformed_filename(str(requested_path or ""))
+    if transformed_hint:
+        transformed_candidate = _attempt(transformed_hint)
+        if transformed_candidate:
+            return transformed_candidate, f"Recovered source dataset path from transformed filename: {requested_path}"
+
+    for candidate in candidates:
+        resolved = _attempt(candidate)
+        if resolved:
+            return resolved, f"Used fallback candidate filepath: {candidate}"
+
+    attempted = ", ".join(checked[:8]) if checked else "<none>"
+    return None, f"Dataset file not found. attempted_paths=[{attempted}]"
+
+
+def sanitize_hyperparameters(task_type: str, model_type: str, hyperparameters: Dict[str, Any]) -> Dict[str, Any]:
+    allowed: Dict[Tuple[str, str], set[str]] = {
+        ("classification", "logistic"): {"max_iter", "C", "solver", "penalty", "class_weight"},
+        ("classification", "decision_tree"): {"max_depth", "min_samples_split", "min_samples_leaf", "criterion"},
+        ("classification", "random_forest"): {"n_estimators", "max_depth", "min_samples_split", "min_samples_leaf", "criterion", "max_features"},
+        ("classification", "svm"): {"C", "kernel", "gamma", "degree", "class_weight"},
+        ("classification", "knn"): {"n_neighbors", "weights", "metric"},
+        ("classification", "naive_bayes"): {"var_smoothing"},
+        ("classification", "gradient_boosting"): {"n_estimators", "learning_rate", "max_depth", "subsample"},
+        ("regression", "linear"): {"fit_intercept", "positive"},
+        ("regression", "ridge"): {"alpha", "fit_intercept", "solver"},
+        ("regression", "lasso"): {"alpha", "fit_intercept", "max_iter"},
+        ("regression", "decision_tree"): {"max_depth", "min_samples_split", "min_samples_leaf", "criterion"},
+        ("regression", "random_forest"): {"n_estimators", "max_depth", "min_samples_split", "min_samples_leaf", "criterion", "max_features"},
+        ("regression", "svr"): {"C", "kernel", "gamma", "degree", "epsilon"},
+        ("regression", "knn"): {"n_neighbors", "weights", "metric"},
+        ("regression", "gradient_boosting"): {"n_estimators", "learning_rate", "max_depth", "subsample"},
+    }
+
+    key = (task_type, model_type)
+    permitted = allowed.get(key)
+    if not permitted:
+        return {}
+
+    cleaned: Dict[str, Any] = {}
+    for name, value in (hyperparameters or {}).items():
+        if name in permitted:
+            cleaned[name] = value
+    return cleaned
+
+
+def preprocess_for_training(
+    df: pd.DataFrame,
+    target_column: str,
+) -> Tuple[pd.DataFrame, pd.Series]:
+    subset = df.copy()
+    subset = subset.dropna(subset=[target_column])
+
+    X = subset.drop(columns=[target_column])
+    y = subset[target_column]
+
+    for col in X.columns:
+        if pd.api.types.is_numeric_dtype(X[col]):
+            X[col] = X[col].fillna(X[col].median())
+        else:
+            mode_series = X[col].mode(dropna=True)
+            fill_value = mode_series.iloc[0] if not mode_series.empty else "missing"
+            X[col] = X[col].fillna(fill_value)
+
+    X = encode_categorical_features(X)
+    X = X.replace([np.inf, -np.inf], np.nan)
+    X = X.fillna(0)
+
+    return X, y
 
 
 def choose_train_tool(workflow: Dict[str, Any]) -> Tuple[Optional[str], Dict[str, Any], Optional[str]]:
@@ -233,9 +387,27 @@ def run_single_pipeline(artifact_path: Path, output_models_dir: Path) -> Pipelin
         train_params.get("model_type") or selected_model_type,
         task_type,
     )
-    test_size = float(train_params.get("test_size") or 0.2)
+    raw_test_size = train_params.get("test_size")
+    try:
+        test_size = float(raw_test_size if raw_test_size is not None else 0.2)
+    except (TypeError, ValueError):
+        test_size = 0.2
+    if test_size <= 0 or test_size >= 1:
+        test_size = 0.2
     random_state = int(train_params.get("random_state") or 42)
     hyperparameters = train_params.get("hyperparameters") or {}
+
+    if not model_type:
+        return PipelineRunResult(
+            dataset_id=dataset_id,
+            artifact_file=artifact_path.name,
+            task_type=task_type,
+            target_column=target_column,
+            model_type=None,
+            status="failed",
+            error="Missing model_type in artifact training parameters",
+            metrics={},
+        )
 
     if not filepath:
         return PipelineRunResult(
@@ -249,8 +421,13 @@ def run_single_pipeline(artifact_path: Path, output_models_dir: Path) -> Pipelin
             metrics={},
         )
 
-    resolved_file = resolve_artifact_path(str(filepath))
-    if not resolved_file.exists():
+    candidate_paths = collect_candidate_filepaths(
+        payload=payload,
+        workflow=workflow,
+        primary_filepath=filepath,
+    )
+    resolved_file, path_note = resolve_dataset_file(filepath, candidate_paths)
+    if not resolved_file:
         return PipelineRunResult(
             dataset_id=dataset_id,
             artifact_file=artifact_path.name,
@@ -258,7 +435,7 @@ def run_single_pipeline(artifact_path: Path, output_models_dir: Path) -> Pipelin
             target_column=target_column,
             model_type=model_type,
             status="failed",
-            error=f"Dataset file not found: {filepath}",
+            error=path_note or f"Dataset file not found: {filepath}",
             metrics={},
         )
 
@@ -276,20 +453,41 @@ def run_single_pipeline(artifact_path: Path, output_models_dir: Path) -> Pipelin
             metrics={},
         )
 
-    X = encode_categorical_features(df.drop(columns=[target_column]))
-    y = df[target_column]
+    X, y = preprocess_for_training(df=df, target_column=target_column)
+    if X.empty or len(y) < 2:
+        return PipelineRunResult(
+            dataset_id=dataset_id,
+            artifact_file=artifact_path.name,
+            task_type=task_type,
+            target_column=target_column,
+            model_type=model_type,
+            status="failed",
+            error="Insufficient usable rows after cleaning missing target/feature values",
+            metrics={},
+        )
+
+    stratify = None
+    if task_type == "classification" and len(np.unique(y)) > 1:
+        stratify = y
 
     X_train, X_test, y_train, y_test = train_test_split(
         X,
         y,
         test_size=test_size,
         random_state=random_state,
+        stratify=stratify,
+    )
+
+    sanitized_hyperparameters = sanitize_hyperparameters(
+        task_type=task_type,
+        model_type=model_type,
+        hyperparameters=hyperparameters,
     )
 
     model = build_model(
         task_type=task_type,
         model_type=model_type,
-        hyperparameters=hyperparameters,
+        hyperparameters=sanitized_hyperparameters,
         random_state=random_state,
     )
     model.fit(X_train, y_train)
@@ -301,16 +499,23 @@ def run_single_pipeline(artifact_path: Path, output_models_dir: Path) -> Pipelin
 
     metrics: Dict[str, Any] = {
         "dataset_rows": int(len(df)),
+        "usable_rows": int(len(X)),
         "feature_count": int(X.shape[1]),
         "target_column": target_column,
         "model_type": model_type,
         "model_path": str(model_path),
+        "resolved_dataset_path": str(resolved_file),
     }
+    if path_note:
+        metrics["filepath_resolution_note"] = path_note
+    dropped_hyperparameter_count = max(0, len(hyperparameters) - len(sanitized_hyperparameters))
+    if dropped_hyperparameter_count:
+        metrics["dropped_hyperparameters"] = dropped_hyperparameter_count
 
     if task_type == "classification":
         y_pred = model.predict(X_test)
         unique_count = len(np.unique(y_test))
-        average = "binary" if unique_count == 2 else "weighted"
+        average = "weighted"
 
         metrics.update(
             {

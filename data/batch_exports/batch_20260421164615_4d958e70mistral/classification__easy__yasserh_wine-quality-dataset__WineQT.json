@@ -1,0 +1,30 @@
+{
+  "dataset_id": "classification__easy__yasserh_wine-quality-dataset__WineQT",
+  "filename": "WineQT.csv",
+  "file_path": "/app/data/uploads/datasets/classification/easy/yasserh_wine-quality-dataset/WineQT.csv",
+  "task_type": "classification",
+  "tier": "easy",
+  "target_column": null,
+  "generated_at": "2026-04-21T17:22:17.177238+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a classification model for the wine quality prediction task",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/easy/yasserh_wine-quality-dataset/WineQT.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/easy/yasserh_wine-quality-dataset/WineQT.csv"
+    },
+    "steps": [],
+    "mcp_servers": [],
+    "validation": {
+      "status": "valid",
+      "issue_count": 0,
+      "blocking_issue_count": 0,
+      "issues": []
+    },
+    "nodes": [],
+    "connections": []
+  }
+}

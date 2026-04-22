@@ -1,0 +1,352 @@
+{
+  "dataset_id": "classification__easy__yasserh_wine-quality-dataset__WineQT",
+  "filename": "WineQT.csv",
+  "file_path": "/app/data/uploads/datasets/classification/easy/yasserh_wine-quality-dataset/WineQT.csv",
+  "task_type": "classification",
+  "tier": "easy",
+  "target_column": null,
+  "generated_at": "2026-04-20T22:35:43.379044+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a classification model for wine quality",
+    "complexity": "simple",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/easy/yasserh_wine-quality-dataset/WineQT.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/easy/yasserh_wine-quality-dataset/WineQT.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_loader",
+            "agent_name": "Data Loader"
+          }
+        },
+        "planner_mcp_server": "Filesystem",
+        "resolved_mcp_server": {
+          "id": "filesystem",
+          "name": "Filesystem",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "load_csv",
+            "description": null,
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/yasserh_wine-quality-dataset/WineQT.csv",
+              "encoding": "utf-8",
+              "delimiter": ","
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": null
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": null,
+          "name": "Data Preparation Server",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": null,
+            "agent_name": "Data Preparation Server"
+          }
+        },
+        "planner_mcp_server": "Data Loading Server",
+        "resolved_mcp_server": {
+          "id": "python-data_loading",
+          "name": "Data Loading Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "infer_data_types",
+            "description": null,
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/yasserh_wine-quality-dataset/WineQT.csv"
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "get_column_info",
+            "description": null,
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/yasserh_wine-quality-dataset/WineQT.csv",
+              "column_name": null
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [
+              "column_name"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "validate_csv_structure",
+            "description": null,
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/yasserh_wine-quality-dataset/WineQT.csv",
+              "expected_columns": null
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": null
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": null,
+          "name": "Model Training Server",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": null,
+            "agent_name": "Model Training Server"
+          }
+        },
+        "planner_mcp_server": "Model Training Server",
+        "resolved_mcp_server": {
+          "id": "python-model_training",
+          "name": "Model Training Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "train_classification_model",
+            "description": null,
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/yasserh_wine-quality-dataset/WineQT.csv",
+              "target_column": "Id",
+              "model_type": "logistic",
+              "test_size": 0.2,
+              "random_state": null,
+              "hyperparameters": {
+                "max_iter": 1000,
+                "C": 1.0,
+                "solver": "lbfgs"
+              },
+              "model_save_path": null
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [
+              "random_state"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "logistic",
+        "rationale": null
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": null,
+          "name": "Model Evaluation Server",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": null,
+            "agent_name": "Model Evaluation Server"
+          }
+        },
+        "planner_mcp_server": "Model Evaluation Server",
+        "resolved_mcp_server": {
+          "id": "python-model_evaluation",
+          "name": "Model Evaluation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "evaluate_classification_model",
+            "description": null,
+            "tool_parameters": {
+              "model_path": null,
+              "test_data_path": "/app/data/uploads/datasets/classification/easy/yasserh_wine-quality-dataset/WineQT.csv",
+              "target_column": "Id",
+              "filepath": "/app/data/uploads/datasets/classification/easy/yasserh_wine-quality-dataset/WineQT.csv"
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [
+              "model_path"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": null
+      }
+    ],
+    "mcp_servers": [
+      {
+        "id": "filesystem",
+        "name": "Filesystem",
+        "command": "npx",
+        "args": [
+          "-y",
+          "@modelcontextprotocol/server-filesystem",
+          "/app"
+        ],
+        "env": {},
+        "is_available": true,
+        "description": "Access and manage project files under /app (catalog, configs, data)"
+      },
+      {
+        "id": "python-data_loading",
+        "name": "Data Loading Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/data_loading/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "CSV file loading, analysis, and validation tools"
+      },
+      {
+        "id": "python-model_evaluation",
+        "name": "Model Evaluation Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_evaluation/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Model evaluation, metrics calculation, and error analysis tools"
+      },
+      {
+        "id": "python-model_training",
+        "name": "Model Training Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_training/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Machine learning model training, hyperparameter tuning, and optimization"
+      }
+    ],
+    "validation": {
+      "status": "uncertain",
+      "issue_count": 6,
+      "blocking_issue_count": 3,
+      "issues": [
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='' name='Data Preparation Server'",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'get_column_info' has unresolved required parameters: column_name",
+          "phase_number": 2,
+          "tool_name": "get_column_info",
+          "missing_parameters": [
+            "column_name"
+          ]
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='' name='Model Training Server'",
+          "phase_number": 3
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'train_classification_model' has unresolved required parameters: random_state",
+          "phase_number": 3,
+          "tool_name": "train_classification_model",
+          "missing_parameters": [
+            "random_state"
+          ]
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='' name='Model Evaluation Server'",
+          "phase_number": 4
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'evaluate_classification_model' has unresolved required parameters: model_path",
+          "phase_number": 4,
+          "tool_name": "evaluate_classification_model",
+          "missing_parameters": [
+            "model_path"
+          ]
+        }
+      ],
+      "allow_persist_with_issues": true
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "Data Preparation Server",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "Model Training Server",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "Model Evaluation Server",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      }
+    ]
+  }
+}

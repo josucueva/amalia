@@ -1,0 +1,193 @@
+{
+  "dataset_id": "classification__hard__prox37_twitter-multilabel-classification-dataset__mLabel_tweets",
+  "filename": "mLabel_tweets.csv",
+  "file_path": "/app/data/uploads/datasets/classification/hard/prox37_twitter-multilabel-classification-dataset/mLabel_tweets.csv",
+  "task_type": "classification",
+  "tier": "hard",
+  "target_column": null,
+  "generated_at": "2026-04-20T22:42:56.815589+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a classification model for multilabel classification task",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/hard/prox37_twitter-multilabel-classification-dataset/mLabel_tweets.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/hard/prox37_twitter-multilabel-classification-dataset/mLabel_tweets.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_loader",
+            "agent_name": "Data Loader"
+          }
+        },
+        "planner_mcp_server": "Filesystem",
+        "resolved_mcp_server": {
+          "id": "filesystem",
+          "name": "Filesystem",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "load_csv",
+            "description": "Load the CSV dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/prox37_twitter-multilabel-classification-dataset/mLabel_tweets.csv",
+              "encoding": "utf-8",
+              "delimiter": ","
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/prox37_twitter-multilabel-classification-dataset/mLabel_tweets.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "get_column_info",
+            "description": "Get column information from the loaded CSV dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/prox37_twitter-multilabel-classification-dataset/mLabel_tweets.csv",
+              "column_name": "labels"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/prox37_twitter-multilabel-classification-dataset/mLabel_tweets.csv",
+              "column_name": "labels"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "infer_data_types",
+            "description": "Infer data types from the loaded CSV dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/prox37_twitter-multilabel-classification-dataset/mLabel_tweets.csv"
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "logistic",
+        "rationale": "Load and preprocess the dataset for model training"
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "model_trainer",
+          "name": "model_trainer",
+          "yaml_path": "config/agents/model_trainer.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_trainer",
+            "agent_name": "Model Trainer"
+          }
+        },
+        "planner_mcp_server": "Model Training Server",
+        "resolved_mcp_server": {
+          "id": "python-model_training",
+          "name": "Model Training Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "train_classification_model",
+            "description": "Train a classification model for the multilabel task",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/prox37_twitter-multilabel-classification-dataset/mLabel_tweets.csv",
+              "target_column": "labels",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "n_estimators": 100
+              },
+              "model_save_path": "/app/models/classification/model.pkl"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/prox37_twitter-multilabel-classification-dataset/mLabel_tweets.csv",
+              "target_column": "labels",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "n_estimators": 100
+              },
+              "model_save_path": "/app/models/classification/model.pkl"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "logistic",
+        "rationale": "Train a classification model for the multilabel task using random forest algorithm"
+      }
+    ],
+    "mcp_servers": [
+      {
+        "id": "filesystem",
+        "name": "Filesystem",
+        "command": "npx",
+        "args": [
+          "-y",
+          "@modelcontextprotocol/server-filesystem",
+          "/app"
+        ],
+        "env": {},
+        "is_available": true,
+        "description": "Access and manage project files under /app (catalog, configs, data)"
+      },
+      {
+        "id": "python-model_training",
+        "name": "Model Training Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_training/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Machine learning model training, hyperparameter tuning, and optimization"
+      }
+    ],
+    "validation": {
+      "status": "valid",
+      "issue_count": 0,
+      "blocking_issue_count": 0,
+      "issues": []
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "model_trainer",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      }
+    ]
+  }
+}
