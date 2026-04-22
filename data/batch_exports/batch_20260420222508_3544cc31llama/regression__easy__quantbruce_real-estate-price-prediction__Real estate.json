@@ -1,0 +1,30 @@
+{
+  "dataset_id": "regression__easy__quantbruce_real-estate-price-prediction__Real estate",
+  "filename": "Real estate.csv",
+  "file_path": "/app/data/uploads/datasets/regression/easy/quantbruce_real-estate-price-prediction/Real estate.csv",
+  "task_type": "regression",
+  "tier": "easy",
+  "target_column": null,
+  "generated_at": "2026-04-20T22:57:43.823537+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a regression model using Real estate dataset",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/regression/easy/quantbruce_real-estate-price-prediction/Real estate.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/regression/easy/quantbruce_real-estate-price-prediction/Real estate.csv"
+    },
+    "steps": [],
+    "mcp_servers": [],
+    "validation": {
+      "status": "valid",
+      "issue_count": 0,
+      "blocking_issue_count": 0,
+      "issues": []
+    },
+    "nodes": [],
+    "connections": []
+  }
+}

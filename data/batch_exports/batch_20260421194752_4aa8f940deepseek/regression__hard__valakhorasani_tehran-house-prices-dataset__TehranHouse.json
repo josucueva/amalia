@@ -1,0 +1,476 @@
+{
+  "dataset_id": "regression__hard__valakhorasani_tehran-house-prices-dataset__TehranHouse",
+  "filename": "TehranHouse.csv",
+  "file_path": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse.csv",
+  "task_type": "regression",
+  "tier": "hard",
+  "target_column": null,
+  "generated_at": "2026-04-21T21:03:11.379349+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a regression model to predict house prices in USD using features like area, rooms, amenities, and location.",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_loader",
+            "agent_name": "Data Loader"
+          }
+        },
+        "planner_mcp_server": "Data Loading Server",
+        "resolved_mcp_server": {
+          "id": "python-data_loading",
+          "name": "Data Loading Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "load_csv",
+            "description": "Load the Tehran house prices dataset for initial inspection",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse.csv",
+              "encoding": "utf-8",
+              "delimiter": ","
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse.csv",
+              "encoding": null,
+              "delimiter": null
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "read_file_head",
+            "description": "Examine the first rows to confirm data structure",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse.csv",
+              "n_rows": 10
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse.csv",
+              "n_rows": 10
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Initial data loading and verification of dataset structure before preprocessing."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "data_preprocessor",
+          "name": "data_preprocessor",
+          "yaml_path": "config/agents/data_preprocessor.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_preprocessor",
+            "agent_name": "data_preprocessor"
+          }
+        },
+        "planner_mcp_server": "Data Preparation Server",
+        "resolved_mcp_server": {
+          "id": "python-data_preparation",
+          "name": "Data Preparation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "remove_duplicates",
+            "description": "Remove 7 duplicate rows identified in dataset analysis",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse.csv",
+              "subset": null,
+              "keep": "first",
+              "output_filepath": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse_cleaned.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse.csv",
+              "subset": null,
+              "keep": "first",
+              "output_filepath": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse_cleaned.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "handle_missing_values",
+            "description": "Handle single missing value in Address column using appropriate strategy",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse_cleaned.csv",
+              "strategy": "most_frequent",
+              "columns": [
+                "Address"
+              ],
+              "output_filepath": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse_no_missing.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse_cleaned.csv",
+              "strategy": "most_frequent",
+              "columns": [
+                "Address"
+              ],
+              "output_filepath": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse_no_missing.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "encode_categorical",
+            "description": "Encode categorical columns (Parking, Warehouse, Elevator, Address) for regression modeling",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse_no_missing.csv",
+              "columns": [
+                "Parking",
+                "Warehouse",
+                "Elevator",
+                "Address"
+              ],
+              "method": "onehot",
+              "output_filepath": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse_encoded.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse_no_missing.csv",
+              "columns": [
+                "Parking",
+                "Warehouse",
+                "Elevator",
+                "Address"
+              ],
+              "method": "onehot",
+              "output_filepath": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse_encoded.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "scale_features",
+            "description": "Scale numerical features (Area, Room, Price) to normalize their ranges",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse_encoded.csv",
+              "columns": [
+                "Area",
+                "Room",
+                "Price"
+              ],
+              "method": "standard",
+              "output_filepath": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse_scaled.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse_encoded.csv",
+              "columns": [
+                "Area",
+                "Room",
+                "Price"
+              ],
+              "method": "standard",
+              "output_filepath": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse_scaled.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Clean and prepare data by removing duplicates, handling missing values, encoding categorical variables, and scaling numerical features."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": "model_trainer",
+          "name": "model_trainer",
+          "yaml_path": "config/agents/model_trainer.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_trainer",
+            "agent_name": "model_trainer"
+          }
+        },
+        "planner_mcp_server": "Model Training Server",
+        "resolved_mcp_server": {
+          "id": "python-model_training",
+          "name": "Model Training Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "train_regression_model",
+            "description": "Train a random forest regression model to predict Price(USD) using all available features",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse_scaled.csv",
+              "target_column": "Price(USD)",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "fit_intercept": true
+              },
+              "model_save_path": "/app/data/models/tehran_house_price_model.pkl"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse_scaled.csv",
+              "target_column": "Price(USD)",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": null,
+              "model_save_path": "/app/data/models/tehran_house_price_model.pkl"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "cross_validate_model",
+            "description": "Perform cross-validation to assess model stability and generalization",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse_scaled.csv",
+              "target_column": "Price(USD)",
+              "model_type": "random_forest",
+              "task": "regression",
+              "cv_folds": 5,
+              "random_state": 42
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse_scaled.csv",
+              "target_column": "Price(USD)",
+              "model_type": "random_forest",
+              "task": "regression",
+              "cv_folds": 5,
+              "random_state": 42
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "linear",
+        "rationale": "Train a robust regression model using random forest (handles mixed feature types well) and validate with cross-validation."
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": "model_evaluator",
+          "name": "model_evaluator",
+          "yaml_path": "config/agents/model_evaluator.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_evaluator",
+            "agent_name": "model_evaluator"
+          }
+        },
+        "planner_mcp_server": "Model Evaluation Server",
+        "resolved_mcp_server": {
+          "id": "python-model_evaluation",
+          "name": "Model Evaluation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "evaluate_regression_model",
+            "description": "Evaluate the trained regression model on test data using regression metrics",
+            "tool_parameters": {
+              "model_path": "/app/data/models/tehran_house_price_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse_scaled.csv",
+              "target_column": "Price(USD)",
+              "filepath": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse.csv"
+            },
+            "planner_parameters": {
+              "model_path": "/app/data/models/tehran_house_price_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse_scaled.csv",
+              "target_column": "Price(USD)"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "calculate_residuals",
+            "description": "Calculate and analyze residuals to understand prediction errors",
+            "tool_parameters": {
+              "model_path": "/app/data/models/tehran_house_price_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse_scaled.csv",
+              "target_column": "Price(USD)"
+            },
+            "planner_parameters": {
+              "model_path": "/app/data/models/tehran_house_price_model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse_scaled.csv",
+              "target_column": "Price(USD)"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "save_evaluation_results",
+            "description": "Save evaluation metrics and results for future reference",
+            "tool_parameters": {
+              "metrics": null,
+              "task_type": "regression",
+              "model_name": "tehran_house_price_model",
+              "dataset_name": "TehranHouse",
+              "notes": "Random forest regression model for Tehran house price prediction",
+              "tags": [
+                "real_estate",
+                "regression",
+                "iran"
+              ],
+              "pipeline": "data_preprocessing->random_forest",
+              "registry_path": "/app/data/evaluation_results/"
+            },
+            "planner_parameters": {
+              "metrics": null,
+              "task_type": "regression",
+              "model_name": "tehran_house_price_model",
+              "dataset_name": "TehranHouse",
+              "notes": "Random forest regression model for Tehran house price prediction",
+              "tags": [
+                "real_estate",
+                "regression",
+                "iran"
+              ],
+              "pipeline": "data_preprocessing->random_forest",
+              "registry_path": "/app/data/evaluation_results/"
+            },
+            "missing_required_parameters": [
+              "metrics"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "linear",
+        "rationale": "Comprehensive evaluation of the regression model's performance, error analysis, and persistence of results."
+      }
+    ],
+    "mcp_servers": [
+      {
+        "id": "python-data_loading",
+        "name": "Data Loading Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/data_loading/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "CSV file loading, analysis, and validation tools"
+      },
+      {
+        "id": "python-data_preparation",
+        "name": "Data Preparation Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/data_preparation/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Data transformation, feature engineering, and dataset preparation tools"
+      },
+      {
+        "id": "python-model_evaluation",
+        "name": "Model Evaluation Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_evaluation/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Model evaluation, metrics calculation, and error analysis tools"
+      },
+      {
+        "id": "python-model_training",
+        "name": "Model Training Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_training/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Machine learning model training, hyperparameter tuning, and optimization"
+      }
+    ],
+    "validation": {
+      "status": "warning",
+      "issue_count": 1,
+      "blocking_issue_count": 0,
+      "issues": [
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'save_evaluation_results' has unresolved required parameters: metrics",
+          "phase_number": 4,
+          "tool_name": "save_evaluation_results",
+          "missing_parameters": [
+            "metrics"
+          ]
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "data_preprocessor",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_trainer",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "model_evaluator",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      }
+    ]
+  }
+}

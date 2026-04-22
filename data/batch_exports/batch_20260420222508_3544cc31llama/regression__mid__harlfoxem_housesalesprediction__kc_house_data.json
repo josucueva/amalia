@@ -1,0 +1,355 @@
+{
+  "dataset_id": "regression__mid__harlfoxem_housesalesprediction__kc_house_data",
+  "filename": "kc_house_data.csv",
+  "file_path": "/app/data/uploads/datasets/regression/mid/harlfoxem_housesalesprediction/kc_house_data.csv",
+  "task_type": "regression",
+  "tier": "mid",
+  "target_column": null,
+  "generated_at": "2026-04-20T23:14:28.614043+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a regression model for predicting sqft_lot15 based on kc_house_data.csv",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/regression/mid/harlfoxem_housesalesprediction/kc_house_data.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/regression/mid/harlfoxem_housesalesprediction/kc_house_data.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_loader",
+            "agent_name": "Data Loader"
+          }
+        },
+        "planner_mcp_server": "Filesystem",
+        "resolved_mcp_server": {
+          "id": "filesystem",
+          "name": "Filesystem",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "load_csv",
+            "description": "Load kc_house_data.csv from /app/data/uploads/datasets/regression/mid/harlfoxem_housesalesprediction/kc_house_data.csv",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/harlfoxem_housesalesprediction/kc_house_data.csv",
+              "encoding": "utf-8",
+              "delimiter": ","
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/harlfoxem_housesalesprediction/kc_house_data.csv",
+              "encoding": "utf-8",
+              "delimiter": ","
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "read_file_head",
+            "description": "Read first 10 rows of kc_house_data.csv",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/harlfoxem_housesalesprediction/kc_house_data.csv",
+              "n_rows": 10
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/harlfoxem_housesalesprediction/kc_house_data.csv",
+              "n_rows": 10
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Load data and inspect first rows"
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "data_preprocessor",
+          "name": "data_preprocessor",
+          "yaml_path": "config/agents/data_preprocessor.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_preprocessor",
+            "agent_name": "Data Preprocessor"
+          }
+        },
+        "planner_mcp_server": "Filesystem",
+        "resolved_mcp_server": {
+          "id": "filesystem",
+          "name": "Filesystem",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "infer_data_types",
+            "description": "Determine data types of kc_house_data.csv columns",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/harlfoxem_housesalesprediction/kc_house_data.csv"
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "detect_missing_values",
+            "description": "Identify missing values in kc_house_data.csv",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/harlfoxem_housesalesprediction/kc_house_data.csv"
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "detect_duplicates",
+            "description": "Check for duplicate rows in kc_house_data.csv",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/harlfoxem_housesalesprediction/kc_house_data.csv",
+              "subset": null
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Preprocess data to handle missing values, duplicates, and infer data types"
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": "model_trainer",
+          "name": "model_trainer",
+          "yaml_path": "config/agents/model_trainer.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_trainer",
+            "agent_name": "Model Trainer"
+          }
+        },
+        "planner_mcp_server": "Filesystem",
+        "resolved_mcp_server": {
+          "id": "filesystem",
+          "name": "Filesystem",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "train_regression_model",
+            "description": "Train regression model for predicting sqft_lot15 based on kc_house_data.csv",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/harlfoxem_housesalesprediction/kc_house_data.csv",
+              "target_column": "sqft_lot15",
+              "model_type": "gradient_boosting",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {},
+              "model_save_path": "/app/models/regression_model"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/harlfoxem_housesalesprediction/kc_house_data.csv",
+              "target_column": "sqft_lot15",
+              "model_type": "gradient_boosting",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {},
+              "model_save_path": "/app/models/regression_model"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "linear",
+        "rationale": "Train regression model using kc_house_data.csv and sqft_lot15 as target column"
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": null,
+          "name": "Model Evaluation",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_evaluation",
+            "agent_name": "Model Evaluation"
+          }
+        },
+        "planner_mcp_server": "Filesystem",
+        "resolved_mcp_server": {
+          "id": "filesystem",
+          "name": "Filesystem",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "evaluate_regression_model",
+            "description": "Evaluate performance of trained regression model on kc_house_data.csv",
+            "tool_parameters": {
+              "model_path": "/app/models/regression_model",
+              "test_data_path": "/app/data/uploads/datasets/regression/mid/harlfoxem_housesalesprediction/kc_house_data.csv",
+              "target_column": "sqft_lot15",
+              "filepath": "/app/data/uploads/datasets/regression/mid/harlfoxem_housesalesprediction/kc_house_data.csv"
+            },
+            "planner_parameters": {
+              "model_path": "/app/models/regression_model",
+              "test_data_path": "/app/data/uploads/datasets/regression/mid/harlfoxem_housesalesprediction/kc_house_data.csv",
+              "target_column": "sqft_lot15"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "calculate_residuals",
+            "description": "Calculate residuals of trained regression model on kc_house_data.csv",
+            "tool_parameters": {
+              "model_path": "/app/models/regression_model",
+              "test_data_path": "/app/data/uploads/datasets/regression/mid/harlfoxem_housesalesprediction/kc_house_data.csv",
+              "target_column": "sqft_lot15"
+            },
+            "planner_parameters": {
+              "model_path": "/app/models/regression_model",
+              "test_data_path": "/app/data/uploads/datasets/regression/mid/harlfoxem_housesalesprediction/kc_house_data.csv",
+              "target_column": "sqft_lot15"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "error_analysis",
+            "description": "Perform error analysis of trained regression model on kc_house_data.csv",
+            "tool_parameters": {
+              "model_path": "/app/models/regression_model",
+              "test_data_path": "/app/data/uploads/datasets/regression/mid/harlfoxem_housesalesprediction/kc_house_data.csv",
+              "target_column": "sqft_lot15",
+              "task": "regression"
+            },
+            "planner_parameters": {
+              "model_path": "/app/models/regression_model",
+              "test_data_path": "/app/data/uploads/datasets/regression/mid/harlfoxem_housesalesprediction/kc_house_data.csv",
+              "target_column": "sqft_lot15",
+              "task": "regression"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "save_evaluation_results",
+            "description": "Save evaluation results of trained regression model on kc_house_data.csv",
+            "tool_parameters": {
+              "metrics": [],
+              "task_type": "regression",
+              "model_name": "gradient_boosting_model",
+              "dataset_name": "kc_house_data",
+              "notes": "",
+              "tags": [],
+              "pipeline": [],
+              "registry_path": "/app/evaluation_results"
+            },
+            "planner_parameters": {
+              "metrics": [],
+              "task_type": "regression",
+              "model_name": "gradient_boosting_model",
+              "dataset_name": "kc_house_data",
+              "notes": "",
+              "tags": [],
+              "pipeline": [],
+              "registry_path": "/app/evaluation_results"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "linear",
+        "rationale": "Evaluate performance of trained regression model, calculate residuals, and perform error analysis on kc_house_data.csv"
+      }
+    ],
+    "mcp_servers": [
+      {
+        "id": "filesystem",
+        "name": "Filesystem",
+        "command": "npx",
+        "args": [
+          "-y",
+          "@modelcontextprotocol/server-filesystem",
+          "/app"
+        ],
+        "env": {},
+        "is_available": true,
+        "description": "Access and manage project files under /app (catalog, configs, data)"
+      }
+    ],
+    "validation": {
+      "status": "uncertain",
+      "issue_count": 1,
+      "blocking_issue_count": 1,
+      "issues": [
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_evaluation' name='Model Evaluation'",
+          "phase_number": 4
+        }
+      ],
+      "allow_persist_with_issues": true
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "data_preprocessor",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_trainer",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "model_evaluation",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      }
+    ]
+  }
+}

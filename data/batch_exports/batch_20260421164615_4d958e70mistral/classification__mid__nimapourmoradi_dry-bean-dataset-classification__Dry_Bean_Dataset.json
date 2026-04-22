@@ -1,0 +1,216 @@
+{
+  "dataset_id": "classification__mid__nimapourmoradi_dry-bean-dataset-classification__Dry_Bean_Dataset",
+  "filename": "Dry_Bean_Dataset.csv",
+  "file_path": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv",
+  "task_type": "classification",
+  "tier": "mid",
+  "target_column": null,
+  "generated_at": "2026-04-21T18:04:18.943383+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Train a classification model on Dry Bean Dataset",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_loader",
+            "agent_name": "data_loader"
+          }
+        },
+        "planner_mcp_server": "python-data_loading",
+        "resolved_mcp_server": {
+          "id": "python-data_loading",
+          "name": "Data Loading Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "load_csv",
+            "description": "Load the Dry Bean Dataset CSV file",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv",
+              "encoding": "utf-8",
+              "delimiter": ","
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv",
+              "encoding": null,
+              "delimiter": ","
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Load the dataset to begin analysis and preparation for modeling."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "statistics_analyzer",
+          "name": "statistics_analyzer",
+          "yaml_path": "config/agents/statistics_analyzer.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "statistics_analyzer",
+            "agent_name": "statistics_analyzer"
+          }
+        },
+        "planner_mcp_server": "python-data_loading",
+        "resolved_mcp_server": {
+          "id": "python-data_loading",
+          "name": "Data Loading Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "get_basic_stats",
+            "description": "Calculate basic statistics of the dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv"
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Analyze the dataset structure and identify any outliers or anomalies."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": "model_trainer",
+          "name": "model_trainer",
+          "yaml_path": "config/agents/model_trainer.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_trainer",
+            "agent_name": "model_trainer"
+          }
+        },
+        "planner_mcp_server": "python-data_loading",
+        "resolved_mcp_server": {
+          "id": "python-data_loading",
+          "name": "Data Loading Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "train_classification_model",
+            "description": "Train a logistic regression model on the dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv",
+              "target_column": "Class",
+              "model_type": "logistic",
+              "test_size": 0.2,
+              "random_state": null,
+              "hyperparameters": {
+                "max_iter": 1000,
+                "C": 1.0,
+                "solver": "lbfgs"
+              },
+              "model_save_path": null
+            },
+            "planner_parameters": {
+              "filepath": null,
+              "target_column": "Class",
+              "model_type": "logistic",
+              "test_size": 0.2,
+              "random_state": null,
+              "hyperparameters": null,
+              "model_save_path": null
+            },
+            "missing_required_parameters": [
+              "random_state"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "logistic",
+        "rationale": "Train a logistic regression model, chosen as it's suitable for binary classification tasks and is a good baseline to start with."
+      }
+    ],
+    "mcp_servers": [
+      {
+        "id": "python-data_loading",
+        "name": "Data Loading Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/data_loading/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "CSV file loading, analysis, and validation tools"
+      }
+    ],
+    "validation": {
+      "status": "warning",
+      "issue_count": 1,
+      "blocking_issue_count": 0,
+      "issues": [
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'train_classification_model' has unresolved required parameters: random_state",
+          "phase_number": 3,
+          "tool_name": "train_classification_model",
+          "missing_parameters": [
+            "random_state"
+          ]
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "statistics_analyzer",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_trainer",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      }
+    ]
+  }
+}

@@ -1,0 +1,313 @@
+{
+  "dataset_id": "regression__mid__yasserh_uber-fares-dataset__uber",
+  "filename": "uber.csv",
+  "file_path": "/app/data/uploads/datasets/regression/mid/yasserh_uber-fares-dataset/uber.csv",
+  "task_type": "regression",
+  "tier": "mid",
+  "target_column": null,
+  "generated_at": "2026-04-20T23:20:26.708737+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a regression model to predict fare_amount using the provided Uber fares dataset.",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/regression/mid/yasserh_uber-fares-dataset/uber.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/regression/mid/yasserh_uber-fares-dataset/uber.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_loader",
+            "agent_name": "data_loader"
+          }
+        },
+        "planner_mcp_server": "filesystem",
+        "resolved_mcp_server": {
+          "id": "filesystem",
+          "name": "Filesystem",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "load_csv",
+            "description": "Load the Uber fares dataset from CSV.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/yasserh_uber-fares-dataset/uber.csv",
+              "encoding": "utf-8",
+              "delimiter": ","
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/yasserh_uber-fares-dataset/uber.csv",
+              "encoding": "utf-8",
+              "delimiter": ","
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Load the dataset for further processing."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "data_preprocessor",
+          "name": "data_preprocessor",
+          "yaml_path": "config/agents/data_preprocessor.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_preprocessor",
+            "agent_name": "data_preprocessor"
+          }
+        },
+        "planner_mcp_server": "filesystem",
+        "resolved_mcp_server": {
+          "id": "filesystem",
+          "name": "Filesystem",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "handle_missing_values",
+            "description": "Handle missing values in the dataset.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/yasserh_uber-fares-dataset/processed/uber.csv",
+              "strategy": "mean",
+              "columns": [
+                "fare_amount",
+                "pickup_longitude",
+                "pickup_latitude",
+                "dropoff_longitude",
+                "dropoff_latitude"
+              ],
+              "output_filepath": "/app/data/uploads/datasets/regression/mid/yasserh_uber-fares-dataset/processed/uber.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/yasserh_uber-fares-dataset/processed/uber.csv",
+              "strategy": "mean",
+              "columns": [
+                "fare_amount",
+                "pickup_longitude",
+                "pickup_latitude",
+                "dropoff_longitude",
+                "dropoff_latitude"
+              ],
+              "output_filepath": "/app/data/uploads/datasets/regression/mid/yasserh_uber-fares-dataset/processed/uber.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "remove_duplicates",
+            "description": "Remove duplicate rows from the dataset.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/yasserh_uber-fares-dataset/processed/uber.csv",
+              "subset": null,
+              "keep": false,
+              "output_filepath": "/app/data/uploads/datasets/regression/mid/yasserh_uber-fares-dataset/processed/uber.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/yasserh_uber-fares-dataset/processed/uber.csv",
+              "subset": null,
+              "keep": false,
+              "output_filepath": "/app/data/uploads/datasets/regression/mid/yasserh_uber-fares-dataset/processed/uber.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Preprocess the dataset to remove missing values and duplicates."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": "model_trainer",
+          "name": "model_trainer",
+          "yaml_path": "config/agents/model_trainer.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_trainer",
+            "agent_name": "model_trainer"
+          }
+        },
+        "planner_mcp_server": "python-model_training",
+        "resolved_mcp_server": {
+          "id": "python-model_training",
+          "name": "Model Training Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "train_regression_model",
+            "description": "Train a regression model using the preprocessed dataset.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/yasserh_uber-fares-dataset/processed/uber.csv",
+              "target_column": "fare_amount",
+              "model_type": "linear",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "fit_intercept": true
+              },
+              "model_save_path": "/app/models/regression/"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/yasserh_uber-fares-dataset/processed/uber.csv",
+              "target_column": "fare_amount",
+              "model_type": "linear",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": null,
+              "model_save_path": "/app/models/regression/"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "linear",
+        "rationale": "Train a regression model using the preprocessed dataset."
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": null,
+          "name": "model_evaluation",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_evaluation",
+            "agent_name": "model_evaluation"
+          }
+        },
+        "planner_mcp_server": "python-model_training",
+        "resolved_mcp_server": {
+          "id": "python-model_training",
+          "name": "Model Training Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "evaluate_regression_model",
+            "description": "Evaluate the trained regression model using metrics.",
+            "tool_parameters": {
+              "model_path": "/app/models/regression/model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/regression/mid/yasserh_uber-fares-dataset/processed/uber.csv",
+              "target_column": "fare_amount",
+              "filepath": "/app/data/uploads/datasets/regression/mid/yasserh_uber-fares-dataset/uber.csv"
+            },
+            "planner_parameters": {
+              "model_path": "/app/models/regression/model.pkl",
+              "test_data_path": "/app/data/uploads/datasets/regression/mid/yasserh_uber-fares-dataset/processed/uber.csv",
+              "target_column": "fare_amount"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "linear",
+        "rationale": "Evaluate the trained regression model using metrics."
+      }
+    ],
+    "mcp_servers": [
+      {
+        "id": "filesystem",
+        "name": "Filesystem",
+        "command": "npx",
+        "args": [
+          "-y",
+          "@modelcontextprotocol/server-filesystem",
+          "/app"
+        ],
+        "env": {},
+        "is_available": true,
+        "description": "Access and manage project files under /app (catalog, configs, data)"
+      },
+      {
+        "id": "python-model_training",
+        "name": "Model Training Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_training/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Machine learning model training, hyperparameter tuning, and optimization"
+      }
+    ],
+    "validation": {
+      "status": "uncertain",
+      "issue_count": 1,
+      "blocking_issue_count": 1,
+      "issues": [
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_evaluation' name='model_evaluation'",
+          "phase_number": 4
+        }
+      ],
+      "allow_persist_with_issues": true
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "data_preprocessor",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_trainer",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "model_evaluation",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      }
+    ]
+  }
+}

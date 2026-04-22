@@ -30,6 +30,27 @@ BLOCKING_VALIDATION_CODES = {
     "no_valid_tools_for_phase",
 }
 
+CLASSIFICATION_MODEL_TYPES = [
+    "logistic",
+    "decision_tree",
+    "random_forest",
+    "svm",
+    "knn",
+    "naive_bayes",
+    "gradient_boosting",
+]
+
+REGRESSION_MODEL_TYPES = [
+    "linear",
+    "ridge",
+    "lasso",
+    "decision_tree",
+    "random_forest",
+    "svr",
+    "knn",
+    "gradient_boosting",
+]
+
 
 class AgentPipelineService:
     """Service for orchestrating multi-agent pipelines."""
@@ -649,6 +670,7 @@ class AgentPipelineService:
             f"{json.dumps(planner_grounding, ensure_ascii=True)}\n\n"
             "[STRICT_PLANNER_MODE]\n"
             "Use only IDs/names/tool names present in PLANNER_GROUNDING_CONTEXT_JSON. "
+            "When creating train_* tools, always choose model_type from available_model_types using dataset characteristics. "
             "Do not call MCP tools in this step. Output only JSON plan."
         )
 
@@ -773,10 +795,15 @@ class AgentPipelineService:
             "agents": agents,
             "mcp_servers": mcp_servers,
             "tools": tools,
+            "available_model_types": {
+                "classification": CLASSIFICATION_MODEL_TYPES,
+                "regression": REGRESSION_MODEL_TYPES,
+            },
             "constraints": {
                 "use_only_known_agents": True,
                 "use_only_known_mcp_servers": True,
                 "use_only_known_tools": True,
+                "model_type_must_come_from_available_model_types": True,
             },
         }
 
@@ -942,6 +969,10 @@ class AgentPipelineService:
             if task_type != "regression"
             else "train_regression_model"
         )
+        selected_model = self._select_model_from_dataset_characteristics(
+            task_type=task_type,
+            dataset_analysis=dataset_analysis,
+        )
         evaluator_tool = (
             "evaluate_classification_model"
             if task_type != "regression"
@@ -987,7 +1018,7 @@ class AgentPipelineService:
                             "parameters": {
                                 "filepath": file_path,
                                 "target_column": target_column,
-                                "model_type": "random_forest",
+                                "model_type": selected_model,
                                 "test_size": 0.2,
                                 "random_state": 42,
                                 "model_save_path": None,
@@ -1127,7 +1158,13 @@ class AgentPipelineService:
             step_tools = []
             for tool in phase.get("tools", []):
                 tool_name = str(tool.get("tool_name") or "")
-                selected_model_type = self._select_model_type_for_phase(phase)
+                selected_model_type = self._select_model_type_for_phase(
+                    phase=phase,
+                    task_type=inferred_task_type,
+                    dataset_analysis=(
+                        dataset_analysis if isinstance(dataset_analysis, dict) else None
+                    ),
+                )
                 planner_parameters = tool.get("parameters")
                 replication_parameters = self._build_tool_replication_parameters(
                     tool_name=tool_name,
@@ -1192,7 +1229,13 @@ class AgentPipelineService:
                     }
                 )
 
-            selected_model_type = self._select_model_type_for_phase(phase)
+            selected_model_type = self._select_model_type_for_phase(
+                phase=phase,
+                task_type=inferred_task_type,
+                dataset_analysis=(
+                    dataset_analysis if isinstance(dataset_analysis, dict) else None
+                ),
+            )
 
             if not step_tools:
                 validation_issues.append(
@@ -1658,10 +1701,6 @@ class AgentPipelineService:
         if "train" in lowered_name and "model_type" not in params:
             if selected_model_type:
                 params["model_type"] = selected_model_type
-            elif task_type == "classification":
-                params["model_type"] = "random_forest"
-            elif task_type == "regression":
-                params["model_type"] = "random_forest_regressor"
 
         if "train" in lowered_name and "test_size" not in params:
             params["test_size"] = 0.2
@@ -1737,14 +1776,18 @@ class AgentPipelineService:
         if param_name == "model_type":
             if selected_model_type:
                 return selected_model_type
-            if task_type == "regression":
-                return "random_forest_regressor"
-            if task_type == "classification":
-                return "random_forest"
+            return self._select_model_from_dataset_characteristics(
+                task_type=task_type,
+                dataset_analysis=dataset_analysis,
+            )
 
         if param_name == "hyperparameters":
+            effective_model_type = selected_model_type or self._select_model_from_dataset_characteristics(
+                task_type=task_type,
+                dataset_analysis=dataset_analysis,
+            )
             return self._default_hyperparameters_for_model(
-                model_type=selected_model_type,
+                model_type=effective_model_type,
                 task_type=task_type,
             )
 
@@ -1798,10 +1841,8 @@ class AgentPipelineService:
     ) -> Dict[str, Any]:
         """Return stable, replayable default hyperparameters for model training."""
         normalized = str(model_type or "").strip().lower()
-        task = str(task_type or "classification").strip().lower()
-
         if not normalized:
-            normalized = "random_forest" if task != "regression" else "random_forest_regressor"
+            return {}
 
         if normalized in {"random_forest", "random_forest_classifier"}:
             return {
@@ -1876,8 +1917,67 @@ class AgentPipelineService:
 
         return catalog_parameters
 
-    def _select_model_type_for_phase(self, phase: Dict[str, Any]) -> Optional[str]:
-        """Infer selected model type from planner text to make training steps reproducible."""
+    def _select_model_from_dataset_characteristics(
+        self,
+        task_type: Optional[str],
+        dataset_analysis: Optional[Dict[str, Any]],
+    ) -> Optional[str]:
+        """Choose a model from supported training models using dataset characteristics."""
+        task = str(task_type or "classification").strip().lower()
+        analysis = dataset_analysis or {}
+
+        rows = int(analysis.get("rows") or 0)
+        columns = int(analysis.get("columns") or 0)
+        feature_count = max(1, columns - 1)
+
+        column_types = analysis.get("column_types") or {}
+        numeric_count = 0
+        categorical_count = 0
+        for dtype in column_types.values():
+            lowered = str(dtype).lower()
+            if any(token in lowered for token in ["int", "float", "double", "number"]):
+                numeric_count += 1
+            elif any(token in lowered for token in ["object", "category", "string", "bool"]):
+                categorical_count += 1
+
+        categorical_ratio = (
+            categorical_count / max(1, numeric_count + categorical_count)
+        )
+        missing_total = int(
+            ((analysis.get("data_quality") or {}).get("total_missing")) or 0
+        )
+        missing_ratio = missing_total / max(1, rows * max(1, columns))
+
+        if task == "regression":
+            if feature_count <= 20 and rows > 0 and rows <= 12000 and missing_ratio < 0.2:
+                return "linear"
+            if feature_count <= 50 and rows <= 8000 and missing_ratio < 0.3:
+                return "ridge"
+            if rows > 30000:
+                return "gradient_boosting"
+            if feature_count > 120:
+                return "svr"
+            return "ridge"
+
+        if feature_count <= 20 and rows > 0 and rows <= 15000 and missing_ratio < 0.2:
+            return "logistic"
+        if rows > 30000:
+            return "gradient_boosting"
+        if feature_count > 120:
+            return "svm"
+        if categorical_ratio > 0.6 and rows < 5000:
+            return "naive_bayes"
+        if rows < 1200:
+            return "decision_tree"
+        return "logistic"
+
+    def _select_model_type_for_phase(
+        self,
+        phase: Dict[str, Any],
+        task_type: Optional[str] = None,
+        dataset_analysis: Optional[Dict[str, Any]] = None,
+    ) -> Optional[str]:
+        """Infer selected model type from planner text and dataset characteristics."""
         search_text = " ".join(
             [
                 str(phase.get("agent_name") or ""),
@@ -1900,14 +2000,25 @@ class AgentPipelineService:
             "knn",
             "naive_bayes",
             "linear_regression",
+            "linear",
+            "ridge",
+            "lasso",
+            "svr",
         ]
 
         for model_name in model_keywords:
             if model_name in search_text:
-                return model_name
+                aliases = {
+                    "linear_regression": "linear",
+                    "logistic_regression": "logistic",
+                }
+                return aliases.get(model_name, model_name)
 
         if "model_trainer" in search_text or "train" in search_text:
-            return "random_forest"
+            return self._select_model_from_dataset_characteristics(
+                task_type=task_type,
+                dataset_analysis=dataset_analysis,
+            )
 
         return None
 

@@ -1,0 +1,330 @@
+{
+  "dataset_id": "regression__easy__ranitsarkar01_porter-delivery-time-estimation__dataset",
+  "filename": "dataset.csv",
+  "file_path": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset.csv",
+  "task_type": "regression",
+  "tier": "easy",
+  "target_column": null,
+  "generated_at": "2026-04-20T22:58:52.674219+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a regression model to predict total_outstanding_orders",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_preprocessor",
+          "name": "data_preprocessor",
+          "yaml_path": "config/agents/data_preprocessor.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_preprocessor",
+            "agent_name": "data_preprocessor"
+          }
+        },
+        "planner_mcp_server": "Data Loading Server",
+        "resolved_mcp_server": {
+          "id": "python-data_loading",
+          "name": "Data Loading Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "read_file_head",
+            "description": "Read the header and first rows of the dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset.csv",
+              "n_rows": 10
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset.csv",
+              "n_rows": 10
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "infer_data_types",
+            "description": "Infer the data types of each column",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset.csv"
+            },
+            "planner_parameters": {},
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "handle_missing_values",
+            "description": "Handle missing values in various columns",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset.csv",
+              "strategy": "remove",
+              "columns": [
+                "market_id",
+                "store_id",
+                "store_primary_category"
+              ],
+              "output_filepath": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset_cleaned.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset.csv",
+              "strategy": "remove",
+              "columns": [
+                "market_id",
+                "store_id",
+                "store_primary_category"
+              ],
+              "output_filepath": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset_cleaned.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "remove_duplicates",
+            "description": "Remove duplicate rows from the dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset_cleaned.csv",
+              "subset": null,
+              "keep": "first",
+              "output_filepath": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset_unique.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset_cleaned.csv",
+              "subset": null,
+              "keep": null,
+              "output_filepath": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset_unique.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "rename_columns",
+            "description": "Rename columns to make them more meaningful",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset_unique.csv",
+              "column_mapping": {
+                "market_id": "market_id",
+                "created_at": "date",
+                "actual_delivery_time": "time"
+              },
+              "output_filepath": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset_preprocessed.csv"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset_unique.csv",
+              "column_mapping": {
+                "market_id": "market_id",
+                "created_at": "date",
+                "actual_delivery_time": "time"
+              },
+              "output_filepath": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset_preprocessed.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "add_column_headers",
+            "description": "Add column headers to the dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset_preprocessed.csv",
+              "column_names": [
+                "market_id",
+                "date",
+                "time",
+                "store_id",
+                "store_primary_category",
+                "order_protocol",
+                "total_items",
+                "subtotal",
+                "num_distinct_items",
+                "min_item_price",
+                "max_item_price",
+                "total_onshift_partners",
+                "total_busy_partners"
+              ],
+              "output_filepath": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset_preprocessed_with_headers.csv",
+              "has_header": "False"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset_preprocessed.csv",
+              "column_names": [
+                "market_id",
+                "date",
+                "time",
+                "store_id",
+                "store_primary_category",
+                "order_protocol",
+                "total_items",
+                "subtotal",
+                "num_distinct_items",
+                "min_item_price",
+                "max_item_price",
+                "total_onshift_partners",
+                "total_busy_partners"
+              ],
+              "output_filepath": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset_preprocessed_with_headers.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "analyze_csv",
+            "description": "Analyze the preprocessed dataset",
+            "tool_parameters": {
+              "filename": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset_preprocessed_with_headers.csv"
+            },
+            "planner_parameters": {
+              "filename": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset_preprocessed_with_headers.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": null
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": null,
+          "name": "train_regression_model",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "train_regression_model",
+            "agent_name": "train_regression_model"
+          }
+        },
+        "planner_mcp_server": "Model Training Server",
+        "resolved_mcp_server": {
+          "id": "python-model_training",
+          "name": "Model Training Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "train_regression_model",
+            "description": "Train a regression model to predict total_outstanding_orders",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset_preprocessed_with_headers.csv",
+              "target_column": "total_outstanding_orders",
+              "model_type": "linear",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "C": 1.0,
+                "epsilon": 0.1
+              },
+              "model_save_path": "/app/models/linear_regression_model"
+            },
+            "planner_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset_preprocessed_with_headers.csv",
+              "target_column": "total_outstanding_orders",
+              "model_type": "linear",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "C": 1.0,
+                "epsilon": 0.1
+              },
+              "model_save_path": "/app/models/linear_regression_model"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "evaluate_regression_model",
+            "description": "Evaluate the trained regression model",
+            "tool_parameters": {
+              "model_path": "/app/models/linear_regression_model",
+              "test_data_path": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset_preprocessed_with_headers.csv",
+              "target_column": "total_outstanding_orders",
+              "filepath": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset.csv"
+            },
+            "planner_parameters": {
+              "model_path": "/app/models/linear_regression_model",
+              "test_data_path": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset_preprocessed_with_headers.csv",
+              "target_column": "total_outstanding_orders"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "linear",
+        "rationale": null
+      }
+    ],
+    "mcp_servers": [
+      {
+        "id": "python-data_loading",
+        "name": "Data Loading Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/data_loading/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "CSV file loading, analysis, and validation tools"
+      },
+      {
+        "id": "python-model_training",
+        "name": "Model Training Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_training/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Machine learning model training, hyperparameter tuning, and optimization"
+      }
+    ],
+    "validation": {
+      "status": "uncertain",
+      "issue_count": 1,
+      "blocking_issue_count": 1,
+      "issues": [
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='train_regression_model' name='train_regression_model'",
+          "phase_number": 2
+        }
+      ],
+      "allow_persist_with_issues": true
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_preprocessor",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "train_regression_model",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      }
+    ]
+  }
+}
