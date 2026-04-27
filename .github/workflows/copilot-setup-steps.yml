@@ -1,0 +1,42 @@
+name: "Copilot Setup Steps"
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+  pull_request:
+    paths:
+      - .github/workflows/copilot-setup-steps.yml
+
+jobs:
+  copilot-setup-steps:
+    runs-on: windows-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Ensure PowerShell 7 (pwsh) is available
+        shell: powershell
+        run: |
+          $ErrorActionPreference = "Stop"
+          if (Get-Command pwsh -ErrorAction SilentlyContinue) {
+            pwsh --version
+            exit 0
+          }
+
+          choco install powershell-core -y --no-progress
+          $pwshPath = "C:\Program Files\PowerShell\7\pwsh.exe"
+          if (!(Test-Path $pwshPath)) {
+            throw "pwsh.exe was not installed at expected path: $pwshPath"
+          }
+
+          $envPath = [Environment]::GetEnvironmentVariable("Path", "Machine")
+          if ($envPath -notlike "*C:\Program Files\PowerShell\7*") {
+            [Environment]::SetEnvironmentVariable(
+              "Path",
+              "$envPath;C:\Program Files\PowerShell\7",
+              "Machine"
+            )
+          }
+
+          pwsh --version
