@@ -1208,18 +1208,24 @@ class BatchProcessorService:
                 orchestration = orchestration_data["orchestration"]
                 validation = orchestration.get("validation", {})
                 if validation.get("status") == "invalid":
-                    # Persist the artifact anyway so users can inspect and iterate quickly.
-                    # We keep all issues but downgrade status to signal uncertainty instead of
-                    # hard-failing the entire batch item.
-                    validation["status"] = "uncertain"
-                    validation["allow_persist_with_issues"] = True
-                    orchestration["validation"] = validation
-                    logger.warning(
-                        "Persisting uncertain orchestration artifact",
+                    logger.error(
+                        "Blocking invalid orchestration artifact",
                         job_id=job_id,
                         dataset_id=item.get("dataset_id"),
                         issue_count=validation.get("issue_count"),
                         blocking_issue_count=validation.get("blocking_issue_count"),
+                    )
+                    raise BatchValidationError(
+                        "Generated orchestration is invalid and cannot be persisted",
+                        code="invalid_orchestration_artifact",
+                        details={
+                            "dataset_id": item.get("dataset_id"),
+                            "issue_count": validation.get("issue_count"),
+                            "blocking_issue_count": validation.get(
+                                "blocking_issue_count"
+                            ),
+                            "issues": validation.get("issues", []),
+                        },
                     )
 
                 artifact_path = self._save_artifact(job_id, item, orchestration)
@@ -1247,6 +1253,8 @@ class BatchProcessorService:
                     "retries": retries,
                 }
 
+            except BatchValidationError:
+                raise
             except Exception as exc:
                 last_error = exc
                 retries += 1

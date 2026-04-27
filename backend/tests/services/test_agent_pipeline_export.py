@@ -145,3 +145,29 @@ async def test_simplified_export_is_valid_with_required_params_present():
     assert orchestration["validation"]["status"] == "valid"
     assert orchestration["validation"]["issue_count"] == 0
     assert orchestration["steps"][0]["tools"][0]["missing_required_parameters"] == []
+
+
+@pytest.mark.asyncio
+async def test_simplified_export_marks_invalid_when_plan_has_no_phases():
+    registry = _build_registry_with_agent()
+    mcp_service = FakeMCPServerService(
+        [FakeMCPServer("python-data-loading", "Data Loading Server")]
+    )
+    pipeline = AgentPipelineService(
+        llm_service=None,
+        agent_registry=registry,
+        mcp_server_service=mcp_service,
+    )
+
+    orchestration = await pipeline._build_simplified_orchestration_export(
+        plan_data={"plan": {"objective": "Build pipeline", "phases": []}},
+        file_path=None,
+        target_column_hint=None,
+        dataset_analysis={"rows": 100, "column_names": ["f1", "target"]},
+    )
+
+    assert orchestration["validation"]["status"] == "invalid"
+    assert orchestration["validation"]["blocking_issue_count"] >= 1
+    issue_codes = {issue["code"] for issue in orchestration["validation"]["issues"]}
+    assert "no_phases_in_plan" in issue_codes
+    assert "no_steps_generated" in issue_codes

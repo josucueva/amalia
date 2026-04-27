@@ -28,6 +28,8 @@ BLOCKING_VALIDATION_CODES = {
     "agent_yaml_missing",
     "agent_unresolved",
     "no_valid_tools_for_phase",
+    "no_phases_in_plan",
+    "no_steps_generated",
 }
 
 CLASSIFICATION_MODEL_TYPES = [
@@ -1068,6 +1070,15 @@ class AgentPipelineService:
         tool_catalog = self._load_tool_catalog_index()
         validation_issues: List[Dict[str, Any]] = []
 
+        if not isinstance(phases, list) or not phases:
+            validation_issues.append(
+                {
+                    "code": "no_phases_in_plan",
+                    "message": "Planner output did not include executable phases",
+                }
+            )
+            phases = []
+
         resolved_dataset_path = self._resolve_data_file_path(file_path)
         if file_path and not resolved_dataset_path:
             validation_issues.append(
@@ -1286,6 +1297,14 @@ class AgentPipelineService:
                     "id": f"conn-{idx + 1}",
                     "fromInstanceId": nodes[idx]["instanceId"],
                     "toInstanceId": nodes[idx + 1]["instanceId"],
+                }
+            )
+
+        if not steps:
+            validation_issues.append(
+                {
+                    "code": "no_steps_generated",
+                    "message": "No executable steps were generated from planner output",
                 }
             )
 
