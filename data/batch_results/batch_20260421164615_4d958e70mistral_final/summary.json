@@ -1,0 +1,62 @@
+{
+  "total_pipelines": 60,
+  "successful": 35,
+  "failed": 25,
+  "classification_successful": 21,
+  "regression_successful": 14,
+  "avg_classification_accuracy": 0.8008,
+  "avg_regression_r2": 0.682,
+  "avg_regression_rmse": 13390.8748,
+  "failed_examples": [
+    {
+      "dataset_id": "classification__easy__fedesoriano_stellar-classification-dataset-sdss17__star_classification",
+      "artifact_file": "classification__easy__fedesoriano_stellar-classification-dataset-sdss17__star_classification.json",
+      "error": "get_column_info: Column 'None' not found"
+    },
+    {
+      "dataset_id": "classification__easy__priyanshusethi_happiness-classification-dataset__happydata",
+      "artifact_file": "classification__easy__priyanshusethi_happiness-classification-dataset__happydata.json",
+      "error": "get_column_info: Column 'None' not found"
+    },
+    {
+      "dataset_id": "classification__easy__yasserh_wine-quality-dataset__WineQT",
+      "artifact_file": "classification__easy__yasserh_wine-quality-dataset__WineQT.json",
+      "error": "Workflow has no executable steps"
+    },
+    {
+      "dataset_id": "classification__hard__abhishek14398_loan-dataset__loan",
+      "artifact_file": "classification__hard__abhishek14398_loan-dataset__loan.json",
+      "error": "Input y contains NaN."
+    },
+    {
+      "dataset_id": "classification__hard__ddosad_ecommerce-customer-service-satisfaction__Customer_support_data",
+      "artifact_file": "classification__hard__ddosad_ecommerce-customer-service-satisfaction__Customer_support_data.json",
+      "error": "Input X contains NaN.\nLogisticRegression does not accept missing values encoded as NaN natively. For supervised learning, you might want to consider sklearn.ensemble.HistGradientBoostingClassifier and Regressor which accept missing values encoded as NaNs natively. Alternatively, it is possible to preprocess the data, for instance by using an imputer transformer in a pipeline or drop samples with missing values. See https://scikit-learn.org/stable/modules/impute.html You can find a list of all estimators that handle NaN values at the following page: https://scikit-learn.org/stable/modules/impute.html#estimators-that-handle-nan-values"
+    },
+    {
+      "dataset_id": "classification__hard__jocelyndumlao_consumer-review-of-clothing-product__Consumer Review of Clothing Product__data_amazon.xlsx - Sheet1",
+      "artifact_file": "classification__hard__jocelyndumlao_consumer-review-of-clothing-product__Consumer Review of Clothing Product__data_amazon.xlsx - Sheet1.json",
+      "error": "Input X contains NaN.\nGradientBoostingClassifier does not accept missing values encoded as NaN natively. For supervised learning, you might want to consider sklearn.ensemble.HistGradientBoostingClassifier and Regressor which accept missing values encoded as NaNs natively. Alternatively, it is possible to preprocess the data, for instance by using an imputer transformer in a pipeline or drop samples with missing values. See https://scikit-learn.org/stable/modules/impute.html You can find a list of all estimators that handle NaN values at the following page: https://scikit-learn.org/stable/modules/impute.html#estimators-that-handle-nan-values"
+    },
+    {
+      "dataset_id": "classification__hard__pashupatigupta_emotion-detection-from-text__tweet_emotions",
+      "artifact_file": "classification__hard__pashupatigupta_emotion-detection-from-text__tweet_emotions.json",
+      "error": "random_state must be an integer, array-like, a BitGenerator, Generator, a numpy RandomState, or None"
+    },
+    {
+      "dataset_id": "classification__hard__saurabhshahane_ecommerce-text-classification__ecommerceDataset",
+      "artifact_file": "classification__hard__saurabhshahane_ecommerce-text-classification__ecommerceDataset.json",
+      "error": "Input contains NaN"
+    },
+    {
+      "dataset_id": "classification__mid__christianlillelund_csgo-round-winner-classification__csgo_round_snapshots",
+      "artifact_file": "classification__mid__christianlillelund_csgo-round-winner-classification__csgo_round_snapshots.json",
+      "error": "pos_label=1 is not a valid label. It should be one of ['CT', 'T']"
+    },
+    {
+      "dataset_id": "classification__mid__fedesoriano_stellar-classification-dataset-sdss17__star_classification",
+      "artifact_file": "classification__mid__fedesoriano_stellar-classification-dataset-sdss17__star_classification.json",
+      "error": "random_state must be an integer, array-like, a BitGenerator, Generator, a numpy RandomState, or None"
+    }
+  ]
+}
