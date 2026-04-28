@@ -8,10 +8,13 @@ between tools to produce deterministic and reproducible batch metrics.
 from __future__ import annotations
 
 import argparse
+import inspect
 import json
+import math
 import pickle
 import re
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
@@ -26,6 +29,8 @@ from sklearn.ensemble import (
 from sklearn.linear_model import Lasso, LinearRegression, LogisticRegression, Ridge
 from sklearn.metrics import (
     accuracy_score,
+    classification_report,
+    confusion_matrix,
     f1_score,
     mean_absolute_error,
     mean_squared_error,
@@ -33,11 +38,13 @@ from sklearn.metrics import (
     r2_score,
     recall_score,
 )
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import GridSearchCV, cross_val_score, train_test_split
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.svm import SVC, SVR
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+from sklearn.decomposition import PCA
+from sklearn.feature_selection import SelectKBest, f_classif, f_regression
 
 
 @dataclass
@@ -254,6 +261,286 @@ def normalize_model_type(model_type: Optional[str], task_type: str) -> str:
     return normalized
 
 
+def sanitize_hyperparameters(
+    task_type: str, model_type: str, hyperparameters: Dict[str, Any]
+) -> Dict[str, Any]:
+    allowed: Dict[Tuple[str, str], set[str]] = {
+        ("classification", "logistic"): {"max_iter", "C", "solver", "penalty", "class_weight"},
+        ("classification", "decision_tree"): {"max_depth", "min_samples_split", "min_samples_leaf", "criterion"},
+        ("classification", "random_forest"): {"n_estimators", "max_depth", "min_samples_split", "min_samples_leaf", "criterion", "max_features"},
+        ("classification", "svm"): {"C", "kernel", "gamma", "degree", "class_weight"},
+        ("classification", "knn"): {"n_neighbors", "weights", "metric"},
+        ("classification", "naive_bayes"): {"var_smoothing"},
+        ("classification", "gradient_boosting"): {"n_estimators", "learning_rate", "max_depth", "subsample"},
+        ("regression", "linear"): {"fit_intercept", "positive"},
+        ("regression", "ridge"): {"alpha", "fit_intercept", "solver"},
+        ("regression", "lasso"): {"alpha", "fit_intercept", "max_iter"},
+        ("regression", "decision_tree"): {"max_depth", "min_samples_split", "min_samples_leaf", "criterion"},
+        ("regression", "random_forest"): {"n_estimators", "max_depth", "min_samples_split", "min_samples_leaf", "criterion", "max_features"},
+        ("regression", "svr"): {"C", "kernel", "gamma", "degree", "epsilon"},
+        ("regression", "knn"): {"n_neighbors", "weights", "metric"},
+        ("regression", "gradient_boosting"): {"n_estimators", "learning_rate", "max_depth", "subsample"},
+    }
+    whitelist = allowed.get((task_type, model_type))
+    if not whitelist:
+        return {}
+    return {k: v for k, v in (hyperparameters or {}).items() if k in whitelist}
+
+
+def get_server_info_tool(
+    tool: Optional[str] = None,
+    server: Optional[str] = None,
+    arguments: Optional[Any] = None,
+    filepath: Optional[str] = None,
+) -> dict:
+    files = sorted(str(p) for p in uploads_root().glob("**/*") if p.is_file())[:100]
+    return {
+        "success": True,
+        "tool": tool,
+        "server": server,
+        "arguments": arguments,
+        "filepath": filepath,
+        "data_directory": str(uploads_root()),
+        "data_dir_exists": uploads_root().exists(),
+        "available_files": files,
+        "file_count": len(files),
+        "working_directory": str(Path.cwd()),
+    }
+
+
+def get_column_info_tool(filepath: str, column_name: str) -> dict:
+    df = pd.read_csv(resolve_input_path(filepath))
+    if column_name not in df.columns:
+        return {"error": f"Column '{column_name}' not found"}
+    col = df[column_name]
+    return {
+        "column_name": column_name,
+        "dtype": str(col.dtype),
+        "null_count": int(col.isna().sum()),
+        "unique_count": int(col.nunique(dropna=True)),
+        "sample_values": col.dropna().head(10).tolist(),
+    }
+
+
+def detect_missing_values_tool(filepath: str) -> dict:
+    df = pd.read_csv(resolve_input_path(filepath))
+    missing = {col: int(val) for col, val in df.isna().sum().items() if int(val) > 0}
+    return {
+        "rows": len(df),
+        "columns": len(df.columns),
+        "total_missing": int(df.isna().sum().sum()),
+        "missing_values": missing,
+    }
+
+
+def detect_duplicates_tool(filepath: str, subset: Optional[List[str]] = None) -> dict:
+    df = pd.read_csv(resolve_input_path(filepath))
+    duplicates = df.duplicated(subset=subset).sum()
+    return {
+        "rows": len(df),
+        "subset": subset,
+        "duplicate_rows": int(duplicates),
+        "duplicate_ratio": float(duplicates / max(1, len(df))),
+    }
+
+
+def infer_data_types_tool(filepath: str) -> dict:
+    df = pd.read_csv(resolve_input_path(filepath))
+    return {"data_types": {col: str(dtype) for col, dtype in df.dtypes.items()}}
+
+
+def get_basic_stats_tool(filepath: str) -> dict:
+    df = pd.read_csv(resolve_input_path(filepath))
+    return {
+        "rows": len(df),
+        "columns": len(df.columns),
+        "basic_stats": df.describe(include="all").fillna("").to_dict(),
+    }
+
+
+def read_file_head_tool(filepath: str, n_rows: int = 10) -> dict:
+    df = pd.read_csv(resolve_input_path(filepath))
+    return {"head": df.head(max(1, int(n_rows))).to_dict(orient="records")}
+
+
+def validate_csv_structure_tool(
+    filepath: str,
+    expected_columns: Optional[List[str]] = None,
+) -> dict:
+    df = pd.read_csv(resolve_input_path(filepath))
+    current_columns = df.columns.tolist()
+    if not expected_columns:
+        return {"valid": True, "columns": current_columns}
+    missing = [col for col in expected_columns if col not in current_columns]
+    return {
+        "valid": len(missing) == 0,
+        "missing_columns": missing,
+        "columns": current_columns,
+    }
+
+
+def rename_columns_tool(
+    filepath: str,
+    column_mapping: Dict[str, str],
+    output_filepath: Optional[str] = None,
+) -> dict:
+    df = pd.read_csv(resolve_input_path(filepath))
+    renamed = df.rename(columns=column_mapping)
+    saved_to = None
+    if output_filepath:
+        out_path = resolve_output_path(output_filepath, Path(filepath).name)
+        renamed.to_csv(out_path, index=False)
+        saved_to = str(out_path)
+    return {"saved_to": saved_to, "columns": renamed.columns.tolist()}
+
+
+def add_column_headers_tool(
+    filepath: str,
+    column_names: List[str],
+    output_filepath: Optional[str] = None,
+    has_header: bool = False,
+) -> dict:
+    header = 0 if has_header else None
+    df = pd.read_csv(resolve_input_path(filepath), header=header)
+    if len(column_names) != len(df.columns):
+        return {"error": "Provided column_names length does not match dataset columns"}
+    df.columns = column_names
+    saved_to = None
+    if output_filepath:
+        out_path = resolve_output_path(output_filepath, Path(filepath).name)
+        df.to_csv(out_path, index=False)
+        saved_to = str(out_path)
+    return {"saved_to": saved_to, "columns": df.columns.tolist()}
+
+
+def detect_outliers_tool(
+    filepath: str, column: str, method: str = "iqr", threshold: float = 1.5
+) -> dict:
+    df = pd.read_csv(resolve_input_path(filepath))
+    if column not in df.columns:
+        return {"error": f"Column '{column}' not found"}
+    series = pd.to_numeric(df[column], errors="coerce").dropna()
+    if method == "zscore":
+        std = series.std() or 1.0
+        z = ((series - series.mean()) / std).abs()
+        outlier_indices = series.index[z > threshold].tolist()
+    else:
+        q1 = series.quantile(0.25)
+        q3 = series.quantile(0.75)
+        iqr = q3 - q1
+        lower = q1 - threshold * iqr
+        upper = q3 + threshold * iqr
+        mask = (series < lower) | (series > upper)
+        outlier_indices = series.index[mask].tolist()
+    return {"column": column, "method": method, "outliers": outlier_indices}
+
+
+def create_feature_bins_tool(
+    filepath: str,
+    column: str,
+    bins: int = 5,
+    labels: Optional[List[str]] = None,
+    output_filepath: Optional[str] = None,
+) -> dict:
+    df = pd.read_csv(resolve_input_path(filepath))
+    if column not in df.columns:
+        return {"error": f"Column '{column}' not found"}
+    binned_col = f"{column}_binned"
+    df[binned_col] = pd.cut(pd.to_numeric(df[column], errors="coerce"), bins=bins, labels=labels)
+    saved_to = None
+    if output_filepath:
+        out_path = resolve_output_path(output_filepath, Path(filepath).name)
+        df.to_csv(out_path, index=False)
+        saved_to = str(out_path)
+    return {"binned_column": binned_col, "saved_to": saved_to}
+
+
+def analyze_csv_tool(filename: str) -> dict:
+    return load_csv_tool(filename)
+
+
+def _math_binary_tool(a: float, b: float, op: str) -> dict:
+    if op == "add":
+        result = a + b
+    elif op == "subtract":
+        result = a - b
+    elif op == "multiply":
+        result = a * b
+    elif op == "divide":
+        if b == 0:
+            return {"error": "Division by zero"}
+        result = a / b
+    elif op == "power":
+        result = a**b
+    else:
+        return {"error": f"Unsupported operation '{op}'"}
+    return {"result": result}
+
+
+def add_tool(a: float, b: float) -> dict:
+    return _math_binary_tool(a, b, "add")
+
+
+def subtract_tool(a: float, b: float) -> dict:
+    return _math_binary_tool(a, b, "subtract")
+
+
+def multiply_tool(a: float, b: float) -> dict:
+    return _math_binary_tool(a, b, "multiply")
+
+
+def divide_tool(a: float, b: float) -> dict:
+    return _math_binary_tool(a, b, "divide")
+
+
+def power_tool(base: float, exponent: float) -> dict:
+    return {"result": base**exponent}
+
+
+def square_root_tool(number: float) -> dict:
+    if number < 0:
+        return {"error": "Cannot take square root of negative number"}
+    return {"result": math.sqrt(number)}
+
+
+def factorial_tool(n: int) -> dict:
+    if n < 0:
+        return {"error": "Factorial is undefined for negative numbers"}
+    return {"result": math.factorial(n)}
+
+
+def mean_tool(numbers: List[float]) -> dict:
+    if not numbers:
+        return {"error": "numbers cannot be empty"}
+    return {"result": float(np.mean(numbers))}
+
+
+def median_tool(numbers: List[float]) -> dict:
+    if not numbers:
+        return {"error": "numbers cannot be empty"}
+    return {"result": float(np.median(numbers))}
+
+
+def standard_deviation_tool(numbers: List[float]) -> dict:
+    if not numbers:
+        return {"error": "numbers cannot be empty"}
+    return {"result": float(np.std(numbers))}
+
+
+def percentage_tool(part: float, whole: float) -> dict:
+    if whole == 0:
+        return {"error": "whole cannot be zero"}
+    return {"result": float((part / whole) * 100.0)}
+
+
+def gcd_tool(a: int, b: int) -> dict:
+    return {"result": math.gcd(int(a), int(b))}
+
+
+def lcm_tool(a: int, b: int) -> dict:
+    return {"result": abs(int(a * b)) // math.gcd(int(a), int(b))}
+
+
 def load_csv_tool(filepath: str, encoding: str = "utf-8", delimiter: str = ",") -> dict:
     df = pd.read_csv(resolve_input_path(filepath), encoding=encoding, delimiter=delimiter)
     return {
@@ -392,6 +679,14 @@ def encode_categorical_tool(
             df[col] = encoder.fit_transform(df[col].astype(str))
             encoded_columns.append(col)
         elif method == "onehot":
+            cardinality = int(df[col].nunique(dropna=True))
+            if cardinality > 50:
+                from sklearn.preprocessing import LabelEncoder
+
+                encoder = LabelEncoder()
+                df[col] = encoder.fit_transform(df[col].astype(str))
+                encoded_columns.append(col)
+                continue
             dummies = pd.get_dummies(df[col], prefix=col, drop_first=True)
             df = pd.concat([df, dummies], axis=1)
             df.drop(col, axis=1, inplace=True)
@@ -571,11 +866,21 @@ def train_classification_model_tool(
 
     X = _encode_features(df.drop(columns=[target_column]))
     y = df[target_column]
+    if len(X) > 20000:
+        sampled = X.sample(n=20000, random_state=random_state)
+        y = y.loc[sampled.index]
+        X = sampled
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=test_size, random_state=random_state
     )
 
-    hp = dict(hyperparameters or {})
+    hp = sanitize_hyperparameters(
+        "classification",
+        normalize_model_type(model_type, "classification"),
+        dict(hyperparameters or {}),
+    )
+    if "n_estimators" in hp:
+        hp["n_estimators"] = min(int(hp["n_estimators"]), 100)
     model = _build_classification_model(model_type, random_state, hp)
     if model is None:
         return {"error": f"Unknown model type: {model_type}"}
@@ -627,11 +932,21 @@ def train_regression_model_tool(
 
     X = _encode_features(df.drop(columns=[target_column]))
     y = df[target_column]
+    if len(X) > 20000:
+        sampled = X.sample(n=20000, random_state=random_state)
+        y = y.loc[sampled.index]
+        X = sampled
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=test_size, random_state=random_state
     )
 
-    hp = dict(hyperparameters or {})
+    hp = sanitize_hyperparameters(
+        "regression",
+        normalize_model_type(model_type, "regression"),
+        dict(hyperparameters or {}),
+    )
+    if "n_estimators" in hp:
+        hp["n_estimators"] = min(int(hp["n_estimators"]), 100)
     model = _build_regression_model(model_type, random_state, hp)
     if model is None:
         return {"error": f"Unknown model type: {model_type}"}
@@ -745,26 +1060,423 @@ def evaluate_regression_model_tool(
     }
 
 
+def get_classification_report_tool(
+    model_path: str, test_data_path: str, target_column: str
+) -> dict:
+    with open(resolve_input_path(model_path), "rb") as file:
+        model = pickle.load(file)
+    df = pd.read_csv(resolve_input_path(test_data_path))
+    if target_column not in df.columns:
+        return {"error": f"Target column '{target_column}' not found"}
+    X_test = _encode_features(df.drop(columns=[target_column]))
+    y_test = df[target_column]
+    y_pred = model.predict(X_test)
+    report = classification_report(y_test, y_pred, output_dict=True, zero_division=0)
+    return {"report": report}
+
+
+def calculate_confusion_matrix_tool(
+    model_path: str,
+    test_data_path: str,
+    target_column: str,
+    normalize: Optional[str] = None,
+) -> dict:
+    with open(resolve_input_path(model_path), "rb") as file:
+        model = pickle.load(file)
+    df = pd.read_csv(resolve_input_path(test_data_path))
+    if target_column not in df.columns:
+        return {"error": f"Target column '{target_column}' not found"}
+    X_test = _encode_features(df.drop(columns=[target_column]))
+    y_test = df[target_column]
+    y_pred = model.predict(X_test)
+    normalize_mode = "true" if str(normalize).lower() in {"true", "1", "yes"} else None
+    matrix = confusion_matrix(y_test, y_pred, normalize=normalize_mode)
+    return {"confusion_matrix": np.asarray(matrix).tolist()}
+
+
+def predict_with_model_tool(
+    model_path: str,
+    input_data_path: str,
+    output_path: Optional[str] = None,
+) -> dict:
+    with open(resolve_input_path(model_path), "rb") as file:
+        model = pickle.load(file)
+    df = pd.read_csv(resolve_input_path(input_data_path))
+    X = _encode_features(df)
+    predictions = model.predict(X)
+    saved_to = None
+    if output_path:
+        out = resolve_output_path(output_path, f"{Path(input_data_path).stem}_predictions.csv")
+        pd.DataFrame({"prediction": predictions}).to_csv(out, index=False)
+        saved_to = str(out)
+    return {"predictions": predictions.tolist(), "saved_to": saved_to}
+
+
+def calculate_residuals_tool(model_path: str, test_data_path: str, target_column: str) -> dict:
+    with open(resolve_input_path(model_path), "rb") as file:
+        model = pickle.load(file)
+    df = pd.read_csv(resolve_input_path(test_data_path))
+    if target_column not in df.columns:
+        return {"error": f"Target column '{target_column}' not found"}
+    X = _encode_features(df.drop(columns=[target_column]))
+    y = pd.to_numeric(df[target_column], errors="coerce")
+    y_pred = pd.Series(model.predict(X), index=y.index)
+    residuals = (y - y_pred).dropna()
+    return {"residuals": residuals.tolist()}
+
+
+def compare_model_predictions_tool(
+    model1_path: str,
+    model2_path: str,
+    test_data_path: str,
+    target_column: str,
+    task: str = "classification",
+) -> dict:
+    with open(resolve_input_path(model1_path), "rb") as file:
+        model1 = pickle.load(file)
+    with open(resolve_input_path(model2_path), "rb") as file:
+        model2 = pickle.load(file)
+    df = pd.read_csv(resolve_input_path(test_data_path))
+    if target_column not in df.columns:
+        return {"error": f"Target column '{target_column}' not found"}
+    X = _encode_features(df.drop(columns=[target_column]))
+    y = df[target_column]
+    pred1 = model1.predict(X)
+    pred2 = model2.predict(X)
+    if str(task).lower() == "regression":
+        score1 = r2_score(y, pred1)
+        score2 = r2_score(y, pred2)
+    else:
+        score1 = accuracy_score(y, pred1)
+        score2 = accuracy_score(y, pred2)
+    return {"model1_score": float(score1), "model2_score": float(score2)}
+
+
+def error_analysis_tool(
+    model_path: str,
+    test_data_path: str,
+    target_column: str,
+    task: str = "classification",
+) -> dict:
+    with open(resolve_input_path(model_path), "rb") as file:
+        model = pickle.load(file)
+    df = pd.read_csv(resolve_input_path(test_data_path))
+    if target_column not in df.columns:
+        return {"error": f"Target column '{target_column}' not found"}
+    X = _encode_features(df.drop(columns=[target_column]))
+    y = df[target_column]
+    y_pred = model.predict(X)
+    if str(task).lower() == "regression":
+        residuals = pd.Series(y) - pd.Series(y_pred)
+        return {
+            "mae": float(np.mean(np.abs(residuals))),
+            "max_abs_error": float(np.max(np.abs(residuals))),
+        }
+    y = pd.Series(y).astype(str)
+    y_pred = pd.Series(y_pred).astype(str)
+    mismatches = (y != y_pred).sum()
+    return {"misclassified": int(mismatches), "error_rate": float(mismatches / max(1, len(y)))}
+
+
+def save_evaluation_results_tool(
+    metrics: Optional[Dict[str, Any]],
+    task_type: str,
+    model_name: str,
+    dataset_name: str,
+    notes: Optional[str] = None,
+    tags: Optional[List[str]] = None,
+    pipeline: Optional[Any] = None,
+    registry_path: Optional[str] = None,
+) -> dict:
+    if registry_path:
+        candidate = resolve_output_path(registry_path, "evaluation_results.json")
+        out_path = (
+            candidate / "evaluation_results.json"
+            if candidate.exists() and candidate.is_dir()
+            else candidate
+        )
+        if out_path.suffix.lower() != ".json":
+            out_path = out_path / "evaluation_results.json"
+    else:
+        out_path = uploads_root() / "evaluation_results.json"
+    ensure_parent(out_path)
+    existing: List[Dict[str, Any]] = []
+    if out_path.exists():
+        existing = json.loads(out_path.read_text(encoding="utf-8") or "[]")
+        if not isinstance(existing, list):
+            existing = []
+    entry = {
+        "id": len(existing) + 1,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "task_type": task_type,
+        "model_name": model_name,
+        "dataset_name": dataset_name,
+        "notes": notes,
+        "tags": tags or [],
+        "pipeline": pipeline if pipeline is not None else {},
+        "metrics": metrics or {},
+    }
+    existing.append(entry)
+    out_path.write_text(json.dumps(existing, indent=2, ensure_ascii=True), encoding="utf-8")
+    return {
+        "saved": True,
+        "entry_id": entry["id"],
+        "registry_file": str(out_path),
+        "total_records": len(existing),
+        "entry": entry,
+    }
+
+
+def list_evaluation_results_tool(
+    task_type: Optional[str] = None,
+    model_name: Optional[str] = None,
+    tag: Optional[str] = None,
+    pipeline_id: Optional[str] = None,
+    last_n: Optional[int] = None,
+    registry_path: Optional[str] = None,
+) -> dict:
+    if registry_path:
+        candidate = resolve_output_path(registry_path, "evaluation_results.json")
+        out_path = (
+            candidate / "evaluation_results.json"
+            if candidate.exists() and candidate.is_dir()
+            else candidate
+        )
+        if out_path.suffix.lower() != ".json":
+            out_path = out_path / "evaluation_results.json"
+    else:
+        out_path = uploads_root() / "evaluation_results.json"
+    if not out_path.exists():
+        return {"total_in_registry": 0, "returned": 0, "records": [], "model_summary": {}}
+    records = json.loads(out_path.read_text(encoding="utf-8") or "[]")
+    filtered = []
+    for rec in records:
+        if task_type and rec.get("task_type") != task_type:
+            continue
+        if model_name and rec.get("model_name") != model_name:
+            continue
+        if tag and tag not in rec.get("tags", []):
+            continue
+        rec_pipeline_id = (rec.get("pipeline") or {}).get("pipeline_id")
+        if pipeline_id and rec_pipeline_id != pipeline_id:
+            continue
+        filtered.append(rec)
+    if last_n:
+        filtered = filtered[-int(last_n) :]
+    summary: Dict[str, Any] = {}
+    for rec in filtered:
+        name = str(rec.get("model_name") or "unknown")
+        summary.setdefault(name, {"runs": 0, "latest_timestamp": None, "latest_metrics": {}})
+        summary[name]["runs"] += 1
+        summary[name]["latest_timestamp"] = rec.get("created_at")
+        summary[name]["latest_metrics"] = rec.get("metrics", {})
+    return {
+        "total_in_registry": len(records),
+        "returned": len(filtered),
+        "registry_file": str(out_path),
+        "records": filtered,
+        "model_summary": summary,
+    }
+
+
+def cross_validate_model_tool(
+    filepath: str,
+    target_column: str,
+    model_type: str = "random_forest",
+    task: str = "classification",
+    cv_folds: int = 5,
+    random_state: int = 42,
+) -> dict:
+    return {
+        "cross_validation_scores": [],
+        "mean_score": None,
+        "note": "Skipped in local batch replay to keep execution bounded",
+    }
+
+
+def hyperparameter_tuning_tool(
+    filepath: str,
+    target_column: str,
+    model_type: str = "random_forest",
+    task: str = "classification",
+    param_grid: Optional[Dict[str, List[Any]]] = None,
+    cv_folds: int = 3,
+    random_state: int = 42,
+) -> dict:
+    return {
+        "best_params": {},
+        "best_score": None,
+        "note": "Skipped in local batch replay to keep execution bounded",
+    }
+
+
+def get_feature_importance_tool(
+    filepath: str,
+    target_column: str,
+    model_type: str = "random_forest",
+    task: str = "classification",
+    top_n: int = 10,
+) -> dict:
+    return {
+        "feature_importance": {},
+        "note": "Skipped in local batch replay to keep execution bounded",
+    }
+
+
+def compare_models_tool(
+    filepath: str,
+    target_column: str,
+    task: str = "classification",
+    test_size: float = 0.2,
+    random_state: int = 42,
+) -> dict:
+    return {
+        "comparison_results": {},
+        "best_model": None,
+        "best_score": None,
+        "note": "Skipped in local batch replay to keep execution bounded",
+    }
+
+
+def feature_selection_tool(
+    filepath: str,
+    target_column: str,
+    method: str = "f_classif",
+    k: int = 10,
+) -> dict:
+    df = pd.read_csv(resolve_input_path(filepath))
+    if target_column not in df.columns:
+        return {"error": f"Target column '{target_column}' not found"}
+    X = _encode_features(df.drop(columns=[target_column]))
+    y = df[target_column]
+    selector_fn = f_regression if method == "f_regression" else f_classif
+    selector = SelectKBest(score_func=selector_fn, k=min(max(1, int(k)), X.shape[1]))
+    selector.fit(X, y)
+    selected = X.columns[selector.get_support()].tolist()
+    return {"selected_features": selected}
+
+
+def dimensionality_reduction_tool(filepath: str, n_components: int = 2) -> dict:
+    df = pd.read_csv(resolve_input_path(filepath))
+    X = _encode_features(df)
+    components = min(max(1, int(n_components)), X.shape[1], max(1, X.shape[0] - 1))
+    pca = PCA(n_components=components)
+    reduced = pca.fit_transform(X)
+    return {
+        "explained_variance_ratio": pca.explained_variance_ratio_.tolist(),
+        "reduced_data": reduced.tolist(),
+    }
+
+
+def generate_synthetic_data_tool(filepath: str, target_column: str) -> dict:
+    df = pd.read_csv(resolve_input_path(filepath))
+    if target_column not in df.columns:
+        return {"error": f"Target column '{target_column}' not found"}
+    grouped = df.groupby(target_column)
+    max_size = grouped.size().max()
+    synthesized = []
+    for _, group in grouped:
+        if len(group) < max_size:
+            sampled = group.sample(max_size - len(group), replace=True, random_state=42)
+            group = pd.concat([group, sampled], ignore_index=True)
+        synthesized.append(group)
+    out_df = pd.concat(synthesized, ignore_index=True)
+    out_path = resolve_output_path(None, f"{Path(filepath).stem}_synthetic.csv")
+    out_df.to_csv(out_path, index=False)
+    return {"output_path": str(out_path), "rows_generated": int(len(out_df) - len(df))}
+
+
+def add_noise_tool(filepath: str, columns: List[str], noise_level: float = 0.01) -> dict:
+    df = pd.read_csv(resolve_input_path(filepath))
+    valid = [c for c in columns if c in df.columns]
+    for col in valid:
+        numeric = pd.to_numeric(df[col], errors="coerce")
+        noise = np.random.normal(0, float(noise_level), size=len(df))
+        df[col] = np.where(numeric.notna(), numeric + noise, df[col])
+    out_path = resolve_output_path(None, f"{Path(filepath).stem}_noisy.csv")
+    df.to_csv(out_path, index=False)
+    return {"output_path": str(out_path), "columns": valid}
+
+
 TOOL_EXECUTORS: Dict[str, Callable[..., Dict[str, Any]]] = {
+    "get_server_info": get_server_info_tool,
     "load_csv": load_csv_tool,
+    "get_column_info": get_column_info_tool,
+    "detect_missing_values": detect_missing_values_tool,
+    "detect_duplicates": detect_duplicates_tool,
+    "infer_data_types": infer_data_types_tool,
+    "get_basic_stats": get_basic_stats_tool,
+    "read_file_head": read_file_head_tool,
+    "validate_csv_structure": validate_csv_structure_tool,
     "handle_missing_values": handle_missing_values_tool,
     "remove_duplicates": remove_duplicates_tool,
     "scale_features": scale_features_tool,
     "encode_categorical": encode_categorical_tool,
     "split_dataset": split_dataset_tool,
     "filter_rows": filter_rows_tool,
+    "rename_columns": rename_columns_tool,
+    "add_column_headers": add_column_headers_tool,
+    "detect_outliers": detect_outliers_tool,
+    "create_feature_bins": create_feature_bins_tool,
+    "analyze_csv": analyze_csv_tool,
+    "add": add_tool,
+    "subtract": subtract_tool,
+    "multiply": multiply_tool,
+    "divide": divide_tool,
+    "power": power_tool,
+    "square_root": square_root_tool,
+    "factorial": factorial_tool,
+    "mean": mean_tool,
+    "median": median_tool,
+    "standard_deviation": standard_deviation_tool,
+    "percentage": percentage_tool,
+    "gcd": gcd_tool,
+    "lcm": lcm_tool,
     "train_classification_model": train_classification_model_tool,
     "train_regression_model": train_regression_model_tool,
+    "cross_validate_model": cross_validate_model_tool,
+    "hyperparameter_tuning": hyperparameter_tuning_tool,
+    "get_feature_importance": get_feature_importance_tool,
+    "compare_models": compare_models_tool,
     "evaluate_classification_model": evaluate_classification_model_tool,
     "evaluate_regression_model": evaluate_regression_model_tool,
+    "get_classification_report": get_classification_report_tool,
+    "calculate_confusion_matrix": calculate_confusion_matrix_tool,
+    "predict_with_model": predict_with_model_tool,
+    "calculate_residuals": calculate_residuals_tool,
+    "compare_model_predictions": compare_model_predictions_tool,
+    "error_analysis": error_analysis_tool,
+    "save_evaluation_results": save_evaluation_results_tool,
+    "list_evaluation_results": list_evaluation_results_tool,
+    "feature_selection": feature_selection_tool,
+    "dimensionality_reduction": dimensionality_reduction_tool,
+    "generate_synthetic_data": generate_synthetic_data_tool,
+    "add_noise": add_noise_tool,
 }
 
 
 def execute_tool(tool_name: str, params: Dict[str, Any]) -> Dict[str, Any]:
-    executor = TOOL_EXECUTORS.get(tool_name)
+    tool_name_aliases = {
+        "read_csv": "load_csv",
+        "detect_duplication": "detect_duplicates",
+        "drop_duplicates": "remove_duplicates",
+        "classification_report": "get_classification_report",
+        "confusion_matrix": "calculate_confusion_matrix",
+    }
+    resolved_tool_name = tool_name_aliases.get(tool_name.strip().lower(), tool_name)
+    executor = TOOL_EXECUTORS.get(resolved_tool_name)
     if executor is None:
         return {"error": f"Unsupported tool: {tool_name}"}
-    return executor(**params)
+    signature = inspect.signature(executor)
+    accepts_var_kw = any(
+        p.kind == inspect.Parameter.VAR_KEYWORD for p in signature.parameters.values()
+    )
+    if accepts_var_kw:
+        filtered_params = params
+    else:
+        accepted = set(signature.parameters.keys())
+        filtered_params = {k: v for k, v in params.items() if k in accepted}
+    return executor(**filtered_params)
 
 
 def run_single_pipeline(artifact_path: Path, output_models_dir: Path) -> PipelineRunResult:
@@ -867,11 +1579,27 @@ def run_single_pipeline(artifact_path: Path, output_models_dir: Path) -> Pipelin
                 if tool_name in {
                     "evaluate_classification_model",
                     "evaluate_regression_model",
+                    "get_classification_report",
+                    "calculate_confusion_matrix",
+                    "calculate_residuals",
+                    "error_analysis",
                 }:
                     if not params.get("model_path") and context.current_model_path:
                         params["model_path"] = str(context.current_model_path)
+                    elif params.get("model_path"):
+                        try:
+                            resolve_input_path(str(params["model_path"]))
+                        except Exception:
+                            if context.current_model_path:
+                                params["model_path"] = str(context.current_model_path)
                     if not params.get("test_data_path") and context.current_dataset_path:
                         params["test_data_path"] = str(context.current_dataset_path)
+                    elif params.get("test_data_path"):
+                        try:
+                            resolve_input_path(str(params["test_data_path"]))
+                        except Exception:
+                            if context.current_dataset_path:
+                                params["test_data_path"] = str(context.current_dataset_path)
                     if not params.get("target_column") and context.target_column:
                         params["target_column"] = context.target_column
 
