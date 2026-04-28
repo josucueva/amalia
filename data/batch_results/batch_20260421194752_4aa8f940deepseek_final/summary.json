@@ -1,0 +1,62 @@
+{
+  "total_pipelines": 61,
+  "successful": 45,
+  "failed": 16,
+  "classification_successful": 26,
+  "regression_successful": 19,
+  "avg_classification_accuracy": 0.8544,
+  "avg_regression_r2": 0.7979,
+  "avg_regression_rmse": 7553.6617,
+  "failed_examples": [
+    {
+      "dataset_id": "classification__easy__uciml_glass__glass.sim_ai_workflow",
+      "artifact_file": "classification__easy__uciml_glass__glass.sim_ai_workflow.json",
+      "error": "Workflow has no executable steps"
+    },
+    {
+      "dataset_id": "classification__hard__abhishek14398_loan-dataset__loan",
+      "artifact_file": "classification__hard__abhishek14398_loan-dataset__loan.json",
+      "error": "Input y contains NaN."
+    },
+    {
+      "dataset_id": "classification__hard__jocelyndumlao_consumer-review-of-clothing-product__Consumer Review of Clothing Product__data_amazon.xlsx - Sheet1",
+      "artifact_file": "classification__hard__jocelyndumlao_consumer-review-of-clothing-product__Consumer Review of Clothing Product__data_amazon.xlsx - Sheet1.json",
+      "error": "Input y contains NaN."
+    },
+    {
+      "dataset_id": "classification__hard__prox37_twitter-multilabel-classification-dataset__mLabel_tweets",
+      "artifact_file": "classification__hard__prox37_twitter-multilabel-classification-dataset__mLabel_tweets.json",
+      "error": "[Errno 28] No space left on device"
+    },
+    {
+      "dataset_id": "classification__hard__saurabhshahane_ecommerce-text-classification__ecommerceDataset",
+      "artifact_file": "classification__hard__saurabhshahane_ecommerce-text-classification__ecommerceDataset.json",
+      "error": "[Errno 28] No space left on device"
+    },
+    {
+      "dataset_id": "classification__mid__christianlillelund_csgo-round-winner-classification__csgo_round_snapshots",
+      "artifact_file": "classification__mid__christianlillelund_csgo-round-winner-classification__csgo_round_snapshots.json",
+      "error": "pos_label=1 is not a valid label. It should be one of ['CT', 'T']"
+    },
+    {
+      "dataset_id": "classification__mid__nimapourmoradi_dry-bean-dataset-classification__Dry_Bean_Dataset",
+      "artifact_file": "classification__mid__nimapourmoradi_dry-bean-dataset-classification__Dry_Bean_Dataset.json",
+      "error": "scale_features: No valid numeric columns found"
+    },
+    {
+      "dataset_id": "classification__mid__xhlulu_cpc-codes__titles",
+      "artifact_file": "classification__mid__xhlulu_cpc-codes__titles.json",
+      "error": "Input y_true contains NaN."
+    },
+    {
+      "dataset_id": "classification__mid__yasserh_titanic-dataset__Titanic-Dataset",
+      "artifact_file": "classification__mid__yasserh_titanic-dataset__Titanic-Dataset.json",
+      "error": "train_classification_model: Target column 'Embarked' not found"
+    },
+    {
+      "dataset_id": "regression__easy__zubairdhuddi_linear-regression__test",
+      "artifact_file": "regression__easy__zubairdhuddi_linear-regression__test.json",
+      "error": "Input file not found: /app/data/uploads/datasets/regression/easy/zubairdhuddi_linear-regression/test.csv_train.csv"
+    }
+  ]
+}
