@@ -1208,43 +1208,63 @@ class BatchProcessorService:
                         f"Pipeline generation failed: {assistant_content[:200]}"
                     )
 
-                # Process and save all orchestration variants
+                # Process and save all orchestration variants (resilient mode)
+                # Do NOT fail-fast on invalid variants. Log and continue.
                 orchestrations = orchestration_data["orchestrations"]
                 artifact_paths = []
+                valid_count = 0
+                invalid_count = 0
                 
                 for idx, orchestration in enumerate(orchestrations, 1):
-                    validation = orchestration.get("validation", {})
-                    if validation.get("status") == "invalid":
+                    try:
+                        validation = orchestration.get("validation", {})
+                        
+                        if validation.get("status") == "invalid":
+                            logger.warning(
+                                "Saving invalid orchestration artifact (resilient mode)",
+                                job_id=job_id,
+                                dataset_id=item.get("dataset_id"),
+                                variant=idx,
+                                issue_count=validation.get("issue_count"),
+                                blocking_issue_count=validation.get("blocking_issue_count"),
+                                issues=validation.get("issues", [])[:3],  # First 3 issues
+                            )
+                            invalid_count += 1
+                        else:
+                            valid_count += 1
+
+                        # Save variant regardless of validation status
+                        artifact_path = self._save_artifact_variant(
+                            job_id=job_id,
+                            item=item,
+                            orchestration=orchestration,
+                            variant_id=idx,
+                            total_variants=len(orchestrations),
+                        )
+                        artifact_paths.append(artifact_path)
+                        
+                    except Exception as variant_error:
+                        # Log variant-specific error but continue with next variant
                         logger.error(
-                            "Blocking invalid orchestration artifact",
+                            "Error saving variant (continuing with next)",
                             job_id=job_id,
                             dataset_id=item.get("dataset_id"),
                             variant=idx,
-                            issue_count=validation.get("issue_count"),
-                            blocking_issue_count=validation.get("blocking_issue_count"),
+                            error=str(variant_error)[:200],
                         )
-                        raise BatchValidationError(
-                            f"Generated orchestration variant {idx} is invalid",
-                            code="invalid_orchestration_artifact",
-                            details={
-                                "dataset_id": item.get("dataset_id"),
-                                "variant": idx,
-                                "issue_count": validation.get("issue_count"),
-                                "blocking_issue_count": validation.get(
-                                    "blocking_issue_count"
-                                ),
-                                "issues": validation.get("issues", []),
-                            },
-                        )
-
-                    artifact_path = self._save_artifact_variant(
-                        job_id=job_id,
-                        item=item,
-                        orchestration=orchestration,
-                        variant_id=idx,
-                        total_variants=len(orchestrations),
-                    )
-                    artifact_paths.append(artifact_path)
+                        invalid_count += 1
+                        continue
+                
+                # Log summary
+                logger.info(
+                    "Variant generation complete (resilient mode)",
+                    job_id=job_id,
+                    dataset_id=item.get("dataset_id"),
+                    total_variants=len(orchestrations),
+                    valid_variants=valid_count,
+                    invalid_variants=invalid_count,
+                    artifacts_saved=len(artifact_paths),
+                )
 
                 if session_id:
                     await self.session_manager.add_message(
@@ -1268,12 +1288,31 @@ class BatchProcessorService:
                     "session_id": session_id,
                     "artifact_paths": artifact_paths,
                     "num_variants": len(orchestrations),
+                    "valid_variants": valid_count,
+                    "invalid_variants": invalid_count,
                     "orchestrations": orchestrations,
                     "retries": retries,
                 }
 
-            except BatchValidationError:
-                raise
+            except BatchValidationError as bve:
+                # Even on validation error, if we have some artifacts, consider it partial success
+                logger.warning(
+                    "Validation error but continuing (resilient mode)",
+                    job_id=job_id,
+                    dataset_id=item.get("dataset_id"),
+                    error=str(bve)[:200],
+                )
+                # Don't re-raise, allow batch to continue
+                return {
+                    "session_id": session_id,
+                    "artifact_paths": artifact_paths if 'artifact_paths' in locals() else [],
+                    "num_variants": len(orchestrations) if 'orchestrations' in locals() else 0,
+                    "valid_variants": valid_count if 'valid_count' in locals() else 0,
+                    "invalid_variants": invalid_count if 'invalid_count' in locals() else 0,
+                    "orchestrations": orchestrations if 'orchestrations' in locals() else [],
+                    "retries": retries,
+                    "validation_error": str(bve)[:200],
+                }
             except Exception as exc:
                 last_error = exc
                 retries += 1
