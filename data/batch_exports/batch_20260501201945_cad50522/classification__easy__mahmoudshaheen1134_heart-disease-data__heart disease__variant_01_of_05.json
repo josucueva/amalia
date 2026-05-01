@@ -1,0 +1,146 @@
+{
+  "dataset_id": "classification__easy__mahmoudshaheen1134_heart-disease-data__heart disease",
+  "filename": "heart disease.csv",
+  "file_path": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/heart disease.csv",
+  "task_type": "classification",
+  "tier": "easy",
+  "target_column": null,
+  "variant_id": 1,
+  "total_variants": 5,
+  "generated_at": "2026-05-01T20:42:55.926598+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a simple and fast classification model on the heart disease dataset to predict the target variable using logistic regression.",
+    "complexity": "simple",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/heart disease.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/heart disease.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "orchestrator_agent",
+          "name": "Orchestrator Agent",
+          "yaml_path": "config/agents/orchestrator_agent.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "orchestrator_agent",
+            "agent_name": "Orchestrator Agent"
+          }
+        },
+        "planner_mcp_server": "amalia-mcp-server",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "train_classification_model",
+            "description": "Train a logistic regression model on the training data for simplicity and speed.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/heart disease.csv",
+              "target_column": "target",
+              "model_type": "logistic",
+              "test_size": 0.2,
+              "random_state": null,
+              "hyperparameters": {
+                "max_iter": 1000,
+                "C": 1.0,
+                "solver": "lbfgs"
+              },
+              "model_save_path": null,
+              "feature_columns": null
+            },
+            "planner_parameters": {
+              "model_type": "logistic",
+              "target_column": "target",
+              "feature_columns": null,
+              "hyperparameters": null
+            },
+            "missing_required_parameters": [
+              "random_state"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "evaluate_classification_model",
+            "description": "Evaluate the trained model on the test set using accuracy, precision, recall, and F1-score.",
+            "tool_parameters": {
+              "model_path": null,
+              "test_data_path": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/heart disease.csv",
+              "target_column": "target",
+              "metrics": [
+                "accuracy",
+                "precision",
+                "recall",
+                "f1"
+              ],
+              "filepath": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/heart disease.csv"
+            },
+            "planner_parameters": {
+              "metrics": [
+                "accuracy",
+                "precision",
+                "recall",
+                "f1"
+              ]
+            },
+            "missing_required_parameters": [
+              "model_path"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "logistic",
+        "rationale": "This phase covers the core steps: data splitting, model training with logistic regression (fast and interpretable for small datasets), and evaluation. No preprocessing is needed as the dataset is clean with no missing values."
+      }
+    ],
+    "mcp_servers": [],
+    "validation": {
+      "status": "warning",
+      "issue_count": 4,
+      "blocking_issue_count": 0,
+      "issues": [
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'amalia-mcp-server'",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'train_test_split' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'train_classification_model' has unresolved required parameters: random_state",
+          "phase_number": 1,
+          "tool_name": "train_classification_model",
+          "missing_parameters": [
+            "random_state"
+          ]
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'evaluate_classification_model' has unresolved required parameters: model_path",
+          "phase_number": 1,
+          "tool_name": "evaluate_classification_model",
+          "missing_parameters": [
+            "model_path"
+          ]
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "orchestrator_agent",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      }
+    ],
+    "connections": []
+  }
+}
