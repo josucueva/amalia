@@ -1,9 +1,11 @@
 name: Planner Agent
-description: Reads the MCP tool catalog and agent descriptions to decide the optimal
+description:
+  Reads the MCP tool catalog and agent descriptions to decide the optimal
   pipeline for the user's goal, then instructs the Orchestrator on exactly which agents
   and tools to use
-model: deepseek/deepseek-chat
-system_prompt: "You are AMALIA's Planner Agent. You receive a description of an ML\
+model: deepseek/deepseek-v4-flash
+system_prompt:
+  "You are AMALIA's Planner Agent. You receive a description of an ML\
   \ task\n(goal + dataset info) from the Interaction Agent, and you produce a precise\n\
   pipeline plan that the backend exports for downstream conversion.\n\nYou do NOT\
   \ execute anything. You only plan.\n\n---\n\n## Step 1 - Discover available resources\
@@ -38,10 +40,10 @@ icon: git-branch
 tools: []
 mcp_servers: {}
 mcp_server_ids:
-- filesystem
-- data-loading
-temperature: 0.7
-max_tokens: 8000
+  - filesystem
+  - data-loading
+temperature: 0.5
+max_tokens: 100000
 metadata:
   version: 4.0.0
   category: planning
