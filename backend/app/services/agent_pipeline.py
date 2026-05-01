@@ -553,7 +553,7 @@ class AgentPipelineService:
         return raw_response
 
     async def process_with_pipeline(
-        self, user_message: str, conversation_history: list
+        self, user_message: str, conversation_history: list, num_pipelines: int = 1
     ) -> Tuple[str, Optional[Dict[str, Any]]]:
         """
         Process a user message through the three-agent pipeline.
@@ -563,6 +563,7 @@ class AgentPipelineService:
         Args:
             user_message: User's original message
             conversation_history: Previous messages
+            num_pipelines: Number of alternative pipelines to generate (default: 1)
 
         Returns:
             Tuple of (final_response, orchestration_data)
@@ -745,7 +746,236 @@ class AgentPipelineService:
 
         return final_message, {"orchestration": orchestration}
 
-    async def _build_planner_grounding_context(self) -> Dict[str, Any]:
+    async def process_with_multiple_pipelines(
+        self,
+        user_message: str,
+        conversation_history: list,
+        num_pipelines: int = 5,
+    ) -> Tuple[str, Optional[Dict[str, Any]]]:
+        """
+        Generate multiple alternative pipelines for the same task.
+
+        This method generates N different pipelines using the same dataset analysis
+        but allowing the Planner Agent to create diverse approaches due to increased
+        temperature and variability.
+
+        Args:
+            user_message: User's original message with file path
+            conversation_history: Previous conversation history
+            num_pipelines: Number of alternative pipelines to generate (default: 5)
+
+        Returns:
+            Tuple of (final_response, orchestration_data_with_all_plans)
+        """
+        if num_pipelines < 1:
+            num_pipelines = 1
+        if num_pipelines > 10:
+            num_pipelines = 10  # Safety limit
+
+        logger.info(
+            "Starting multi-pipeline generation",
+            num_pipelines=num_pipelines,
+        )
+
+        # Step 1: Interaction Agent (single execution)
+        interaction_agent = self.agent_registry.get_agent("interaction_agent")
+        if not interaction_agent:
+            logger.error("Interaction agent not found")
+            return "Interaction agent is not available.", None
+
+        file_path = self._extract_file_path_from_message(user_message)
+        dataset_snapshot = (
+            self._build_dataset_snapshot(file_path) if file_path else None
+        )
+
+        interaction_input = user_message
+        if dataset_snapshot:
+            interaction_input = (
+                f"{user_message}\n\n"
+                "[DATASET_FIRST_100_ROWS_ANALYSIS_JSON]\n"
+                f"{json.dumps(dataset_snapshot, ensure_ascii=True)}"
+            )
+
+        logger.info("Step 1: Processing with interaction agent")
+        interaction_response = await self._generate_agent_response_with_tools(
+            agent=interaction_agent,
+            user_message=interaction_input,
+            conversation_history=conversation_history,
+            single_pass=True,
+            disable_tools=False,
+            max_tokens_override=1800,
+        )
+
+        action_data = self._extract_json_from_response(interaction_response)
+
+        if not action_data or action_data.get("action") != "plan_pipeline":
+            if file_path:
+                logger.warning(
+                    "Interaction did not return plan JSON; using fallback",
+                    file_path=file_path,
+                )
+                action_data = {
+                    "action": "plan_pipeline",
+                    "improved_prompt": user_message,
+                    "dataset_analysis": dataset_snapshot or {},
+                }
+            else:
+                normalized_response = self._normalize_chat_text_response(
+                    interaction_response,
+                    action_data,
+                )
+                return normalized_response, None
+
+        if not self._dataset_analysis_is_sufficient(action_data, file_path or ""):
+            if dataset_snapshot:
+                action_data["dataset_analysis"] = dataset_snapshot
+
+        improved_prompt = action_data.get("improved_prompt", user_message)
+        dataset_analysis = (
+            action_data.get("dataset_analysis", {})
+            if isinstance(action_data, dict)
+            else {}
+        )
+
+        if file_path:
+            logger.info("File path extracted from message", file_path=file_path)
+            improved_prompt = f"{improved_prompt}\n\n[ATTACHED_FILE: {file_path}]"
+
+        logger.info(
+            "Step 2: Interaction agent created improved prompt",
+            prompt_length=len(improved_prompt),
+            has_file=bool(file_path),
+        )
+
+        # Step 2: Generate N plans with Planner Agent
+        planner_agent = self.agent_registry.get_agent("planner_agent")
+        if not planner_agent:
+            logger.error("Planner agent not found")
+            return "Pipeline planning is not available.", None
+
+        planner_grounding = await self._build_planner_grounding_context()
+        all_plans = []
+        all_orchestrations = []
+
+        for pipeline_idx in range(num_pipelines):
+            logger.info(
+                "Generating pipeline",
+                pipeline_number=pipeline_idx + 1,
+                total_pipelines=num_pipelines,
+            )
+
+            # Add approach hint to diversify plans
+            approach_hints = [
+                "Focus on simplicity and speed",
+                "Focus on accuracy and robustness",
+                "Focus on feature engineering and preprocessing",
+                "Focus on ensemble methods and model diversity",
+                "Focus on interpretability and explainability",
+                "Focus on memory efficiency and scalability",
+                "Focus on specialized techniques for this data type",
+                "Focus on handling class imbalance and edge cases",
+                "Focus on cross-validation and robust evaluation",
+                "Focus on automated hyperparameter tuning",
+            ]
+            approach_hint = approach_hints[pipeline_idx % len(approach_hints)]
+
+            planner_input = improved_prompt
+            if dataset_analysis:
+                planner_input = (
+                    f"{improved_prompt}\n\n"
+                    "[DATASET_ANALYSIS_JSON]\n"
+                    f"{json.dumps(dataset_analysis, ensure_ascii=True)}"
+                )
+            planner_input = (
+                f"{planner_input}\n\n"
+                "[PLANNER_GROUNDING_CONTEXT_JSON]\n"
+                f"{json.dumps(planner_grounding, ensure_ascii=True)}\n\n"
+                "[APPROACH_HINT]\n"
+                f"Pipeline variant {pipeline_idx + 1} of {num_pipelines}: {approach_hint}\n\n"
+                "[STRICT_PLANNER_MODE]\n"
+                "Use only IDs/names/tool names present in PLANNER_GROUNDING_CONTEXT_JSON. "
+                "When creating train_* tools, always choose model_type from available_model_types using dataset characteristics. "
+                "Do not call MCP tools in this step. Output only JSON plan."
+            )
+
+            planner_response = await self._generate_agent_response_with_tools(
+                agent=planner_agent,
+                user_message=planner_input,
+                conversation_history=[],
+                single_pass=True,
+                disable_tools=True,
+                max_tokens_override=2200,
+            )
+
+            plan_data = self._extract_json_from_response(planner_response)
+
+            if not plan_data or "plan" not in plan_data:
+                logger.warning(
+                    "Planner failed to create valid JSON plan; using fallback",
+                    pipeline_idx=pipeline_idx,
+                    response_preview=planner_response[:500]
+                    if planner_response
+                    else None,
+                )
+                plan_data = {
+                    "plan": self._build_fallback_plan(
+                        file_path=file_path,
+                        dataset_analysis=(
+                            dataset_analysis
+                            if isinstance(dataset_analysis, dict)
+                            else None
+                        ),
+                    )
+                }
+
+            # Add pipeline variant metadata
+            plan_data["plan"]["variant_id"] = pipeline_idx + 1
+            plan_data["plan"]["variant_total"] = num_pipelines
+            plan_data["plan"]["approach"] = approach_hint
+
+            all_plans.append(plan_data)
+
+            logger.info(
+                "Pipeline generated successfully",
+                pipeline_idx=pipeline_idx,
+                phases=len(plan_data.get("plan", {}).get("phases", [])),
+            )
+
+            # Build orchestration export for this plan
+            orchestration = await self._build_simplified_orchestration_export(
+                plan_data=plan_data,
+                file_path=file_path,
+                target_column_hint=(
+                    action_data.get("dataset_analysis", {}).get("target_column")
+                    if isinstance(action_data, dict)
+                    else None
+                ),
+                dataset_analysis=(
+                    dataset_analysis
+                    if isinstance(dataset_analysis, dict)
+                    else None
+                ),
+            )
+            all_orchestrations.append(orchestration)
+
+        logger.info(
+            "All pipelines generated successfully",
+            total_generated=len(all_plans),
+        )
+
+        final_message = (
+            f"✅ Generated {len(all_plans)} alternative pipelines.\n\n"
+            "Each export includes different approaches to the same task: "
+            "simplicity, accuracy, feature engineering, ensemble methods, and interpretability. "
+            "These are intended as intermediate AMALIA formats for downstream conversion."
+        )
+
+        return final_message, {
+            "pipelines": all_plans,
+            "orchestrations": all_orchestrations,
+            "num_variants": len(all_plans),
+        }
+
         """Build compact grounding context from real agents, MCP servers, and catalog."""
         agents = []
         for agent in self.agent_registry.list_agents():
