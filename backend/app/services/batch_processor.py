@@ -338,8 +338,9 @@ class BatchProcessorService:
                     "duration_seconds": None,
                     "error": None,
                     "session_id": None,
-                    "artifact_path": None,
-                    "orchestration": None,
+                    "artifact_paths": None,
+                    "num_variants": None,
+                    "orchestrations": None,
                 }
             )
 
@@ -1117,8 +1118,9 @@ class BatchProcessorService:
                     completed_at=datetime.now(timezone.utc),
                     duration_seconds=duration,
                     session_id=result.get("session_id"),
-                    artifact_path=result.get("artifact_path"),
-                    orchestration=result.get("orchestration"),
+                    artifact_paths=result.get("artifact_paths"),
+                    num_variants=result.get("num_variants"),
+                    orchestrations=result.get("orchestrations"),
                     retries=result.get("retries", 0),
                 )
 
@@ -1194,41 +1196,55 @@ class BatchProcessorService:
                 )
 
                 assistant_content, orchestration_data = (
-                    await pipeline_service.process_with_pipeline(
+                    await pipeline_service.process_with_multiple_pipelines(
                         user_message=user_message_with_context,
                         conversation_history=conversation_history,
+                        num_pipelines=5,
                     )
                 )
 
-                if not orchestration_data or "orchestration" not in orchestration_data:
+                if not orchestration_data or "orchestrations" not in orchestration_data:
                     raise RuntimeError(
                         f"Pipeline generation failed: {assistant_content[:200]}"
                     )
 
-                orchestration = orchestration_data["orchestration"]
-                validation = orchestration.get("validation", {})
-                if validation.get("status") == "invalid":
-                    logger.error(
-                        "Blocking invalid orchestration artifact",
-                        job_id=job_id,
-                        dataset_id=item.get("dataset_id"),
-                        issue_count=validation.get("issue_count"),
-                        blocking_issue_count=validation.get("blocking_issue_count"),
-                    )
-                    raise BatchValidationError(
-                        "Generated orchestration is invalid and cannot be persisted",
-                        code="invalid_orchestration_artifact",
-                        details={
-                            "dataset_id": item.get("dataset_id"),
-                            "issue_count": validation.get("issue_count"),
-                            "blocking_issue_count": validation.get(
-                                "blocking_issue_count"
-                            ),
-                            "issues": validation.get("issues", []),
-                        },
-                    )
+                # Process and save all orchestration variants
+                orchestrations = orchestration_data["orchestrations"]
+                artifact_paths = []
+                
+                for idx, orchestration in enumerate(orchestrations, 1):
+                    validation = orchestration.get("validation", {})
+                    if validation.get("status") == "invalid":
+                        logger.error(
+                            "Blocking invalid orchestration artifact",
+                            job_id=job_id,
+                            dataset_id=item.get("dataset_id"),
+                            variant=idx,
+                            issue_count=validation.get("issue_count"),
+                            blocking_issue_count=validation.get("blocking_issue_count"),
+                        )
+                        raise BatchValidationError(
+                            f"Generated orchestration variant {idx} is invalid",
+                            code="invalid_orchestration_artifact",
+                            details={
+                                "dataset_id": item.get("dataset_id"),
+                                "variant": idx,
+                                "issue_count": validation.get("issue_count"),
+                                "blocking_issue_count": validation.get(
+                                    "blocking_issue_count"
+                                ),
+                                "issues": validation.get("issues", []),
+                            },
+                        )
 
-                artifact_path = self._save_artifact(job_id, item, orchestration)
+                    artifact_path = self._save_artifact_variant(
+                        job_id=job_id,
+                        item=item,
+                        orchestration=orchestration,
+                        variant_id=idx,
+                        total_variants=len(orchestrations),
+                    )
+                    artifact_paths.append(artifact_path)
 
                 if session_id:
                     await self.session_manager.add_message(
@@ -1236,7 +1252,9 @@ class BatchProcessorService:
                         role="assistant",
                         content=assistant_content,
                         metadata={
-                            "orchestration": orchestration_data,
+                            "orchestrations": orchestration_data,
+                            "artifact_paths": artifact_paths,
+                            "num_variants": len(orchestrations),
                             "agents_used": [
                                 "interaction_agent",
                                 "planner_agent",
@@ -1248,8 +1266,9 @@ class BatchProcessorService:
 
                 return {
                     "session_id": session_id,
-                    "artifact_path": artifact_path,
-                    "orchestration": orchestration,
+                    "artifact_paths": artifact_paths,
+                    "num_variants": len(orchestrations),
+                    "orchestrations": orchestrations,
                     "retries": retries,
                 }
 
@@ -1295,6 +1314,52 @@ class BatchProcessorService:
             "task_type": item.get("task_type"),
             "tier": item.get("tier"),
             "target_column": item.get("target_column"),
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "workflow": orchestration,
+        }
+
+        with open(artifact_path, "w", encoding="utf-8") as file:
+            json.dump(payload, file, indent=2)
+
+        return str(artifact_path)
+
+    def _save_artifact_variant(
+        self,
+        job_id: str,
+        item: Dict[str, Any],
+        orchestration: Dict[str, Any],
+        variant_id: int,
+        total_variants: int,
+    ) -> str:
+        """Persist orchestration JSON artifact variant for downstream Sim usage.
+        
+        Args:
+            job_id: Batch job identifier
+            item: Dataset item from batch manifest
+            orchestration: Orchestration workflow data
+            variant_id: Sequential variant number (1-based)
+            total_variants: Total number of variants for this dataset
+            
+        Returns:
+            Path to saved artifact file
+        """
+        output_dir = Path(self.settings.batch_artifacts_dir) / job_id
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        safe_dataset = item["dataset_id"].replace("/", "_")
+        artifact_path = (
+            output_dir / f"{safe_dataset}__variant_{variant_id:02d}_of_{total_variants:02d}.json"
+        )
+
+        payload = {
+            "dataset_id": item["dataset_id"],
+            "filename": item["filename"],
+            "file_path": item["file_path"],
+            "task_type": item.get("task_type"),
+            "tier": item.get("tier"),
+            "target_column": item.get("target_column"),
+            "variant_id": variant_id,
+            "total_variants": total_variants,
             "generated_at": datetime.now(timezone.utc).isoformat(),
             "workflow": orchestration,
         }

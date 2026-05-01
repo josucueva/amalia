@@ -179,9 +179,7 @@
               "target_column": "target",
               "model_type": "logistic"
             },
-            "missing_required_parameters": [
-              "random_state"
-            ],
+            "missing_required_parameters": ["random_state"],
             "parameter_source": "mcp_catalog_defaults_and_context"
           }
         ],
@@ -217,9 +215,7 @@
               "filepath": "/app/data/uploads/datasets/classification/easy/abhishek14398_heart-disease-classification/heart.csv"
             },
             "planner_parameters": {},
-            "missing_required_parameters": [
-              "model_path"
-            ],
+            "missing_required_parameters": ["model_path"],
             "parameter_source": "mcp_catalog_defaults_and_context"
           }
         ],
@@ -232,11 +228,7 @@
         "id": "filesystem",
         "name": "Filesystem",
         "command": "npx",
-        "args": [
-          "-y",
-          "@modelcontextprotocol/server-filesystem",
-          "/app"
-        ],
+        "args": ["-y", "@modelcontextprotocol/server-filesystem", "/app"],
         "env": {},
         "is_available": true,
         "description": "Access and manage project files under /app (catalog, configs, data)"
@@ -245,9 +237,7 @@
         "id": "python-model_evaluation",
         "name": "Model Evaluation Server",
         "command": "python",
-        "args": [
-          "/app/mcp_servers/model_evaluation/server.py"
-        ],
+        "args": ["/app/mcp_servers/model_evaluation/server.py"],
         "env": {
           "PYTHONPATH": "/app"
         },
@@ -258,9 +248,7 @@
         "id": "python-model_training",
         "name": "Model Training Server",
         "command": "python",
-        "args": [
-          "/app/mcp_servers/model_training/server.py"
-        ],
+        "args": ["/app/mcp_servers/model_training/server.py"],
         "env": {
           "PYTHONPATH": "/app"
         },
@@ -278,9 +266,7 @@
           "message": "Tool 'train_classification_model' has unresolved required parameters: random_state",
           "phase_number": 3,
           "tool_name": "train_classification_model",
-          "missing_parameters": [
-            "random_state"
-          ]
+          "missing_parameters": ["random_state"]
         },
         {
           "code": "agent_unresolved",
@@ -292,9 +278,7 @@
           "message": "Tool 'evaluate_classification_model' has unresolved required parameters: model_path",
           "phase_number": 4,
           "tool_name": "evaluate_classification_model",
-          "missing_parameters": [
-            "model_path"
-          ]
+          "missing_parameters": ["model_path"]
         }
       ],
       "allow_persist_with_issues": true

@@ -1,0 +1,1204 @@
+{
+  "version": "1.0",
+  "exportedAt": "2026-04-22T00:00:00.000Z",
+  "state": {
+    "blocks": {
+      "1f2c9439-e8be-4574-b8e0-b7862cb7234d": {
+        "id": "1f2c9439-e8be-4574-b8e0-b7862cb7234d",
+        "type": "start_trigger",
+        "name": "Start",
+        "position": {
+          "x": -20,
+          "y": 200
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "advancedMode": false,
+        "triggerMode": false,
+        "height": 0,
+        "subBlocks": {
+          "inputFormat": {
+            "id": "inputFormat",
+            "type": "input-format",
+            "value": [
+              {
+                "id": "1a7c43a7-f2fd-4ce9-8cc7-7f7f597d6d6f",
+                "name": "filePath",
+                "type": "string",
+                "value": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass.csv",
+                "collapsed": false
+              },
+              {
+                "id": "cf11dc09-22ec-43fc-b398-2324dbf28f02",
+                "name": "inputText",
+                "type": "string",
+                "value": "",
+                "collapsed": false,
+                "description": ""
+              }
+            ]
+          }
+        },
+        "outputs": {
+          "files": {
+            "type": "file[]",
+            "description": "User uploaded files"
+          },
+          "input": {
+            "type": "string",
+            "description": "Primary user input or message"
+          },
+          "conversationId": {
+            "type": "string",
+            "description": "Conversation thread identifier"
+          }
+        },
+        "data": {},
+        "locked": false
+      },
+      "4e2c040e-03eb-4b81-a9b5-f0139307de8d": {
+        "id": "4e2c040e-03eb-4b81-a9b5-f0139307de8d",
+        "type": "agent",
+        "name": "Data Loader",
+        "position": {
+          "x": 220,
+          "y": 200
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "advancedMode": false,
+        "triggerMode": false,
+        "height": 0,
+        "subBlocks": {
+          "model": {
+            "id": "model",
+            "type": "combobox",
+            "value": "openrouter/openrouter/pony-alpha"
+          },
+          "tools": {
+            "id": "tools",
+            "type": "tool-input",
+            "value": [
+              {
+                "type": "mcp",
+                "title": "analyze_csv",
+                "params": {
+                  "filename": "<start.filePath>",
+                  "serverId": "python-mathematics",
+                  "toolName": "analyze_csv",
+                  "serverUrl": "http://host.docker.internal:8001/mcp",
+                  "serverName": "Mathematics Server"
+                },
+                "schema": {
+                  "type": "object",
+                  "required": ["filename"],
+                  "properties": {
+                    "filename": {
+                      "type": "string"
+                    }
+                  },
+                  "description": "Analyze uploaded CSV file.",
+                  "additionalProperties": false
+                },
+                "toolId": "python-mathematics-analyze_csv",
+                "isExpanded": false,
+                "usageControl": "auto"
+              },
+              {
+                "type": "mcp",
+                "title": "load_csv",
+                "params": {
+                  "filepath": "<start.filePath>",
+                  "encoding": "utf-8",
+                  "delimiter": ",",
+                  "serverId": "python-data_loading",
+                  "toolName": "load_csv",
+                  "serverUrl": "http://host.docker.internal:8002/mcp",
+                  "serverName": "Data Loading Server"
+                },
+                "schema": {
+                  "type": "object",
+                  "required": ["filepath"],
+                  "properties": {
+                    "filepath": {
+                      "type": "string"
+                    },
+                    "encoding": {
+                      "type": "string",
+                      "default": "utf-8"
+                    },
+                    "delimiter": {
+                      "type": "string",
+                      "default": ","
+                    }
+                  },
+                  "description": "Load a CSV file and return metadata.",
+                  "additionalProperties": false
+                },
+                "toolId": "python-data_loading-load_csv",
+                "isExpanded": false,
+                "usageControl": "auto"
+              },
+              {
+                "type": "mcp",
+                "title": "detect_duplicates",
+                "params": {
+                  "filepath": "<start.filePath>",
+                  "subset": null,
+                  "serverId": "python-data_loading",
+                  "toolName": "detect_duplicates",
+                  "serverUrl": "http://host.docker.internal:8002/mcp",
+                  "serverName": "Data Loading Server"
+                },
+                "schema": {
+                  "type": "object",
+                  "required": ["filepath"],
+                  "properties": {
+                    "filepath": {
+                      "type": "string"
+                    },
+                    "subset": {
+                      "anyOf": [
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    }
+                  },
+                  "description": "Detect duplicate rows in a dataset.",
+                  "additionalProperties": false
+                },
+                "toolId": "python-data_loading-detect_duplicates",
+                "isExpanded": false,
+                "usageControl": "auto"
+              }
+            ]
+          },
+          "apiKey": {
+            "id": "apiKey",
+            "type": "short-input",
+            "value": "{{OPENROUTER_API_KEY}}"
+          },
+          "skills": {
+            "id": "skills",
+            "type": "skill-input",
+            "value": []
+          },
+          "messages": {
+            "id": "messages",
+            "type": "messages-input",
+            "value": [
+              {
+                "role": "user",
+                "content": "<start>"
+              }
+            ]
+          },
+          "maxTokens": {
+            "id": "maxTokens",
+            "type": "short-input",
+            "value": null
+          },
+          "verbosity": {
+            "id": "verbosity",
+            "type": "dropdown",
+            "value": ""
+          },
+          "memoryType": {
+            "id": "memoryType",
+            "type": "dropdown",
+            "value": "none"
+          },
+          "temperature": {
+            "id": "temperature",
+            "type": "slider",
+            "value": 0.3
+          },
+          "azureEndpoint": {
+            "id": "azureEndpoint",
+            "type": "short-input",
+            "value": null
+          },
+          "bedrockRegion": {
+            "id": "bedrockRegion",
+            "type": "short-input",
+            "value": null
+          },
+          "thinkingLevel": {
+            "id": "thinkingLevel",
+            "type": "dropdown",
+            "value": ""
+          },
+          "vertexProject": {
+            "id": "vertexProject",
+            "type": "short-input",
+            "value": null
+          },
+          "conversationId": {
+            "id": "conversationId",
+            "type": "short-input",
+            "value": null
+          },
+          "responseFormat": {
+            "id": "responseFormat",
+            "type": "code",
+            "value": null
+          },
+          "vertexLocation": {
+            "id": "vertexLocation",
+            "type": "short-input",
+            "value": null
+          },
+          "azureApiVersion": {
+            "id": "azureApiVersion",
+            "type": "short-input",
+            "value": null
+          },
+          "reasoningEffort": {
+            "id": "reasoningEffort",
+            "type": "dropdown",
+            "value": ""
+          },
+          "bedrockSecretKey": {
+            "id": "bedrockSecretKey",
+            "type": "short-input",
+            "value": null
+          },
+          "vertexCredential": {
+            "id": "vertexCredential",
+            "type": "oauth-input",
+            "value": null
+          },
+          "slidingWindowSize": {
+            "id": "slidingWindowSize",
+            "type": "short-input",
+            "value": null
+          },
+          "bedrockAccessKeyId": {
+            "id": "bedrockAccessKeyId",
+            "type": "short-input",
+            "value": null
+          },
+          "slidingWindowTokens": {
+            "id": "slidingWindowTokens",
+            "type": "short-input",
+            "value": null
+          }
+        },
+        "outputs": {
+          "cost": {
+            "type": "json",
+            "description": "Cost of the API call"
+          },
+          "model": {
+            "type": "string",
+            "description": "Model used for generation"
+          },
+          "tokens": {
+            "type": "json",
+            "description": "Token usage statistics"
+          },
+          "content": {
+            "type": "string",
+            "description": "Generated response content"
+          },
+          "toolCalls": {
+            "type": "json",
+            "description": "Tool calls made"
+          },
+          "providerTiming": {
+            "type": "json",
+            "description": "Provider timing information"
+          }
+        },
+        "data": {},
+        "locked": false
+      },
+      "53c95f04-3c43-4f8b-a818-49a5ddf8ee59": {
+        "id": "53c95f04-3c43-4f8b-a818-49a5ddf8ee59",
+        "type": "agent",
+        "name": "Data Preprocessor",
+        "position": {
+          "x": 440,
+          "y": 200
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "advancedMode": false,
+        "triggerMode": false,
+        "height": 0,
+        "subBlocks": {
+          "model": {
+            "id": "model",
+            "type": "combobox",
+            "value": "openrouter/openrouter/pony-alpha"
+          },
+          "tools": {
+            "id": "tools",
+            "type": "tool-input",
+            "value": [
+              {
+                "type": "mcp",
+                "title": "remove_duplicates",
+                "params": {
+                  "filepath": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass.csv",
+                  "subset": null,
+                  "keep": "first",
+                  "output_filepath": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass_cleaned.csv",
+                  "serverId": "python-data_preparation",
+                  "toolName": "remove_duplicates",
+                  "serverUrl": "http://host.docker.internal:8003/mcp",
+                  "serverName": "Data Preparation Server"
+                },
+                "schema": {
+                  "type": "object",
+                  "required": ["filepath"],
+                  "properties": {
+                    "filepath": {
+                      "type": "string"
+                    },
+                    "subset": {
+                      "anyOf": [
+                        {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    },
+                    "keep": {
+                      "type": "string",
+                      "default": "first"
+                    },
+                    "output_filepath": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    }
+                  },
+                  "description": "Remove duplicate rows from a dataset.",
+                  "additionalProperties": false
+                },
+                "toolId": "python-data_preparation-remove_duplicates",
+                "isExpanded": false,
+                "usageControl": "auto"
+              },
+              {
+                "type": "mcp",
+                "title": "scale_features",
+                "params": {
+                  "filepath": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass_cleaned.csv",
+                  "columns": [
+                    "RI",
+                    "Na",
+                    "Mg",
+                    "Al",
+                    "Si",
+                    "K",
+                    "Ca",
+                    "Ba",
+                    "Fe"
+                  ],
+                  "method": "standard",
+                  "output_filepath": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass_scaled.csv",
+                  "serverId": "python-data_preparation",
+                  "toolName": "scale_features",
+                  "serverUrl": "http://host.docker.internal:8003/mcp",
+                  "serverName": "Data Preparation Server"
+                },
+                "schema": {
+                  "type": "object",
+                  "required": ["filepath", "columns"],
+                  "properties": {
+                    "filepath": {
+                      "type": "string"
+                    },
+                    "columns": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "method": {
+                      "type": "string",
+                      "default": "standard"
+                    },
+                    "output_filepath": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    }
+                  },
+                  "description": "Scale numerical features using various scaling methods.",
+                  "additionalProperties": false
+                },
+                "toolId": "python-data_preparation-scale_features",
+                "isExpanded": false,
+                "usageControl": "auto"
+              },
+              {
+                "type": "mcp",
+                "title": "split_dataset",
+                "params": {
+                  "filepath": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass_scaled.csv",
+                  "train_ratio": 0.8,
+                  "random_state": 42,
+                  "shuffle": true,
+                  "serverId": "python-data_preparation",
+                  "toolName": "split_dataset",
+                  "serverUrl": "http://host.docker.internal:8003/mcp",
+                  "serverName": "Data Preparation Server"
+                },
+                "schema": {
+                  "type": "object",
+                  "required": ["filepath"],
+                  "properties": {
+                    "filepath": {
+                      "type": "string"
+                    },
+                    "train_ratio": {
+                      "type": "number",
+                      "default": 0.8
+                    },
+                    "random_state": {
+                      "type": "integer",
+                      "default": 42
+                    },
+                    "shuffle": {
+                      "type": "boolean",
+                      "default": true
+                    }
+                  },
+                  "description": "Split a dataset into training and testing sets.",
+                  "additionalProperties": false
+                },
+                "toolId": "python-data_preparation-split_dataset",
+                "isExpanded": false,
+                "usageControl": "auto"
+              }
+            ]
+          },
+          "apiKey": {
+            "id": "apiKey",
+            "type": "short-input",
+            "value": "{{OPENROUTER_API_KEY}}"
+          },
+          "skills": {
+            "id": "skills",
+            "type": "skill-input",
+            "value": []
+          },
+          "messages": {
+            "id": "messages",
+            "type": "messages-input",
+            "value": [
+              {
+                "role": "user",
+                "content": "<dataloader>"
+              }
+            ]
+          },
+          "maxTokens": {
+            "id": "maxTokens",
+            "type": "short-input",
+            "value": null
+          },
+          "verbosity": {
+            "id": "verbosity",
+            "type": "dropdown",
+            "value": ""
+          },
+          "memoryType": {
+            "id": "memoryType",
+            "type": "dropdown",
+            "value": "none"
+          },
+          "temperature": {
+            "id": "temperature",
+            "type": "slider",
+            "value": 0.3
+          },
+          "azureEndpoint": {
+            "id": "azureEndpoint",
+            "type": "short-input",
+            "value": null
+          },
+          "bedrockRegion": {
+            "id": "bedrockRegion",
+            "type": "short-input",
+            "value": null
+          },
+          "thinkingLevel": {
+            "id": "thinkingLevel",
+            "type": "dropdown",
+            "value": ""
+          },
+          "vertexProject": {
+            "id": "vertexProject",
+            "type": "short-input",
+            "value": null
+          },
+          "conversationId": {
+            "id": "conversationId",
+            "type": "short-input",
+            "value": null
+          },
+          "responseFormat": {
+            "id": "responseFormat",
+            "type": "code",
+            "value": null
+          },
+          "vertexLocation": {
+            "id": "vertexLocation",
+            "type": "short-input",
+            "value": null
+          },
+          "azureApiVersion": {
+            "id": "azureApiVersion",
+            "type": "short-input",
+            "value": null
+          },
+          "reasoningEffort": {
+            "id": "reasoningEffort",
+            "type": "dropdown",
+            "value": ""
+          },
+          "bedrockSecretKey": {
+            "id": "bedrockSecretKey",
+            "type": "short-input",
+            "value": null
+          },
+          "vertexCredential": {
+            "id": "vertexCredential",
+            "type": "oauth-input",
+            "value": null
+          },
+          "slidingWindowSize": {
+            "id": "slidingWindowSize",
+            "type": "short-input",
+            "value": null
+          },
+          "bedrockAccessKeyId": {
+            "id": "bedrockAccessKeyId",
+            "type": "short-input",
+            "value": null
+          },
+          "slidingWindowTokens": {
+            "id": "slidingWindowTokens",
+            "type": "short-input",
+            "value": null
+          }
+        },
+        "outputs": {
+          "cost": {
+            "type": "json",
+            "description": "Cost of the API call"
+          },
+          "model": {
+            "type": "string",
+            "description": "Model used for generation"
+          },
+          "tokens": {
+            "type": "json",
+            "description": "Token usage statistics"
+          },
+          "content": {
+            "type": "string",
+            "description": "Generated response content"
+          },
+          "toolCalls": {
+            "type": "json",
+            "description": "Tool calls made"
+          },
+          "providerTiming": {
+            "type": "json",
+            "description": "Provider timing information"
+          }
+        },
+        "data": {},
+        "locked": false
+      },
+      "5cc7f4ef-1c2f-4c8f-b1df-6f0b6f6de63a": {
+        "id": "5cc7f4ef-1c2f-4c8f-b1df-6f0b6f6de63a",
+        "type": "agent",
+        "name": "Model Trainer",
+        "position": {
+          "x": 660,
+          "y": 200
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "advancedMode": false,
+        "triggerMode": false,
+        "height": 0,
+        "subBlocks": {
+          "model": {
+            "id": "model",
+            "type": "combobox",
+            "value": "openrouter/openrouter/pony-alpha"
+          },
+          "tools": {
+            "id": "tools",
+            "type": "tool-input",
+            "value": [
+              {
+                "type": "mcp",
+                "title": "train_classification_model",
+                "params": {
+                  "filepath": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass_scaled.csv",
+                  "target_column": "Type",
+                  "model_type": "random_forest",
+                  "test_size": 0.2,
+                  "random_state": 42,
+                  "hyperparameters": {
+                    "max_iter": 1000,
+                    "C": 1.0,
+                    "solver": "lbfgs"
+                  },
+                  "model_save_path": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass_rf_model.pkl",
+                  "serverId": "python-model_training",
+                  "toolName": "train_classification_model",
+                  "serverUrl": "http://host.docker.internal:8004/mcp",
+                  "serverName": "Model Training Server"
+                },
+                "schema": {
+                  "type": "object",
+                  "required": ["filepath", "target_column"],
+                  "properties": {
+                    "filepath": {
+                      "type": "string"
+                    },
+                    "target_column": {
+                      "type": "string"
+                    },
+                    "model_type": {
+                      "type": "string",
+                      "default": "random_forest"
+                    },
+                    "test_size": {
+                      "type": "number",
+                      "default": 0.2
+                    },
+                    "random_state": {
+                      "type": "integer",
+                      "default": 42
+                    },
+                    "hyperparameters": {
+                      "type": "object",
+                      "default": {}
+                    },
+                    "model_save_path": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    }
+                  },
+                  "description": "Train a classification model.",
+                  "additionalProperties": false
+                },
+                "toolId": "python-model_training-train_classification_model",
+                "isExpanded": true,
+                "usageControl": "auto"
+              }
+            ]
+          },
+          "apiKey": {
+            "id": "apiKey",
+            "type": "short-input",
+            "value": "{{OPENROUTER_API_KEY}}"
+          },
+          "skills": {
+            "id": "skills",
+            "type": "skill-input",
+            "value": []
+          },
+          "messages": {
+            "id": "messages",
+            "type": "messages-input",
+            "value": [
+              {
+                "role": "user",
+                "content": "<datapreprocessor>"
+              }
+            ]
+          },
+          "maxTokens": {
+            "id": "maxTokens",
+            "type": "short-input",
+            "value": null
+          },
+          "verbosity": {
+            "id": "verbosity",
+            "type": "dropdown",
+            "value": ""
+          },
+          "memoryType": {
+            "id": "memoryType",
+            "type": "dropdown",
+            "value": "none"
+          },
+          "temperature": {
+            "id": "temperature",
+            "type": "slider",
+            "value": 0.3
+          },
+          "azureEndpoint": {
+            "id": "azureEndpoint",
+            "type": "short-input",
+            "value": null
+          },
+          "bedrockRegion": {
+            "id": "bedrockRegion",
+            "type": "short-input",
+            "value": null
+          },
+          "thinkingLevel": {
+            "id": "thinkingLevel",
+            "type": "dropdown",
+            "value": ""
+          },
+          "vertexProject": {
+            "id": "vertexProject",
+            "type": "short-input",
+            "value": null
+          },
+          "conversationId": {
+            "id": "conversationId",
+            "type": "short-input",
+            "value": null
+          },
+          "responseFormat": {
+            "id": "responseFormat",
+            "type": "code",
+            "value": null
+          },
+          "vertexLocation": {
+            "id": "vertexLocation",
+            "type": "short-input",
+            "value": null
+          },
+          "azureApiVersion": {
+            "id": "azureApiVersion",
+            "type": "short-input",
+            "value": null
+          },
+          "reasoningEffort": {
+            "id": "reasoningEffort",
+            "type": "dropdown",
+            "value": ""
+          },
+          "bedrockSecretKey": {
+            "id": "bedrockSecretKey",
+            "type": "short-input",
+            "value": null
+          },
+          "vertexCredential": {
+            "id": "vertexCredential",
+            "type": "oauth-input",
+            "value": null
+          },
+          "slidingWindowSize": {
+            "id": "slidingWindowSize",
+            "type": "short-input",
+            "value": null
+          },
+          "bedrockAccessKeyId": {
+            "id": "bedrockAccessKeyId",
+            "type": "short-input",
+            "value": null
+          },
+          "slidingWindowTokens": {
+            "id": "slidingWindowTokens",
+            "type": "short-input",
+            "value": null
+          }
+        },
+        "outputs": {
+          "cost": {
+            "type": "json",
+            "description": "Cost of the API call"
+          },
+          "model": {
+            "type": "string",
+            "description": "Model used for generation"
+          },
+          "tokens": {
+            "type": "json",
+            "description": "Token usage statistics"
+          },
+          "content": {
+            "type": "string",
+            "description": "Generated response content"
+          },
+          "toolCalls": {
+            "type": "json",
+            "description": "Tool calls made"
+          },
+          "providerTiming": {
+            "type": "json",
+            "description": "Provider timing information"
+          }
+        },
+        "data": {},
+        "locked": false
+      },
+      "d2ca22a6-b78a-4f04-96d8-76f1f29f5e54": {
+        "id": "d2ca22a6-b78a-4f04-96d8-76f1f29f5e54",
+        "type": "agent",
+        "name": "Model Evaluator",
+        "position": {
+          "x": 880,
+          "y": 200
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "advancedMode": false,
+        "triggerMode": false,
+        "height": 0,
+        "subBlocks": {
+          "model": {
+            "id": "model",
+            "type": "combobox",
+            "value": "openrouter/openrouter/pony-alpha"
+          },
+          "tools": {
+            "id": "tools",
+            "type": "tool-input",
+            "value": [
+              {
+                "type": "mcp",
+                "title": "evaluate_classification_model",
+                "params": {
+                  "model_path": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass_rf_model.pkl",
+                  "test_data_path": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass_scaled.csv",
+                  "target_column": "Type",
+                  "filepath": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass.csv",
+                  "serverId": "python-model_evaluation",
+                  "toolName": "evaluate_classification_model",
+                  "serverUrl": "http://host.docker.internal:8005/mcp",
+                  "serverName": "Model Evaluation Server"
+                },
+                "schema": {
+                  "type": "object",
+                  "required": ["model_path", "test_data_path", "target_column"],
+                  "properties": {
+                    "model_path": {
+                      "type": "string"
+                    },
+                    "test_data_path": {
+                      "type": "string"
+                    },
+                    "target_column": {
+                      "type": "string"
+                    },
+                    "filepath": {
+                      "type": "string"
+                    }
+                  },
+                  "description": "Evaluate a trained classification model.",
+                  "additionalProperties": false
+                },
+                "toolId": "python-model_evaluation-evaluate_classification_model",
+                "isExpanded": false,
+                "usageControl": "auto"
+              },
+              {
+                "type": "mcp",
+                "title": "get_classification_report",
+                "params": {
+                  "model_path": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass_rf_model.pkl",
+                  "test_data_path": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass_scaled.csv",
+                  "target_column": "Type",
+                  "serverId": "python-model_evaluation",
+                  "toolName": "get_classification_report",
+                  "serverUrl": "http://host.docker.internal:8005/mcp",
+                  "serverName": "Model Evaluation Server"
+                },
+                "schema": {
+                  "type": "object",
+                  "required": ["model_path", "test_data_path", "target_column"],
+                  "properties": {
+                    "model_path": {
+                      "type": "string"
+                    },
+                    "test_data_path": {
+                      "type": "string"
+                    },
+                    "target_column": {
+                      "type": "string"
+                    }
+                  },
+                  "description": "Generate a classification report for a model.",
+                  "additionalProperties": false
+                },
+                "toolId": "python-model_evaluation-get_classification_report",
+                "isExpanded": false,
+                "usageControl": "auto"
+              },
+              {
+                "type": "mcp",
+                "title": "calculate_confusion_matrix",
+                "params": {
+                  "model_path": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass_rf_model.pkl",
+                  "test_data_path": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass_scaled.csv",
+                  "target_column": "Type",
+                  "normalize": "true",
+                  "serverId": "python-model_evaluation",
+                  "toolName": "calculate_confusion_matrix",
+                  "serverUrl": "http://host.docker.internal:8005/mcp",
+                  "serverName": "Model Evaluation Server"
+                },
+                "schema": {
+                  "type": "object",
+                  "required": ["model_path", "test_data_path", "target_column"],
+                  "properties": {
+                    "model_path": {
+                      "type": "string"
+                    },
+                    "test_data_path": {
+                      "type": "string"
+                    },
+                    "target_column": {
+                      "type": "string"
+                    },
+                    "normalize": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ],
+                      "default": null
+                    }
+                  },
+                  "description": "Calculate the confusion matrix for a classification model.",
+                  "additionalProperties": false
+                },
+                "toolId": "python-model_evaluation-calculate_confusion_matrix",
+                "isExpanded": false,
+                "usageControl": "auto"
+              }
+            ]
+          },
+          "apiKey": {
+            "id": "apiKey",
+            "type": "short-input",
+            "value": "{{OPENROUTER_API_KEY}}"
+          },
+          "skills": {
+            "id": "skills",
+            "type": "skill-input",
+            "value": []
+          },
+          "messages": {
+            "id": "messages",
+            "type": "messages-input",
+            "value": [
+              {
+                "role": "user",
+                "content": "<modeltrainer>"
+              }
+            ]
+          },
+          "maxTokens": {
+            "id": "maxTokens",
+            "type": "short-input",
+            "value": null
+          },
+          "verbosity": {
+            "id": "verbosity",
+            "type": "dropdown",
+            "value": ""
+          },
+          "memoryType": {
+            "id": "memoryType",
+            "type": "dropdown",
+            "value": "none"
+          },
+          "temperature": {
+            "id": "temperature",
+            "type": "slider",
+            "value": 0.3
+          },
+          "azureEndpoint": {
+            "id": "azureEndpoint",
+            "type": "short-input",
+            "value": null
+          },
+          "bedrockRegion": {
+            "id": "bedrockRegion",
+            "type": "short-input",
+            "value": null
+          },
+          "thinkingLevel": {
+            "id": "thinkingLevel",
+            "type": "dropdown",
+            "value": ""
+          },
+          "vertexProject": {
+            "id": "vertexProject",
+            "type": "short-input",
+            "value": null
+          },
+          "conversationId": {
+            "id": "conversationId",
+            "type": "short-input",
+            "value": null
+          },
+          "responseFormat": {
+            "id": "responseFormat",
+            "type": "code",
+            "value": null
+          },
+          "vertexLocation": {
+            "id": "vertexLocation",
+            "type": "short-input",
+            "value": null
+          },
+          "azureApiVersion": {
+            "id": "azureApiVersion",
+            "type": "short-input",
+            "value": null
+          },
+          "reasoningEffort": {
+            "id": "reasoningEffort",
+            "type": "dropdown",
+            "value": ""
+          },
+          "bedrockSecretKey": {
+            "id": "bedrockSecretKey",
+            "type": "short-input",
+            "value": null
+          },
+          "vertexCredential": {
+            "id": "vertexCredential",
+            "type": "oauth-input",
+            "value": null
+          },
+          "slidingWindowSize": {
+            "id": "slidingWindowSize",
+            "type": "short-input",
+            "value": null
+          },
+          "bedrockAccessKeyId": {
+            "id": "bedrockAccessKeyId",
+            "type": "short-input",
+            "value": null
+          },
+          "slidingWindowTokens": {
+            "id": "slidingWindowTokens",
+            "type": "short-input",
+            "value": null
+          }
+        },
+        "outputs": {
+          "cost": {
+            "type": "json",
+            "description": "Cost of the API call"
+          },
+          "model": {
+            "type": "string",
+            "description": "Model used for generation"
+          },
+          "tokens": {
+            "type": "json",
+            "description": "Token usage statistics"
+          },
+          "content": {
+            "type": "string",
+            "description": "Generated response content"
+          },
+          "toolCalls": {
+            "type": "json",
+            "description": "Tool calls made"
+          },
+          "providerTiming": {
+            "type": "json",
+            "description": "Provider timing information"
+          }
+        },
+        "data": {},
+        "locked": false
+      }
+    },
+    "edges": [
+      {
+        "id": "09bc0d53-f65a-4db8-9ee4-2eb0fb4c2e06",
+        "source": "1f2c9439-e8be-4574-b8e0-b7862cb7234d",
+        "target": "4e2c040e-03eb-4b81-a9b5-f0139307de8d",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "6fd74dd5-d829-43af-b6fc-fcf73a96959e",
+        "source": "4e2c040e-03eb-4b81-a9b5-f0139307de8d",
+        "target": "53c95f04-3c43-4f8b-a818-49a5ddf8ee59",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "b5f58950-f63a-4e43-a4bd-b4642d9654b0",
+        "source": "53c95f04-3c43-4f8b-a818-49a5ddf8ee59",
+        "target": "5cc7f4ef-1c2f-4c8f-b1df-6f0b6f6de63a",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "f9c5f5b9-63ce-4fc0-a560-2ac9d6e0f007",
+        "source": "5cc7f4ef-1c2f-4c8f-b1df-6f0b6f6de63a",
+        "target": "d2ca22a6-b78a-4f04-96d8-76f1f29f5e54",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      }
+    ],
+    "loops": {},
+    "parallels": {},
+    "metadata": {
+      "name": "glass_sim_ai_workflow",
+      "description": "Sim AI compatible workflow derived from generated glass pipeline",
+      "color": "#22c55e",
+      "exportedAt": "2026-04-22T00:00:00.000Z"
+    },
+    "variables": {}
+  }
+}

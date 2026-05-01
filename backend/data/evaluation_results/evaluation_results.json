@@ -1,0 +1,331 @@
+[
+  {
+    "id": 1,
+    "created_at": "2026-04-28T02:52:56.483621+00:00",
+    "task_type": "classification",
+    "model_name": "random_forest_star_classification",
+    "dataset_name": "stellar-classification-dataset-sdss17",
+    "notes": "Random Forest classifier for stellar object classification (GALAXY, STAR, QSO)",
+    "tags": [
+      "astronomy",
+      "multi-class",
+      "random_forest"
+    ],
+    "pipeline": "data_preprocessing -> encoding -> scaling -> random_forest",
+    "metrics": {}
+  },
+  {
+    "id": 2,
+    "created_at": "2026-04-28T02:53:02.584035+00:00",
+    "task_type": "classification",
+    "model_name": "random_forest_eye_state",
+    "dataset_name": "EEG_Eye_State_Classification",
+    "notes": "EEG eye state classification with 14 features, binary target",
+    "tags": [
+      "eeg",
+      "classification",
+      "random_forest"
+    ],
+    "pipeline": "data_loader->data_preprocessor->model_trainer->model_evaluator",
+    "metrics": {}
+  },
+  {
+    "id": 3,
+    "created_at": "2026-04-28T02:53:55.494321+00:00",
+    "task_type": "classification",
+    "model_name": "random_forest",
+    "dataset_name": "website_classification",
+    "notes": "Text classification model for website categories",
+    "tags": [
+      "text_classification",
+      "website",
+      "random_forest"
+    ],
+    "pipeline": "data_loader->data_preprocessor->model_trainer->model_evaluator",
+    "metrics": {}
+  },
+  {
+    "id": 4,
+    "created_at": "2026-04-28T02:55:24.053422+00:00",
+    "task_type": "classification",
+    "model_name": "ecommerce_classifier",
+    "dataset_name": "ecommerceDataset",
+    "notes": "Random Forest classifier for e-commerce product categorization",
+    "tags": [
+      "ecommerce",
+      "text_classification",
+      "random_forest"
+    ],
+    "pipeline": "data_loader->data_preprocessor->model_trainer->model_evaluator",
+    "metrics": {}
+  },
+  {
+    "id": 5,
+    "created_at": "2026-04-28T03:25:32.684583+00:00",
+    "task_type": "classification",
+    "model_name": "heart_disease_classifier",
+    "dataset_name": "Heart_disease_cleveland_new",
+    "notes": "Binary classification for heart disease prediction",
+    "tags": [
+      "heart_disease",
+      "classification",
+      "healthcare"
+    ],
+    "pipeline": "data_loader->data_preprocessor->model_trainer->model_evaluator",
+    "metrics": {}
+  },
+  {
+    "id": 6,
+    "created_at": "2026-04-28T03:25:39.474775+00:00",
+    "task_type": "classification",
+    "model_name": "glass_classifier",
+    "dataset_name": "uciml_glass",
+    "notes": "Random Forest classifier for glass type prediction",
+    "tags": [
+      "classification",
+      "multi-class",
+      "glass"
+    ],
+    "pipeline": "data_preprocessor->model_trainer",
+    "metrics": {}
+  },
+  {
+    "id": 7,
+    "created_at": "2026-04-28T03:26:00.778013+00:00",
+    "task_type": "classification",
+    "model_name": "website_classification_model",
+    "dataset_name": "website_classification",
+    "notes": "Random Forest classifier trained on cleaned website text data",
+    "tags": [
+      "text_classification",
+      "website_categorization"
+    ],
+    "pipeline": "data_loader->data_preprocessor->model_trainer->model_evaluator",
+    "metrics": {}
+  },
+  {
+    "id": 8,
+    "created_at": "2026-04-28T03:26:40.603748+00:00",
+    "task_type": "classification",
+    "model_name": "twitter_multilabel_classifier",
+    "dataset_name": "mLabel_tweets",
+    "notes": "Multilabel classification of tweet content",
+    "tags": [
+      "twitter",
+      "multilabel",
+      "text_classification"
+    ],
+    "pipeline": "data_loader->data_preprocessor->model_trainer->model_evaluator",
+    "metrics": {}
+  },
+  {
+    "id": 9,
+    "created_at": "2026-04-28T03:26:46.298566+00:00",
+    "task_type": "classification",
+    "model_name": "ecommerce_classification_model",
+    "dataset_name": "ecommerceDataset",
+    "notes": "E-commerce product classification based on descriptions",
+    "tags": [
+      "ecommerce",
+      "text_classification",
+      "household"
+    ],
+    "pipeline": "data_preprocessing -> model_training",
+    "metrics": {}
+  },
+  {
+    "id": 10,
+    "created_at": "2026-04-28T03:26:51.307708+00:00",
+    "task_type": "classification",
+    "model_name": "spam_url_classifier",
+    "dataset_name": "url_spam_classification",
+    "notes": "Random Forest classifier for URL spam detection",
+    "tags": [
+      "url",
+      "spam",
+      "classification"
+    ],
+    "pipeline": "data_loader->data_preprocessor->model_trainer->model_evaluator",
+    "metrics": {}
+  },
+  {
+    "id": 11,
+    "created_at": "2026-04-28T03:26:54.511701+00:00",
+    "task_type": "classification",
+    "model_name": "cyberbullying_classifier",
+    "dataset_name": "cyberbullying_tweets",
+    "notes": "Random Forest classifier for cyberbullying type prediction",
+    "tags": [
+      "cyberbullying",
+      "text_classification",
+      "random_forest"
+    ],
+    "pipeline": "cyberbullying_classification_pipeline",
+    "metrics": {}
+  },
+  {
+    "id": 12,
+    "created_at": "2026-04-28T03:27:23.311569+00:00",
+    "task_type": "classification",
+    "model_name": "text_classification_model",
+    "dataset_name": "tanishqdublish_text-classification-documentation",
+    "notes": "Text classification model trained on news articles",
+    "tags": [
+      "text_classification",
+      "logistic_regression"
+    ],
+    "pipeline": "text_classification_pipeline",
+    "metrics": {}
+  },
+  {
+    "id": 13,
+    "created_at": "2026-04-28T03:31:27.081962+00:00",
+    "task_type": "classification",
+    "model_name": "random_forest_star_classification",
+    "dataset_name": "stellar-classification-dataset-sdss17",
+    "notes": "Random Forest classifier for stellar object classification (GALAXY, STAR, QSO)",
+    "tags": [
+      "astronomy",
+      "multi-class",
+      "random_forest"
+    ],
+    "pipeline": "data_preprocessing -> encoding -> scaling -> random_forest",
+    "metrics": {}
+  },
+  {
+    "id": 14,
+    "created_at": "2026-04-28T03:31:34.316495+00:00",
+    "task_type": "classification",
+    "model_name": "random_forest_eye_state",
+    "dataset_name": "EEG_Eye_State_Classification",
+    "notes": "EEG eye state classification with 14 features, binary target",
+    "tags": [
+      "eeg",
+      "classification",
+      "random_forest"
+    ],
+    "pipeline": "data_loader->data_preprocessor->model_trainer->model_evaluator",
+    "metrics": {}
+  },
+  {
+    "id": 15,
+    "created_at": "2026-04-28T03:32:08.829479+00:00",
+    "task_type": "classification",
+    "model_name": "random_forest",
+    "dataset_name": "website_classification",
+    "notes": "Text classification model for website categories",
+    "tags": [
+      "text_classification",
+      "website",
+      "random_forest"
+    ],
+    "pipeline": "data_loader->data_preprocessor->model_trainer->model_evaluator",
+    "metrics": {}
+  },
+  {
+    "id": 16,
+    "created_at": "2026-04-28T03:35:22.039086+00:00",
+    "task_type": "classification",
+    "model_name": "random_forest_mba_admission",
+    "dataset_name": "MBA_admission_dataset",
+    "notes": "MBA admission prediction with missing values handled and categorical encoding",
+    "tags": [
+      "mba",
+      "admission",
+      "classification",
+      "random_forest"
+    ],
+    "pipeline": "data_preprocessing -> random_forest_classification",
+    "metrics": {}
+  },
+  {
+    "id": 17,
+    "created_at": "2026-04-28T03:35:23.159509+00:00",
+    "task_type": "regression",
+    "model_name": "tehran_house_price_model",
+    "dataset_name": "TehranHouse",
+    "notes": "Random forest regression model for Tehran house price prediction",
+    "tags": [
+      "real_estate",
+      "regression",
+      "iran"
+    ],
+    "pipeline": "data_preprocessing->random_forest",
+    "metrics": {}
+  },
+  {
+    "id": 18,
+    "created_at": "2026-04-28T03:35:34.044103+00:00",
+    "task_type": "regression",
+    "model_name": "random_forest_msrp_predictor",
+    "dataset_name": "CooperUnion_cardataset",
+    "notes": "Car price prediction using vehicle specifications",
+    "tags": [
+      "automotive",
+      "price_prediction",
+      "regression"
+    ],
+    "pipeline": "data_preprocessing -> encoding -> scaling -> random_forest",
+    "metrics": {}
+  },
+  {
+    "id": 19,
+    "created_at": "2026-04-28T03:35:53.409182+00:00",
+    "task_type": "regression",
+    "model_name": "random_forest_housing",
+    "dataset_name": "california_housing",
+    "notes": "Regression model for median house value prediction",
+    "tags": [
+      "housing",
+      "california",
+      "regression"
+    ],
+    "pipeline": "data_preprocessing -> random_forest_regression",
+    "metrics": {}
+  },
+  {
+    "id": 20,
+    "created_at": "2026-04-28T03:37:40.838216+00:00",
+    "task_type": "regression",
+    "model_name": "diamonds_gradient_boosting",
+    "dataset_name": "diamonds",
+    "notes": "Gradient boosting regression model for diamond price prediction",
+    "tags": [
+      "diamonds",
+      "regression",
+      "gradient_boosting"
+    ],
+    "pipeline": "diamonds_regression_pipeline",
+    "metrics": {}
+  },
+  {
+    "id": 21,
+    "created_at": "2026-04-28T03:38:26.709059+00:00",
+    "task_type": "regression",
+    "model_name": "random_forest",
+    "dataset_name": "Loan_risk_score",
+    "notes": "Random Forest regression for RiskScore prediction with 36 features",
+    "tags": [
+      "financial_risk",
+      "loan_approval",
+      "regression"
+    ],
+    "pipeline": "data_preprocessing -> random_forest",
+    "metrics": {}
+  },
+  {
+    "id": 22,
+    "created_at": "2026-04-28T03:38:27.376441+00:00",
+    "task_type": "regression",
+    "model_name": "random_forest_insurance_charges",
+    "dataset_name": "insurance.csv",
+    "notes": "Insurance charges prediction with demographic and health factors",
+    "tags": [
+      "insurance",
+      "regression",
+      "healthcare"
+    ],
+    "pipeline": "data_preprocessing -> encoding -> scaling -> random_forest",
+    "metrics": {}
+  }
+]

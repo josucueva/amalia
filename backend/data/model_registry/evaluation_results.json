@@ -1,0 +1,152 @@
+[
+  {
+    "id": 1,
+    "created_at": "2026-04-28T02:52:56.660155+00:00",
+    "task_type": "classification",
+    "model_name": "naive_bayes_diabetes_model",
+    "dataset_name": "Naive-Bayes-Classification-Data",
+    "notes": "Binary classification of diabetes using glucose and bloodpressure",
+    "tags": [
+      "naive_bayes",
+      "binary_classification",
+      "diabetes"
+    ],
+    "pipeline": "planner_generated_pipeline",
+    "metrics": {}
+  },
+  {
+    "id": 2,
+    "created_at": "2026-04-28T02:57:16.751865+00:00",
+    "task_type": "classification",
+    "model_name": "random_forest_text_classifier",
+    "dataset_name": "tanishqdublish_text-classification-documentation",
+    "notes": "Text classification with 2 classes, 100 samples, Random Forest model",
+    "tags": [
+      "text_classification",
+      "news_articles",
+      "binary"
+    ],
+    "pipeline": "planner_generated_pipeline",
+    "metrics": {}
+  },
+  {
+    "id": 3,
+    "created_at": "2026-04-28T02:57:30.200555+00:00",
+    "task_type": "regression",
+    "model_name": "random_forest",
+    "dataset_name": "crop_yield_data",
+    "notes": "Random Forest regression model for crop yield prediction",
+    "tags": [
+      "agriculture",
+      "regression",
+      "random_forest"
+    ],
+    "pipeline": "data_loader->data_preprocessor->model_trainer->model_evaluator",
+    "metrics": {}
+  },
+  {
+    "id": 4,
+    "created_at": "2026-04-28T03:25:17.893283+00:00",
+    "task_type": "classification",
+    "model_name": "heart_disease_classifier",
+    "dataset_name": "heart.csv",
+    "notes": "Random Forest classifier for heart disease prediction",
+    "tags": [
+      "heart_disease",
+      "classification",
+      "healthcare"
+    ],
+    "pipeline": "simple_classification_pipeline",
+    "metrics": {}
+  },
+  {
+    "id": 5,
+    "created_at": "2026-04-28T03:27:04.254401+00:00",
+    "task_type": "classification",
+    "model_name": "heart_disease_random_forest",
+    "dataset_name": "fedesoriano_heart-failure-prediction",
+    "notes": "Heart disease classification with clinical features",
+    "tags": [
+      "heart",
+      "classification",
+      "healthcare"
+    ],
+    "pipeline": "data_preprocessing -> encoding -> scaling -> random_forest",
+    "metrics": {}
+  },
+  {
+    "id": 6,
+    "created_at": "2026-04-28T03:27:22.356200+00:00",
+    "task_type": "classification",
+    "model_name": "dry_bean_rf_model",
+    "dataset_name": "Dry_Bean_Dataset",
+    "notes": "Random Forest classifier on scaled features, 80/20 split",
+    "tags": [
+      "dry_bean",
+      "classification",
+      "random_forest"
+    ],
+    "pipeline": "data_preprocessor->model_trainer->model_evaluator",
+    "metrics": {}
+  },
+  {
+    "id": 7,
+    "created_at": "2026-04-28T03:31:27.249005+00:00",
+    "task_type": "classification",
+    "model_name": "naive_bayes_diabetes_model",
+    "dataset_name": "Naive-Bayes-Classification-Data",
+    "notes": "Binary classification of diabetes using glucose and bloodpressure",
+    "tags": [
+      "naive_bayes",
+      "binary_classification",
+      "diabetes"
+    ],
+    "pipeline": "planner_generated_pipeline",
+    "metrics": {}
+  },
+  {
+    "id": 8,
+    "created_at": "2026-04-28T03:33:54.940396+00:00",
+    "task_type": "classification",
+    "model_name": "random_forest_text_classifier",
+    "dataset_name": "tanishqdublish_text-classification-documentation",
+    "notes": "Text classification with 2 classes, 100 samples, Random Forest model",
+    "tags": [
+      "text_classification",
+      "news_articles",
+      "binary"
+    ],
+    "pipeline": "planner_generated_pipeline",
+    "metrics": {}
+  },
+  {
+    "id": 9,
+    "created_at": "2026-04-28T03:34:17.141204+00:00",
+    "task_type": "regression",
+    "model_name": "random_forest",
+    "dataset_name": "crop_yield_data",
+    "notes": "Random Forest regression model for crop yield prediction",
+    "tags": [
+      "agriculture",
+      "regression",
+      "random_forest"
+    ],
+    "pipeline": "data_loader->data_preprocessor->model_trainer->model_evaluator",
+    "metrics": {}
+  },
+  {
+    "id": 10,
+    "created_at": "2026-04-28T03:36:31.409573+00:00",
+    "task_type": "regression",
+    "model_name": "random_forest_sqft_lot15",
+    "dataset_name": "kc_house_data",
+    "notes": "Regression model predicting sqft_lot15 using house features",
+    "tags": [
+      "house_sales",
+      "regression",
+      "random_forest"
+    ],
+    "pipeline": "data_preprocessing -> random_forest_regression",
+    "metrics": {}
+  }
+]

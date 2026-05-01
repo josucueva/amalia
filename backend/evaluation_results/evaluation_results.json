@@ -1,0 +1,76 @@
+[
+  {
+    "id": 1,
+    "created_at": "2026-04-28T02:57:28.882839+00:00",
+    "task_type": "regression",
+    "model_name": "random_forest",
+    "dataset_name": "Mobile-Price-Prediction-cleaned_data",
+    "notes": "Mobile phone price prediction with 7 numerical features",
+    "tags": [
+      "mobile",
+      "price",
+      "regression",
+      "random_forest"
+    ],
+    "pipeline": "data_preprocessor->model_trainer->model_evaluator",
+    "metrics": {}
+  },
+  {
+    "id": 2,
+    "created_at": "2026-04-28T03:25:40.562634+00:00",
+    "task_type": "classification",
+    "model_name": "random_forest_wine_quality",
+    "dataset_name": "WineQT",
+    "notes": "Classification model predicting wine quality (3-8) from physicochemical features",
+    "tags": [
+      "wine",
+      "quality",
+      "classification",
+      "random_forest"
+    ],
+    "pipeline": "data_loader->data_preprocessor->model_trainer->model_evaluator",
+    "metrics": {}
+  },
+  {
+    "id": 3,
+    "created_at": "2026-04-28T03:34:15.322763+00:00",
+    "task_type": "regression",
+    "model_name": "random_forest",
+    "dataset_name": "Mobile-Price-Prediction-cleaned_data",
+    "notes": "Mobile phone price prediction with 7 numerical features",
+    "tags": [
+      "mobile",
+      "price",
+      "regression",
+      "random_forest"
+    ],
+    "pipeline": "data_preprocessor->model_trainer->model_evaluator",
+    "metrics": {}
+  },
+  {
+    "id": 4,
+    "created_at": "2026-04-28T03:35:13.562910+00:00",
+    "task_type": "regression",
+    "model_name": "car_price_gradient_boosting",
+    "dataset_name": "car_price_prediction",
+    "notes": "Gradient boosting regression model for car price prediction",
+    "tags": [
+      "regression",
+      "gradient_boosting",
+      "car_prices"
+    ],
+    "pipeline": "data_preprocessing -> gradient_boosting_regression",
+    "metrics": {}
+  },
+  {
+    "id": 5,
+    "created_at": "2026-04-28T04:08:43.387741+00:00",
+    "task_type": "regression",
+    "model_name": "gradient_boosting_model",
+    "dataset_name": "kc_house_data",
+    "notes": "",
+    "tags": [],
+    "pipeline": [],
+    "metrics": {}
+  }
+]
