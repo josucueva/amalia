@@ -552,6 +552,62 @@ class AgentPipelineService:
 
         return raw_response
 
+    async def _build_planner_grounding_context(self) -> Dict[str, Any]:
+        """Build grounding context with available tools, models, and agents for planner."""
+        agents = []
+        mcp_servers = {}
+        tools = []
+
+        # Collect available agents
+        if self.agent_registry:
+            for agent_id in ["interaction_agent", "planner_agent", "orchestrator_agent"]:
+                agent = self.agent_registry.get_agent(agent_id)
+                if agent:
+                    agents.append({
+                        "id": agent_id,
+                        "name": agent.config.name if hasattr(agent.config, "name") else agent_id,
+                        "description": agent.config.description if hasattr(agent.config, "description") else "",
+                    })
+
+        # Collect MCP servers and tools
+        if self.mcp_server_service:
+            try:
+                servers = self.mcp_server_service.list_servers()
+                for server_id, server in servers.items():
+                    if server and hasattr(server, "is_available") and server.is_available:
+                        mcp_servers[server_id] = {
+                            "id": server_id,
+                            "name": getattr(server, "name", server_id),
+                            "description": getattr(server, "description", ""),
+                        }
+                        
+                        # Get tools from this server
+                        if hasattr(server, "tools"):
+                            for tool_name, tool_info in server.tools.items():
+                                tools.append({
+                                    "name": tool_name,
+                                    "server_name": server_id,
+                                    "description": tool_info.get("description", "") if isinstance(tool_info, dict) else "",
+                                })
+            except Exception as e:
+                logger.warning("Failed to collect MCP servers for grounding", error=str(e))
+
+        return {
+            "agents": agents,
+            "mcp_servers": mcp_servers,
+            "tools": tools,
+            "available_model_types": {
+                "classification": CLASSIFICATION_MODEL_TYPES,
+                "regression": REGRESSION_MODEL_TYPES,
+            },
+            "constraints": {
+                "use_only_known_agents": True,
+                "use_only_known_mcp_servers": True,
+                "use_only_known_tools": True,
+                "model_type_must_come_from_available_model_types": True,
+            },
+        }
+
     async def process_with_pipeline(
         self, user_message: str, conversation_history: list, num_pipelines: int = 1
     ) -> Tuple[str, Optional[Dict[str, Any]]]:
