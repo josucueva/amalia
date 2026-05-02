@@ -1,0 +1,260 @@
+{
+  "dataset_id": "regression__mid__camnugent_california-housing-prices__housing",
+  "filename": "housing.csv",
+  "file_path": "/app/data/uploads/datasets/regression/mid/camnugent_california-housing-prices/housing.csv",
+  "task_type": "regression",
+  "tier": "mid",
+  "target_column": null,
+  "variant_id": 4,
+  "total_variants": 5,
+  "generated_at": "2026-05-02T01:28:05.723102+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a regression model using ensemble methods to predict median_house_value from the California housing dataset.",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/regression/mid/camnugent_california-housing-prices/housing.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/regression/mid/camnugent_california-housing-prices/housing.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": null,
+          "name": "AutoML Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "automl_agent",
+            "agent_name": "AutoML Agent"
+          }
+        },
+        "planner_mcp_server": "automl_server",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "train_regression_model",
+            "description": "Train a Random Forest regression model on the housing dataset with median_house_value as target.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/camnugent_california-housing-prices/housing.csv",
+              "target_column": "median_house_value",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "n_estimators": 100,
+                "max_depth": null,
+                "min_samples_split": 2,
+                "min_samples_leaf": 1
+              },
+              "model_save_path": null,
+              "dataset_path": "/app/data/uploads/datasets/regression/mid/camnugent_california-housing-prices/housing.csv",
+              "feature_columns": null,
+              "categorical_columns": [
+                "ocean_proximity"
+              ],
+              "handle_missing": "drop",
+              "scale_features": true,
+              "encode_categorical": true
+            },
+            "planner_parameters": {
+              "dataset_path": "/app/data/uploads/datasets/regression/mid/camnugent_california-housing-prices/housing.csv",
+              "target_column": "median_house_value",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "n_estimators": 100,
+                "max_depth": null,
+                "min_samples_split": 2,
+                "min_samples_leaf": 1
+              },
+              "feature_columns": null,
+              "categorical_columns": [
+                "ocean_proximity"
+              ],
+              "handle_missing": "drop",
+              "scale_features": true,
+              "encode_categorical": true
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "linear",
+        "rationale": "Train a Random Forest regressor as the primary ensemble model, handling categorical encoding and scaling automatically."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": null,
+          "name": "AutoML Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "automl_agent",
+            "agent_name": "AutoML Agent"
+          }
+        },
+        "planner_mcp_server": "automl_server",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "evaluate_regression_model",
+            "description": "Evaluate the trained Random Forest model using R\u00b2, MAE, RMSE, and cross-validation scores.",
+            "tool_parameters": {
+              "model_path": null,
+              "test_data_path": "/app/data/uploads/datasets/regression/mid/camnugent_california-housing-prices/housing.csv",
+              "target_column": "median_house_value",
+              "model_id": null,
+              "dataset_path": "/app/data/uploads/datasets/regression/mid/camnugent_california-housing-prices/housing.csv",
+              "metrics": [
+                "r2",
+                "mae",
+                "rmse",
+                "cv_r2"
+              ],
+              "cv_folds": 5,
+              "random_state": 42,
+              "filepath": "/app/data/uploads/datasets/regression/mid/camnugent_california-housing-prices/housing.csv"
+            },
+            "planner_parameters": {
+              "model_id": null,
+              "dataset_path": "/app/data/uploads/datasets/regression/mid/camnugent_california-housing-prices/housing.csv",
+              "target_column": "median_house_value",
+              "metrics": [
+                "r2",
+                "mae",
+                "rmse",
+                "cv_r2"
+              ],
+              "cv_folds": 5,
+              "random_state": 42
+            },
+            "missing_required_parameters": [
+              "model_path"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "linear",
+        "rationale": "Obtain comprehensive performance metrics to assess model quality and identify overfitting."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": null,
+          "name": "AutoML Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "automl_agent",
+            "agent_name": "AutoML Agent"
+          }
+        },
+        "planner_mcp_server": "automl_server",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": "linear",
+        "rationale": "Understand which features (median_income, ocean_proximity, etc.) drive predictions for business insights."
+      }
+    ],
+    "mcp_servers": [],
+    "validation": {
+      "status": "invalid",
+      "issue_count": 9,
+      "blocking_issue_count": 4,
+      "issues": [
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='automl_agent' name='AutoML Agent'",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'automl_server'",
+          "phase_number": 1
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='automl_agent' name='AutoML Agent'",
+          "phase_number": 2
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'automl_server'",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'evaluate_regression_model' has unresolved required parameters: model_path",
+          "phase_number": 2,
+          "tool_name": "evaluate_regression_model",
+          "missing_parameters": [
+            "model_path"
+          ]
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='automl_agent' name='AutoML Agent'",
+          "phase_number": 3
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'automl_server'",
+          "phase_number": 3
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'feature_importance' not found in mcp-catalog.yaml",
+          "phase_number": 3
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 3
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "automl_agent",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "automl_agent",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "automl_agent",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      }
+    ]
+  }
+}
