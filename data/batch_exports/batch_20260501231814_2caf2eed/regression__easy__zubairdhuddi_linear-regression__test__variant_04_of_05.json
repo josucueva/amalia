@@ -1,0 +1,182 @@
+{
+  "dataset_id": "regression__easy__zubairdhuddi_linear-regression__test",
+  "filename": "test.csv",
+  "file_path": "/app/data/uploads/datasets/regression/easy/zubairdhuddi_linear-regression/test.csv",
+  "task_type": "regression",
+  "tier": "easy",
+  "target_column": null,
+  "variant_id": 4,
+  "total_variants": 5,
+  "generated_at": "2026-05-02T00:59:36.410867+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a random forest regression model on the clean test.csv dataset with two columns (x, y) to predict y from x.",
+    "complexity": "simple",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/regression/easy/zubairdhuddi_linear-regression/test.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/regression/easy/zubairdhuddi_linear-regression/test.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "model_trainer",
+          "name": "model_trainer",
+          "yaml_path": "config/agents/model_trainer.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_trainer",
+            "agent_name": "Model Trainer Agent"
+          }
+        },
+        "planner_mcp_server": "regression_mcp_server",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "train_regression_model",
+            "description": "Train a random forest regression model on the training split.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/zubairdhuddi_linear-regression/test.csv",
+              "target_column": "y",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "n_estimators": 100,
+                "max_depth": null
+              },
+              "model_save_path": null,
+              "train_data_path": null,
+              "feature_columns": [
+                "x"
+              ]
+            },
+            "planner_parameters": {
+              "model_type": "random_forest",
+              "train_data_path": null,
+              "feature_columns": [
+                "x"
+              ],
+              "target_column": "y",
+              "random_state": 42,
+              "hyperparameters": {
+                "n_estimators": 100,
+                "max_depth": null
+              }
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "linear",
+        "rationale": "The dataset is small, clean, and has only one feature. An ensemble method (random forest) is chosen per the approach hint to provide robust regression with built-in feature importance."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "model_evaluator",
+          "name": "model_evaluator",
+          "yaml_path": "config/agents/model_evaluator.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_evaluator",
+            "agent_name": "Model Evaluator Agent"
+          }
+        },
+        "planner_mcp_server": "regression_mcp_server",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "evaluate_regression_model",
+            "description": "Compute regression metrics on the test split to assess model performance.",
+            "tool_parameters": {
+              "model_path": null,
+              "test_data_path": "/app/data/uploads/datasets/regression/easy/zubairdhuddi_linear-regression/test.csv",
+              "target_column": "y",
+              "metrics": [
+                "r2",
+                "mse",
+                "mae"
+              ],
+              "filepath": "/app/data/uploads/datasets/regression/easy/zubairdhuddi_linear-regression/test.csv"
+            },
+            "planner_parameters": {
+              "model_path": null,
+              "test_data_path": null,
+              "metrics": [
+                "r2",
+                "mse",
+                "mae"
+              ]
+            },
+            "missing_required_parameters": [
+              "model_path"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Evaluation is needed to quantify prediction accuracy and ensure the model generalizes well."
+      }
+    ],
+    "mcp_servers": [],
+    "validation": {
+      "status": "warning",
+      "issue_count": 4,
+      "blocking_issue_count": 0,
+      "issues": [
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'regression_mcp_server'",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'split_data' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'regression_mcp_server'",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'evaluate_regression_model' has unresolved required parameters: model_path",
+          "phase_number": 2,
+          "tool_name": "evaluate_regression_model",
+          "missing_parameters": [
+            "model_path"
+          ]
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "model_trainer",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "model_evaluator",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      }
+    ]
+  }
+}

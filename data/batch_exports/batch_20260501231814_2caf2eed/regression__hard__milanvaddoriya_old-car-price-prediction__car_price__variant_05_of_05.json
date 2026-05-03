@@ -1,0 +1,255 @@
+{
+  "dataset_id": "regression__hard__milanvaddoriya_old-car-price-prediction__car_price",
+  "filename": "car_price.csv",
+  "file_path": "/app/data/uploads/datasets/regression/hard/milanvaddoriya_old-car-price-prediction/car_price.csv",
+  "task_type": "regression",
+  "tier": "hard",
+  "target_column": null,
+  "variant_id": 5,
+  "total_variants": 5,
+  "generated_at": "2026-05-02T01:15:32.725150+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build an interpretable regression model to predict car prices in rupees from the provided dataset.",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/regression/hard/milanvaddoriya_old-car-price-prediction/car_price.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/regression/hard/milanvaddoriya_old-car-price-prediction/car_price.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": null,
+          "name": "Data Loading Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "data_loader_agent",
+            "agent_name": "Data Loading Agent"
+          }
+        },
+        "planner_mcp_server": "mcp_filesystem",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "load_csv",
+            "description": "Load the car_price.csv dataset into memory.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/milanvaddoriya_old-car-price-prediction/car_price.csv",
+              "encoding": "utf-8",
+              "delimiter": ",",
+              "file_path": "/app/data/uploads/datasets/regression/hard/milanvaddoriya_old-car-price-prediction/car_price.csv",
+              "header": 0
+            },
+            "planner_parameters": {
+              "file_path": "/app/data/uploads/datasets/regression/hard/milanvaddoriya_old-car-price-prediction/car_price.csv",
+              "delimiter": ",",
+              "encoding": "utf-8",
+              "header": 0
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Load the dataset as the first step to enable further processing."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": null,
+          "name": "Data Preprocessing Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "data_preprocessor_agent",
+            "agent_name": "Data Preprocessing Agent"
+          }
+        },
+        "planner_mcp_server": "mcp_preprocessing",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": null,
+        "rationale": "Raw data has mixed formats and non-numeric target; cleaning and feature engineering are essential for regression."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": null,
+          "name": "Model Training Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_trainer_agent",
+            "agent_name": "Model Training Agent"
+          }
+        },
+        "planner_mcp_server": "mcp_modeling",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": "linear",
+        "rationale": "Linear regression is interpretable and aligned with the focus on explainability."
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": null,
+          "name": "Model Evaluation & Explainability Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "explainer_agent",
+            "agent_name": "Model Evaluation & Explainability Agent"
+          }
+        },
+        "planner_mcp_server": "mcp_explainability",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": null,
+        "rationale": "Provide metrics and explanations to fulfill the interpretability focus of the project."
+      }
+    ],
+    "mcp_servers": [],
+    "validation": {
+      "status": "invalid",
+      "issue_count": 16,
+      "blocking_issue_count": 7,
+      "issues": [
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='data_loader_agent' name='Data Loading Agent'",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'mcp_filesystem'",
+          "phase_number": 1
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='data_preprocessor_agent' name='Data Preprocessing Agent'",
+          "phase_number": 2
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'mcp_preprocessing'",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'clean_data' not found in mcp-catalog.yaml",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'feature_engineering' not found in mcp-catalog.yaml",
+          "phase_number": 2
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 2
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_trainer_agent' name='Model Training Agent'",
+          "phase_number": 3
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'mcp_modeling'",
+          "phase_number": 3
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'train_linear_regression' not found in mcp-catalog.yaml",
+          "phase_number": 3
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 3
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='explainer_agent' name='Model Evaluation & Explainability Agent'",
+          "phase_number": 4
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'mcp_explainability'",
+          "phase_number": 4
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'evaluate_regression' not found in mcp-catalog.yaml",
+          "phase_number": 4
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'explain_model' not found in mcp-catalog.yaml",
+          "phase_number": 4
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 4
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader_agent",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "data_preprocessor_agent",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_trainer_agent",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "explainer_agent",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      }
+    ]
+  }
+}

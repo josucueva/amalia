@@ -1,0 +1,273 @@
+{
+  "dataset_id": "classification__hard__andrewmvd_cyberbullying-classification__cyberbullying_tweets",
+  "filename": "cyberbullying_tweets.csv",
+  "file_path": "/app/data/uploads/datasets/classification/hard/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+  "task_type": "classification",
+  "tier": "hard",
+  "target_column": null,
+  "variant_id": 1,
+  "total_variants": 5,
+  "generated_at": "2026-05-02T00:00:27.011922+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a binary classification model to predict cyberbullying type from tweet text, using a simple and fast pipeline.",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/hard/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/hard/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": null,
+          "name": "Data Loader Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "data_loader_agent",
+            "agent_name": "Data Loader Agent"
+          }
+        },
+        "planner_mcp_server": "core",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "load_csv",
+            "description": "Load the cyberbullying tweets CSV file into memory",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+              "encoding": "utf-8",
+              "delimiter": ",",
+              "file_path": "/app/data/uploads/datasets/classification/hard/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+              "header": 0,
+              "target_column": "cyberbullying_type"
+            },
+            "planner_parameters": {
+              "file_path": "/app/data/uploads/datasets/classification/hard/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+              "header": 0,
+              "delimiter": ",",
+              "encoding": "utf-8",
+              "target_column": "cyberbullying_type"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "This dataset is in CSV format with two columns; the Data Loader Agent reads it into a pandas DataFrame for downstream processing."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": null,
+          "name": "Text Preprocessing Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "text_preprocessing_agent",
+            "agent_name": "Text Preprocessing Agent"
+          }
+        },
+        "planner_mcp_server": "nlp",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": null,
+        "rationale": "Text data requires cleaning (noise removal) and numerical vectorization. TF-IDF is a fast, effective method for classification on short texts."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": null,
+          "name": "Model Training Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_training_agent",
+            "agent_name": "Model Training Agent"
+          }
+        },
+        "planner_mcp_server": "ml",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "train_classification_model",
+            "description": "Train a logistic regression classifier on the TF-IDF features",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+              "target_column": "cyberbullying_type",
+              "model_type": "logistic",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "max_iter": 1000,
+                "C": 1.0,
+                "solver": "lbfgs"
+              },
+              "model_save_path": null,
+              "features_column": "features",
+              "train_test_split": 0.8,
+              "class_weight": "balanced"
+            },
+            "planner_parameters": {
+              "features_column": "features",
+              "target_column": "cyberbullying_type",
+              "model_type": "logistic",
+              "train_test_split": 0.8,
+              "random_state": 42,
+              "class_weight": "balanced"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "logistic",
+        "rationale": "Logistic regression is fast, interpretable, and performs well on high-dimensional sparse text data. Balanced class weights handle potential class imbalance."
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": null,
+          "name": "Evaluation Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "evaluation_agent",
+            "agent_name": "Evaluation Agent"
+          }
+        },
+        "planner_mcp_server": "ml",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": null,
+        "rationale": "Standard evaluation ensures the model's performance is measurable and comparable. Metrics are selected for classification tasks."
+      }
+    ],
+    "mcp_servers": [],
+    "validation": {
+      "status": "invalid",
+      "issue_count": 13,
+      "blocking_issue_count": 6,
+      "issues": [
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='data_loader_agent' name='Data Loader Agent'",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'core'",
+          "phase_number": 1
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='text_preprocessing_agent' name='Text Preprocessing Agent'",
+          "phase_number": 2
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'nlp'",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'clean_text' not found in mcp-catalog.yaml",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'vectorize_tfidf' not found in mcp-catalog.yaml",
+          "phase_number": 2
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 2
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_training_agent' name='Model Training Agent'",
+          "phase_number": 3
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'ml'",
+          "phase_number": 3
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='evaluation_agent' name='Evaluation Agent'",
+          "phase_number": 4
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'ml'",
+          "phase_number": 4
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'evaluate_classification' not found in mcp-catalog.yaml",
+          "phase_number": 4
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 4
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader_agent",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "text_preprocessing_agent",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_training_agent",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "evaluation_agent",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      }
+    ]
+  }
+}

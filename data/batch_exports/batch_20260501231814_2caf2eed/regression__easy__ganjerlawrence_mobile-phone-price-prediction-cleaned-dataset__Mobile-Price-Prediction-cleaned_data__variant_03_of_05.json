@@ -1,0 +1,480 @@
+{
+  "dataset_id": "regression__easy__ganjerlawrence_mobile-phone-price-prediction-cleaned-dataset__Mobile-Price-Prediction-cleaned_data",
+  "filename": "Mobile-Price-Prediction-cleaned_data.csv",
+  "file_path": "/app/data/uploads/datasets/regression/easy/ganjerlawrence_mobile-phone-price-prediction-cleaned-dataset/Mobile-Price-Prediction-cleaned_data.csv",
+  "task_type": "regression",
+  "tier": "easy",
+  "target_column": null,
+  "variant_id": 3,
+  "total_variants": 5,
+  "generated_at": "2026-05-02T00:42:56.873385+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a regression model to predict mobile phone price using feature engineering and preprocessing.",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/regression/easy/ganjerlawrence_mobile-phone-price-prediction-cleaned-dataset/Mobile-Price-Prediction-cleaned_data.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/regression/easy/ganjerlawrence_mobile-phone-price-prediction-cleaned-dataset/Mobile-Price-Prediction-cleaned_data.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": null,
+          "name": "Feature Engineering Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "feature_engineering_agent",
+            "agent_name": "Feature Engineering Agent"
+          }
+        },
+        "planner_mcp_server": "feature-engineering-server",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": "linear",
+        "rationale": "Focus on feature engineering as per hint; create polynomial and interaction features to help the regression model capture non-linear patterns and interactions between key attributes like RAM, ROM, camera specs, and battery power."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": null,
+          "name": "Preprocessing Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "preprocessing_agent",
+            "agent_name": "Preprocessing Agent"
+          }
+        },
+        "planner_mcp_server": "preprocessing-server",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "scale_features",
+            "description": "Standardize numeric features for model convergence.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/ganjerlawrence_mobile-phone-price-prediction-cleaned-dataset/Mobile-Price-Prediction-cleaned_data.csv",
+              "columns": [
+                "Ratings",
+                "RAM",
+                "ROM",
+                "Mobile_Size",
+                "Primary_Cam",
+                "Selfi_Cam",
+                "Battery_Power",
+                "poly_RAM^2",
+                "poly_ROM^2",
+                "poly_Primary_Cam^2",
+                "poly_Battery_Power^2",
+                "interact_RAM_ROM",
+                "interact_Primary_Cam_Selfi_Cam",
+                "interact_RAM_Battery_Power",
+                "Mobile_Size_bin",
+                "RAM_bin"
+              ],
+              "method": "standard",
+              "output_filepath": null,
+              "include_target": false,
+              "target_column": "Price"
+            },
+            "planner_parameters": {
+              "method": "standard",
+              "columns": [
+                "Ratings",
+                "RAM",
+                "ROM",
+                "Mobile_Size",
+                "Primary_Cam",
+                "Selfi_Cam",
+                "Battery_Power",
+                "poly_RAM^2",
+                "poly_ROM^2",
+                "poly_Primary_Cam^2",
+                "poly_Battery_Power^2",
+                "interact_RAM_ROM",
+                "interact_Primary_Cam_Selfi_Cam",
+                "interact_RAM_Battery_Power",
+                "Mobile_Size_bin",
+                "RAM_bin"
+              ],
+              "include_target": false,
+              "target_column": "Price"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "split_dataset",
+            "description": "Split data into train and test sets.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/ganjerlawrence_mobile-phone-price-prediction-cleaned-dataset/Mobile-Price-Prediction-cleaned_data.csv",
+              "train_ratio": "0.8",
+              "random_state": 42,
+              "shuffle": true,
+              "test_size": 0.2,
+              "stratify": null
+            },
+            "planner_parameters": {
+              "test_size": 0.2,
+              "random_state": 42,
+              "stratify": null,
+              "shuffle": true
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "linear",
+        "rationale": "Preprocess engineered features: cap outliers to avoid distortion, scale all numeric inputs (including new features) for model stability, and split into train/test sets for evaluation."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": null,
+          "name": "Model Training Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_training_agent",
+            "agent_name": "Model Training Agent"
+          }
+        },
+        "planner_mcp_server": "model-training-server",
+        "resolved_mcp_server": {
+          "id": "python-model_training",
+          "name": "Model Training Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "train_regression_model",
+            "description": "Train a Gradient Boosting Regressor as the primary model for price prediction.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/ganjerlawrence_mobile-phone-price-prediction-cleaned-dataset/Mobile-Price-Prediction-cleaned_data.csv",
+              "target_column": "Price",
+              "model_type": "gradient_boosting",
+              "test_size": 0.2,
+              "random_state": null,
+              "hyperparameters": {
+                "n_estimators": 200,
+                "max_depth": 4,
+                "learning_rate": 0.1,
+                "subsample": 0.8,
+                "random_state": 42
+              },
+              "model_save_path": null,
+              "features": [],
+              "cross_validation": true,
+              "cv_folds": 5,
+              "scoring": "r2",
+              "return_model": true,
+              "return_metrics": true,
+              "feature_importance": true
+            },
+            "planner_parameters": {
+              "model_type": "gradient_boosting",
+              "target_column": "Price",
+              "features": [],
+              "hyperparameters": {
+                "n_estimators": 200,
+                "max_depth": 4,
+                "learning_rate": 0.1,
+                "subsample": 0.8,
+                "random_state": 42
+              },
+              "test_size": null,
+              "random_state": null,
+              "cross_validation": true,
+              "cv_folds": 5,
+              "scoring": "r2",
+              "return_model": true,
+              "return_metrics": true,
+              "feature_importance": true
+            },
+            "missing_required_parameters": [
+              "random_state"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "train_regression_model",
+            "description": "Train a Random Forest Regressor as a secondary model for comparison.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/easy/ganjerlawrence_mobile-phone-price-prediction-cleaned-dataset/Mobile-Price-Prediction-cleaned_data.csv",
+              "target_column": "Price",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": null,
+              "hyperparameters": {
+                "n_estimators": 100,
+                "max_depth": 10,
+                "min_samples_split": 5,
+                "random_state": 42
+              },
+              "model_save_path": null,
+              "features": [],
+              "cross_validation": true,
+              "cv_folds": 5,
+              "scoring": "r2",
+              "return_model": true,
+              "return_metrics": true,
+              "feature_importance": true
+            },
+            "planner_parameters": {
+              "model_type": "random_forest",
+              "target_column": "Price",
+              "features": [],
+              "hyperparameters": {
+                "n_estimators": 100,
+                "max_depth": 10,
+                "min_samples_split": 5,
+                "random_state": 42
+              },
+              "test_size": null,
+              "random_state": null,
+              "cross_validation": true,
+              "cv_folds": 5,
+              "scoring": "r2",
+              "return_model": true,
+              "return_metrics": true,
+              "feature_importance": true
+            },
+            "missing_required_parameters": [
+              "random_state"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "linear",
+        "rationale": "Train both Gradient Boosting and Random Forest models to leverage ensemble methods for regression. Gradient boosting handles non-linear interactions effectively; random forest provides robustness. Both are among available_model_types. Hyperparameters chosen for a small dataset (100 rows) to avoid overfitting."
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": null,
+          "name": "Evaluation Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "evaluation_agent",
+            "agent_name": "Evaluation Agent"
+          }
+        },
+        "planner_mcp_server": "evaluation-server",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "evaluate_regression_model",
+            "description": "Compute regression metrics on test set to compare models and select best.",
+            "tool_parameters": {
+              "model_path": null,
+              "test_data_path": "/app/data/uploads/datasets/regression/easy/ganjerlawrence_mobile-phone-price-prediction-cleaned-dataset/Mobile-Price-Prediction-cleaned_data.csv",
+              "target_column": "Price",
+              "models": [
+                "GradientBoostingRegressor",
+                "RandomForestRegressor"
+              ],
+              "dataset": "test",
+              "metrics": [
+                "r2",
+                "mae",
+                "rmse",
+                "mape"
+              ],
+              "plot_residuals": true,
+              "plot_predictions_vs_actual": true,
+              "return_report": true,
+              "filepath": "/app/data/uploads/datasets/regression/easy/ganjerlawrence_mobile-phone-price-prediction-cleaned-dataset/Mobile-Price-Prediction-cleaned_data.csv"
+            },
+            "planner_parameters": {
+              "models": [
+                "GradientBoostingRegressor",
+                "RandomForestRegressor"
+              ],
+              "dataset": "test",
+              "metrics": [
+                "r2",
+                "mae",
+                "rmse",
+                "mape"
+              ],
+              "target_column": "Price",
+              "plot_residuals": true,
+              "plot_predictions_vs_actual": true,
+              "return_report": true
+            },
+            "missing_required_parameters": [
+              "model_path"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Evaluate both models using regression metrics (R\u00b2, MAE, RMSE, MAPE) and diagnostic plots to choose the best performer for deployment."
+      }
+    ],
+    "mcp_servers": [
+      {
+        "id": "python-model_training",
+        "name": "Model Training Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_training/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Machine learning model training, hyperparameter tuning, and optimization"
+      }
+    ],
+    "validation": {
+      "status": "invalid",
+      "issue_count": 15,
+      "blocking_issue_count": 5,
+      "issues": [
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='feature_engineering_agent' name='Feature Engineering Agent'",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'feature-engineering-server'",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'create_polynomial_features' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'create_interaction_features' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'bin_numeric_features' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 1
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='preprocessing_agent' name='Preprocessing Agent'",
+          "phase_number": 2
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'preprocessing-server'",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'handle_outliers' not found in mcp-catalog.yaml",
+          "phase_number": 2
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_training_agent' name='Model Training Agent'",
+          "phase_number": 3
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'train_regression_model' has unresolved required parameters: random_state",
+          "phase_number": 3,
+          "tool_name": "train_regression_model",
+          "missing_parameters": [
+            "random_state"
+          ]
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'train_regression_model' has unresolved required parameters: random_state",
+          "phase_number": 3,
+          "tool_name": "train_regression_model",
+          "missing_parameters": [
+            "random_state"
+          ]
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='evaluation_agent' name='Evaluation Agent'",
+          "phase_number": 4
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'evaluation-server'",
+          "phase_number": 4
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'evaluate_regression_model' has unresolved required parameters: model_path",
+          "phase_number": 4,
+          "tool_name": "evaluate_regression_model",
+          "missing_parameters": [
+            "model_path"
+          ]
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "feature_engineering_agent",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "preprocessing_agent",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_training_agent",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "evaluation_agent",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      }
+    ]
+  }
+}

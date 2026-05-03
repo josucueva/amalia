@@ -1,0 +1,242 @@
+{
+  "dataset_id": "classification__easy__robikscube_eye-state-classification-eeg-dataset__EEG_Eye_State_Classification",
+  "filename": "EEG_Eye_State_Classification.csv",
+  "file_path": "/app/data/uploads/datasets/classification/easy/robikscube_eye-state-classification-eeg-dataset/EEG_Eye_State_Classification.csv",
+  "task_type": "classification",
+  "tier": "easy",
+  "target_column": null,
+  "variant_id": 2,
+  "total_variants": 5,
+  "generated_at": "2026-05-01T23:49:44.065282+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a robust binary classification model to predict eye state (open/closed) from 14 EEG signal features.",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/easy/robikscube_eye-state-classification-eeg-dataset/EEG_Eye_State_Classification.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/easy/robikscube_eye-state-classification-eeg-dataset/EEG_Eye_State_Classification.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": null,
+          "name": "Data Preprocessing Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "data_preprocessing_agent",
+            "agent_name": "Data Preprocessing Agent"
+          }
+        },
+        "planner_mcp_server": "data_tools_server",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "load_csv",
+            "description": "Load the EEG dataset CSV file into a pandas DataFrame.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/robikscube_eye-state-classification-eeg-dataset/EEG_Eye_State_Classification.csv",
+              "encoding": "utf-8",
+              "delimiter": ",",
+              "file_path": "/app/data/uploads/datasets/classification/easy/robikscube_eye-state-classification-eeg-dataset/EEG_Eye_State_Classification.csv",
+              "header": true,
+              "columns_to_keep": null,
+              "dtype": null,
+              "nrows": null
+            },
+            "planner_parameters": {
+              "file_path": "/app/data/uploads/datasets/classification/easy/robikscube_eye-state-classification-eeg-dataset/EEG_Eye_State_Classification.csv",
+              "header": true,
+              "delimiter": ",",
+              "encoding": "utf-8",
+              "columns_to_keep": null,
+              "dtype": null,
+              "nrows": null
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "logistic",
+        "rationale": "Load the raw CSV data and perform a train-test split to prepare for model training and evaluation."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": null,
+          "name": "Model Training Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_training_agent",
+            "agent_name": "Model Training Agent"
+          }
+        },
+        "planner_mcp_server": "ml_training_server",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "train_classification_model",
+            "description": "Train a Random Forest classifier on the training data. Random Forest is chosen for its robustness and ability to handle high-dimensional EEG features.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/robikscube_eye-state-classification-eeg-dataset/EEG_Eye_State_Classification.csv",
+              "target_column": "eyeDetection",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "max_iter": 1000,
+                "C": 1.0,
+                "solver": "lbfgs"
+              },
+              "model_save_path": null,
+              "train_features": null,
+              "train_labels": null,
+              "n_estimators": 100,
+              "max_depth": null,
+              "min_samples_split": 2,
+              "min_samples_leaf": 1,
+              "criterion": "gini",
+              "class_weight": "balanced",
+              "n_jobs": -1
+            },
+            "planner_parameters": {
+              "model_type": "random_forest",
+              "train_features": null,
+              "train_labels": null,
+              "random_state": 42,
+              "n_estimators": 100,
+              "max_depth": null,
+              "min_samples_split": 2,
+              "min_samples_leaf": 1,
+              "criterion": "gini",
+              "class_weight": "balanced",
+              "n_jobs": -1
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "logistic",
+        "rationale": "Train an ensemble model that reduces overfitting and provides high accuracy for the EEG eye state classification task."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": null,
+          "name": "Model Evaluation Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_evaluation_agent",
+            "agent_name": "Model Evaluation Agent"
+          }
+        },
+        "planner_mcp_server": "ml_evaluation_server",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": "logistic",
+        "rationale": "Assess the model's performance to ensure it meets accuracy and robustness requirements, and provide interpretable results."
+      }
+    ],
+    "mcp_servers": [],
+    "validation": {
+      "status": "invalid",
+      "issue_count": 10,
+      "blocking_issue_count": 4,
+      "issues": [
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='data_preprocessing_agent' name='Data Preprocessing Agent'",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'data_tools_server'",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'split_data' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_training_agent' name='Model Training Agent'",
+          "phase_number": 2
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'ml_training_server'",
+          "phase_number": 2
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_evaluation_agent' name='Model Evaluation Agent'",
+          "phase_number": 3
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'ml_evaluation_server'",
+          "phase_number": 3
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'evaluate_classification' not found in mcp-catalog.yaml",
+          "phase_number": 3
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'generate_classification_report' not found in mcp-catalog.yaml",
+          "phase_number": 3
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 3
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_preprocessing_agent",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "model_training_agent",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_evaluation_agent",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      }
+    ]
+  }
+}

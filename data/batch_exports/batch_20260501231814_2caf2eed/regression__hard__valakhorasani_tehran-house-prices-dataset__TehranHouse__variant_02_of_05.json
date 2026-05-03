@@ -1,0 +1,289 @@
+{
+  "dataset_id": "regression__hard__valakhorasani_tehran-house-prices-dataset__TehranHouse",
+  "filename": "TehranHouse.csv",
+  "file_path": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse.csv",
+  "task_type": "regression",
+  "tier": "hard",
+  "target_column": null,
+  "variant_id": 2,
+  "total_variants": 5,
+  "generated_at": "2026-05-02T01:21:59.989927+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a robust regression model to predict house prices in USD from the TehranHouse dataset, handling missing values and categorical features.",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": null,
+          "name": "Data Preprocessing Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "data_preprocessing_agent",
+            "agent_name": "Data Preprocessing Agent"
+          }
+        },
+        "planner_mcp_server": "mcp_server_preprocess",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "handle_missing_values",
+            "description": "Remove the single row with missing Address or impute with mode; drop duplicates",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse.csv",
+              "strategy": "drop",
+              "columns": [
+                "Address"
+              ],
+              "output_filepath": null,
+              "drop_duplicates": true
+            },
+            "planner_parameters": {
+              "strategy": "drop",
+              "columns": [
+                "Address"
+              ],
+              "drop_duplicates": true
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "encode_categorical",
+            "description": "One-hot encode binary categoricals (Parking, Warehouse, Elevator) and address",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse.csv",
+              "columns": [
+                "Parking",
+                "Warehouse",
+                "Elevator",
+                "Address"
+              ],
+              "method": "onehot",
+              "output_filepath": null,
+              "encoding_method": "one_hot"
+            },
+            "planner_parameters": {
+              "columns": [
+                "Parking",
+                "Warehouse",
+                "Elevator",
+                "Address"
+              ],
+              "encoding_method": "one_hot"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "scale_features",
+            "description": "Standardize numeric features for model stability",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse.csv",
+              "columns": [
+                "Area",
+                "Room"
+              ],
+              "method": "standard",
+              "output_filepath": null,
+              "scaler": "standard"
+            },
+            "planner_parameters": {
+              "columns": [
+                "Area",
+                "Room"
+              ],
+              "scaler": "standard"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Address missing values, encode categorical variables, and scale numeric features to prepare data for accurate regression."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": null,
+          "name": "Model Training Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_training_agent",
+            "agent_name": "Model Training Agent"
+          }
+        },
+        "planner_mcp_server": "mcp_server_training",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "train_regression_model",
+            "description": "Train a Gradient Boosting Regressor for high accuracy and robustness",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse.csv",
+              "target_column": "Price(USD)",
+              "model_type": "gradient_boosting",
+              "test_size": 0.2,
+              "random_state": null,
+              "hyperparameters": {
+                "n_estimators": 200,
+                "max_depth": 4,
+                "learning_rate": 0.05,
+                "random_state": 42
+              },
+              "model_save_path": null
+            },
+            "planner_parameters": {
+              "model_type": "gradient_boosting",
+              "target_column": "Price(USD)",
+              "hyperparameters": {
+                "n_estimators": 200,
+                "max_depth": 4,
+                "learning_rate": 0.05,
+                "random_state": 42
+              }
+            },
+            "missing_required_parameters": [
+              "random_state"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "linear",
+        "rationale": "Gradient boosting is chosen to capture complex patterns and provide robust predictions, aligning with the accuracy and robustness focus."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": null,
+          "name": "Model Evaluation Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_evaluation_agent",
+            "agent_name": "Model Evaluation Agent"
+          }
+        },
+        "planner_mcp_server": "mcp_server_evaluation",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": null,
+        "rationale": "Quantitative and visual evaluation ensure model meets performance expectations."
+      }
+    ],
+    "mcp_servers": [],
+    "validation": {
+      "status": "invalid",
+      "issue_count": 11,
+      "blocking_issue_count": 4,
+      "issues": [
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='data_preprocessing_agent' name='Data Preprocessing Agent'",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'mcp_server_preprocess'",
+          "phase_number": 1
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_training_agent' name='Model Training Agent'",
+          "phase_number": 2
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'mcp_server_training'",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'split_data' not found in mcp-catalog.yaml",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'train_regression_model' has unresolved required parameters: random_state",
+          "phase_number": 2,
+          "tool_name": "train_regression_model",
+          "missing_parameters": [
+            "random_state"
+          ]
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_evaluation_agent' name='Model Evaluation Agent'",
+          "phase_number": 3
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'mcp_server_evaluation'",
+          "phase_number": 3
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'evaluate_regression' not found in mcp-catalog.yaml",
+          "phase_number": 3
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'plot_residuals' not found in mcp-catalog.yaml",
+          "phase_number": 3
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 3
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_preprocessing_agent",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "model_training_agent",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_evaluation_agent",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      }
+    ]
+  }
+}

@@ -1,0 +1,327 @@
+{
+  "dataset_id": "classification__easy__uciml_glass__glass",
+  "filename": "glass.csv",
+  "file_path": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass.csv",
+  "task_type": "classification",
+  "tier": "easy",
+  "target_column": null,
+  "variant_id": 4,
+  "total_variants": 5,
+  "generated_at": "2026-05-01T23:51:45.413242+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a classification model for the glass dataset using ensemble methods to predict the glass type (6 classes) from 9 numeric features.",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": null,
+          "name": "Data Loader Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "data_loader_agent_001",
+            "agent_name": "Data Loader Agent"
+          }
+        },
+        "planner_mcp_server": "mcp_data_loader",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "load_csv",
+            "description": "Load the glass CSV dataset into memory",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass.csv",
+              "encoding": "utf-8",
+              "delimiter": ",",
+              "file_path": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass.csv",
+              "header_row": 0,
+              "skip_initial_space": false,
+              "quotechar": "\"",
+              "escapechar": null,
+              "na_values": null,
+              "keep_default_na": true,
+              "nrows": null
+            },
+            "planner_parameters": {
+              "file_path": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass.csv",
+              "delimiter": ",",
+              "header_row": 0,
+              "encoding": "utf-8",
+              "skip_initial_space": false,
+              "quotechar": "\"",
+              "escapechar": null,
+              "na_values": null,
+              "keep_default_na": true,
+              "nrows": null
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Load the raw dataset from its file path so it can be used by downstream preprocessing and modeling agents."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": null,
+          "name": "Preprocessor Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "preprocessor_agent_001",
+            "agent_name": "Preprocessor Agent"
+          }
+        },
+        "planner_mcp_server": "mcp_preprocessor",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "handle_missing_values",
+            "description": "Check and handle missing values (none reported, but tool call is standard)",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass.csv",
+              "strategy": "none",
+              "columns": [
+                "RI",
+                "Na",
+                "Mg",
+                "Al",
+                "Si",
+                "K",
+                "Ca",
+                "Ba",
+                "Fe"
+              ],
+              "output_filepath": null,
+              "fill_value": null,
+              "columns_to_handle": null
+            },
+            "planner_parameters": {
+              "strategy": "none",
+              "fill_value": null,
+              "columns_to_handle": null
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "logistic",
+        "rationale": "Separate features from target and split data into training (80%) and testing (20%) sets to evaluate model performance. Stratified split ensures class distribution preserved."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": null,
+          "name": "Model Trainer Agent (Ensemble)",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_trainer_agent_001",
+            "agent_name": "Model Trainer Agent (Ensemble)"
+          }
+        },
+        "planner_mcp_server": "mcp_model_trainer",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "train_classification_model",
+            "description": "Train an ensemble classification model (Random Forest) on glass dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass.csv",
+              "target_column": "Type",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": null,
+              "hyperparameters": {
+                "n_estimators": 100,
+                "max_depth": null,
+                "random_state": 42
+              },
+              "model_save_path": null,
+              "train_features": null,
+              "train_target": null,
+              "test_features": null,
+              "test_target": null,
+              "cv_folds": 5,
+              "scoring_metric": "accuracy",
+              "use_gpu": false,
+              "verbose": 1
+            },
+            "planner_parameters": {
+              "model_type": "random_forest",
+              "train_features": null,
+              "train_target": null,
+              "test_features": null,
+              "test_target": null,
+              "hyperparameters": {
+                "n_estimators": 100,
+                "max_depth": null,
+                "random_state": 42
+              },
+              "cv_folds": 5,
+              "scoring_metric": "accuracy",
+              "use_gpu": false,
+              "verbose": 1
+            },
+            "missing_required_parameters": [
+              "random_state"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "logistic",
+        "rationale": "Random Forest is an ensemble method suited for small datasets with numeric features; it handles multiclass classification well and provides feature importance. 5-fold cross-validation on training set for robust performance estimation."
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": null,
+          "name": "Model Evaluator Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_evaluator_agent_001",
+            "agent_name": "Model Evaluator Agent"
+          }
+        },
+        "planner_mcp_server": "mcp_model_evaluator",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": "logistic",
+        "rationale": "Assess model generalization on the unseen test set using standard classification metrics including confusion matrix for multi-class analysis."
+      }
+    ],
+    "mcp_servers": [],
+    "validation": {
+      "status": "invalid",
+      "issue_count": 12,
+      "blocking_issue_count": 5,
+      "issues": [
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='data_loader_agent_001' name='Data Loader Agent'",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'mcp_data_loader'",
+          "phase_number": 1
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='preprocessor_agent_001' name='Preprocessor Agent'",
+          "phase_number": 2
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'mcp_preprocessor'",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'split_data' not found in mcp-catalog.yaml",
+          "phase_number": 2
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_trainer_agent_001' name='Model Trainer Agent (Ensemble)'",
+          "phase_number": 3
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'mcp_model_trainer'",
+          "phase_number": 3
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'train_classification_model' has unresolved required parameters: random_state",
+          "phase_number": 3,
+          "tool_name": "train_classification_model",
+          "missing_parameters": [
+            "random_state"
+          ]
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_evaluator_agent_001' name='Model Evaluator Agent'",
+          "phase_number": 4
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'mcp_model_evaluator'",
+          "phase_number": 4
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'evaluate_classification' not found in mcp-catalog.yaml",
+          "phase_number": 4
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 4
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader_agent_001",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "preprocessor_agent_001",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_trainer_agent_001",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "model_evaluator_agent_001",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      }
+    ]
+  }
+}

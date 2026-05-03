@@ -1,0 +1,243 @@
+{
+  "dataset_id": "regression__mid__hrokrin_the-largest-diamond-dataset-currely-on-kaggle__diamonds",
+  "filename": "diamonds.csv",
+  "file_path": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds.csv",
+  "task_type": "regression",
+  "tier": "mid",
+  "target_column": null,
+  "variant_id": 3,
+  "total_variants": 5,
+  "generated_at": "2026-05-02T01:32:49.842891+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a regression model to predict diamond total_sales_price using feature engineering and preprocessing.",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "orchestrator_agent",
+          "name": "Orchestrator Agent",
+          "yaml_path": "config/agents/orchestrator_agent.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "orchestrator_agent",
+            "agent_name": "Orchestrator Agent"
+          }
+        },
+        "planner_mcp_server": "python",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": "ridge",
+        "rationale": "Preprocess the dataset: split into train/test, encode categorical variables, scale numerical features. This prepares the data for model training while handling the mix of data types present."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "orchestrator_agent",
+          "name": "Orchestrator Agent",
+          "yaml_path": "config/agents/orchestrator_agent.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "orchestrator_agent",
+            "agent_name": "Orchestrator Agent"
+          }
+        },
+        "planner_mcp_server": "python",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "train_regression_model",
+            "description": "Train a Gradient Boosting regressor on the preprocessed training data to predict total_sales_price.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds.csv",
+              "target_column": "total_sales_price",
+              "model_type": "gradient_boosting",
+              "test_size": 0.2,
+              "random_state": null,
+              "hyperparameters": {
+                "n_estimators": 100,
+                "learning_rate": 0.1,
+                "max_depth": 3,
+                "random_state": 42
+              },
+              "model_save_path": null,
+              "feature_columns": "auto"
+            },
+            "planner_parameters": {
+              "model_type": "gradient_boosting",
+              "hyperparameters": {
+                "n_estimators": 100,
+                "learning_rate": 0.1,
+                "max_depth": 3,
+                "random_state": 42
+              },
+              "target_column": "total_sales_price",
+              "feature_columns": "auto"
+            },
+            "missing_required_parameters": [
+              "random_state"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "ridge",
+        "rationale": "Use Gradient Boosting (a strong ensemble method for regression) to model the relationship between diamond features and price. Chosen from available regression model types."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": "orchestrator_agent",
+          "name": "Orchestrator Agent",
+          "yaml_path": "config/agents/orchestrator_agent.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "orchestrator_agent",
+            "agent_name": "Orchestrator Agent"
+          }
+        },
+        "planner_mcp_server": "python",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "evaluate_regression_model",
+            "description": "Evaluate the trained model on the test set using RMSE, MAE, and R\u00b2 metrics.",
+            "tool_parameters": {
+              "model_path": null,
+              "test_data_path": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds.csv",
+              "target_column": "total_sales_price",
+              "metrics": [
+                "rmse",
+                "mae",
+                "r2"
+              ],
+              "test_set": "from_phase_1",
+              "model": "from_phase_2",
+              "filepath": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds.csv"
+            },
+            "planner_parameters": {
+              "metrics": [
+                "rmse",
+                "mae",
+                "r2"
+              ],
+              "test_set": "from_phase_1",
+              "model": "from_phase_2"
+            },
+            "missing_required_parameters": [
+              "model_path"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "ridge",
+        "rationale": "Assess model performance to ensure it generalizes well. The chosen metrics are standard for regression tasks."
+      }
+    ],
+    "mcp_servers": [],
+    "validation": {
+      "status": "invalid",
+      "issue_count": 9,
+      "blocking_issue_count": 1,
+      "issues": [
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'python'",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'train_test_split' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'data_encoder' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'data_scaler' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'python'",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'train_regression_model' has unresolved required parameters: random_state",
+          "phase_number": 2,
+          "tool_name": "train_regression_model",
+          "missing_parameters": [
+            "random_state"
+          ]
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'python'",
+          "phase_number": 3
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'evaluate_regression_model' has unresolved required parameters: model_path",
+          "phase_number": 3,
+          "tool_name": "evaluate_regression_model",
+          "missing_parameters": [
+            "model_path"
+          ]
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "orchestrator_agent",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "orchestrator_agent",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "orchestrator_agent",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      }
+    ]
+  }
+}

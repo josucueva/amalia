@@ -1,0 +1,292 @@
+{
+  "dataset_id": "regression__hard__spittman1248_cdc-data-nutrition-physical-activity-obesity__Nutrition__Physical_Activity__and_Obesity_-_Behavioral_Risk_Factor_Surveillance_System",
+  "filename": "Nutrition__Physical_Activity__and_Obesity_-_Behavioral_Risk_Factor_Surveillance_System.csv",
+  "file_path": "/app/data/uploads/datasets/regression/hard/spittman1248_cdc-data-nutrition-physical-activity-obesity/Nutrition__Physical_Activity__and_Obesity_-_Behavioral_Risk_Factor_Surveillance_System.csv",
+  "task_type": "regression",
+  "tier": "hard",
+  "target_column": null,
+  "variant_id": 3,
+  "total_variants": 5,
+  "generated_at": "2026-05-02T01:17:39.083526+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a regression model to predict the percentage of adults with obesity (Data_Value) using demographic, geographic, and stratifying features from the BRFSS dataset.",
+    "complexity": "complex",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/regression/hard/spittman1248_cdc-data-nutrition-physical-activity-obesity/Nutrition__Physical_Activity__and_Obesity_-_Behavioral_Risk_Factor_Surveillance_System.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/regression/hard/spittman1248_cdc-data-nutrition-physical-activity-obesity/Nutrition__Physical_Activity__and_Obesity_-_Behavioral_Risk_Factor_Surveillance_System.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": null,
+          "name": "Preprocessing Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "preprocessing_agent",
+            "agent_name": "Preprocessing Agent"
+          }
+        },
+        "planner_mcp_server": "local_preprocessing_server",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": null,
+        "rationale": "The dataset has many missing values, categorical columns, and mixed scales. Cleaning, encoding, and scaling are necessary before modeling."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": null,
+          "name": "Feature Engineering Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "feature_engineering_agent",
+            "agent_name": "Feature Engineering Agent"
+          }
+        },
+        "planner_mcp_server": "local_feature_engineering_server",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": "linear",
+        "rationale": "Extract meaningful features and reduce noise to improve regression performance."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": null,
+          "name": "Model Training Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_training_agent",
+            "agent_name": "Model Training Agent"
+          }
+        },
+        "planner_mcp_server": "local_model_training_server",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "train_regression_model",
+            "description": "Train a gradient boosting regressor (selected from available_model_types: gradient_boosting) suitable for mixed features and non-linear relationships.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/spittman1248_cdc-data-nutrition-physical-activity-obesity/Nutrition__Physical_Activity__and_Obesity_-_Behavioral_Risk_Factor_Surveillance_System.csv",
+              "target_column": "Data_Value",
+              "model_type": "gradient_boosting",
+              "test_size": 0.2,
+              "random_state": null,
+              "hyperparameters": {
+                "n_estimators": 200,
+                "max_depth": 5,
+                "learning_rate": 0.1,
+                "random_state": 42
+              },
+              "model_save_path": null
+            },
+            "planner_parameters": {
+              "model_type": "gradient_boosting",
+              "target_column": "Data_Value",
+              "hyperparameters": {
+                "n_estimators": 200,
+                "max_depth": 5,
+                "learning_rate": 0.1,
+                "random_state": 42
+              }
+            },
+            "missing_required_parameters": [
+              "random_state"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "gradient_boosting",
+        "rationale": "Gradient boosting is robust to mixed data types and typically performs well for regression on tabular data with missing values and interactions."
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": null,
+          "name": "Evaluation Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "evaluation_agent",
+            "agent_name": "Evaluation Agent"
+          }
+        },
+        "planner_mcp_server": "local_evaluation_server",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": "ridge",
+        "rationale": "Quantify model performance and provide interpretable insights about feature contributions."
+      }
+    ],
+    "mcp_servers": [],
+    "validation": {
+      "status": "invalid",
+      "issue_count": 20,
+      "blocking_issue_count": 7,
+      "issues": [
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='preprocessing_agent' name='Preprocessing Agent'",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'local_preprocessing_server'",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'missing_value_imputer' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'feature_encoder' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'feature_scaler' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 1
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='feature_engineering_agent' name='Feature Engineering Agent'",
+          "phase_number": 2
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'local_feature_engineering_server'",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'datetime_feature_extractor' not found in mcp-catalog.yaml",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'feature_selector' not found in mcp-catalog.yaml",
+          "phase_number": 2
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 2
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_training_agent' name='Model Training Agent'",
+          "phase_number": 3
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'local_model_training_server'",
+          "phase_number": 3
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'train_test_split' not found in mcp-catalog.yaml",
+          "phase_number": 3
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'train_regression_model' has unresolved required parameters: random_state",
+          "phase_number": 3,
+          "tool_name": "train_regression_model",
+          "missing_parameters": [
+            "random_state"
+          ]
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='evaluation_agent' name='Evaluation Agent'",
+          "phase_number": 4
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'local_evaluation_server'",
+          "phase_number": 4
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'regression_evaluator' not found in mcp-catalog.yaml",
+          "phase_number": 4
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'feature_importance_plotter' not found in mcp-catalog.yaml",
+          "phase_number": 4
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 4
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "preprocessing_agent",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "feature_engineering_agent",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_training_agent",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "evaluation_agent",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      }
+    ]
+  }
+}

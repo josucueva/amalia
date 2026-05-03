@@ -1,0 +1,245 @@
+{
+  "dataset_id": "classification__mid__fedesoriano_stellar-classification-dataset-sdss17__star_classification",
+  "filename": "star_classification.csv",
+  "file_path": "/app/data/uploads/datasets/classification/mid/fedesoriano_stellar-classification-dataset-sdss17/star_classification.csv",
+  "task_type": "classification",
+  "tier": "mid",
+  "target_column": null,
+  "variant_id": 3,
+  "total_variants": 5,
+  "generated_at": "2026-05-02T00:27:14.855722+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a classification model to predict the 'class' label (GALAXY, STAR, QSO) from photometric and spectroscopic features in the SDSS stellar classification dataset.",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/mid/fedesoriano_stellar-classification-dataset-sdss17/star_classification.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/mid/fedesoriano_stellar-classification-dataset-sdss17/star_classification.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": null,
+          "name": "Data Preprocessing Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "data_preprocessing_agent_001",
+            "agent_name": "Data Preprocessing Agent"
+          }
+        },
+        "planner_mcp_server": "preprocessing_server",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": null,
+        "rationale": "Initial data loading and cleaning to prepare the dataset for feature engineering and modeling."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": null,
+          "name": "Feature Engineering Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "feature_engineering_agent_002",
+            "agent_name": "Feature Engineering Agent"
+          }
+        },
+        "planner_mcp_server": "feature_engineering_server",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": null,
+        "rationale": "Select and scale relevant features to improve model performance and convergence."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": null,
+          "name": "Model Training Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_training_agent_003",
+            "agent_name": "Model Training Agent"
+          }
+        },
+        "planner_mcp_server": "training_server",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": "logistic",
+        "rationale": "Random Forest handles mixed features well and is robust to outliers; cross-validation ensures reliable generalization."
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": null,
+          "name": "Model Evaluation Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_evaluation_agent_004",
+            "agent_name": "Model Evaluation Agent"
+          }
+        },
+        "planner_mcp_server": "evaluation_server",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": null,
+        "rationale": "Evaluate model performance across all classes to ensure balanced predictions for rare classes like QSO."
+      }
+    ],
+    "mcp_servers": [],
+    "validation": {
+      "status": "invalid",
+      "issue_count": 18,
+      "blocking_issue_count": 8,
+      "issues": [
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='data_preprocessing_agent_001' name='Data Preprocessing Agent'",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'preprocessing_server'",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'data_loader' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'data_cleaner' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 1
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='feature_engineering_agent_002' name='Feature Engineering Agent'",
+          "phase_number": 2
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'feature_engineering_server'",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'feature_selector' not found in mcp-catalog.yaml",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'feature_transformer' not found in mcp-catalog.yaml",
+          "phase_number": 2
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 2
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_training_agent_003' name='Model Training Agent'",
+          "phase_number": 3
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'training_server'",
+          "phase_number": 3
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'train_classifier' not found in mcp-catalog.yaml",
+          "phase_number": 3
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 3
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_evaluation_agent_004' name='Model Evaluation Agent'",
+          "phase_number": 4
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'evaluation_server'",
+          "phase_number": 4
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'evaluate_classifier' not found in mcp-catalog.yaml",
+          "phase_number": 4
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 4
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_preprocessing_agent_001",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "feature_engineering_agent_002",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_training_agent_003",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "model_evaluation_agent_004",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      }
+    ]
+  }
+}

@@ -1,0 +1,434 @@
+{
+  "dataset_id": "regression__mid__hrokrin_the-largest-diamond-dataset-currely-on-kaggle__diamonds",
+  "filename": "diamonds.csv",
+  "file_path": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds.csv",
+  "task_type": "regression",
+  "tier": "mid",
+  "target_column": null,
+  "variant_id": 4,
+  "total_variants": 5,
+  "generated_at": "2026-05-02T01:32:49.850695+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a regression model using ensemble methods to predict total_sales_price from diamond attributes.",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_preprocessor",
+          "name": "data_preprocessor",
+          "yaml_path": "config/agents/data_preprocessor.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_preprocessor",
+            "agent_name": "Data Preprocessor"
+          }
+        },
+        "planner_mcp_server": "mcp_preprocessing",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "handle_missing_values",
+            "description": "Check and handle any missing values; dataset has none reported but ensure completeness.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds.csv",
+              "strategy": "none",
+              "columns": [
+                "",
+                "cut",
+                "color",
+                "clarity",
+                "carat_weight",
+                "cut_quality",
+                "lab",
+                "symmetry",
+                "polish",
+                "eye_clean",
+                "culet_size",
+                "culet_condition",
+                "depth_percent",
+                "table_percent",
+                "meas_length",
+                "meas_width",
+                "meas_depth",
+                "girdle_min",
+                "girdle_max",
+                "fluor_color",
+                "fluor_intensity",
+                "fancy_color_dominant_color",
+                "fancy_color_secondary_color",
+                "fancy_color_overtone",
+                "fancy_color_intensity",
+                "total_sales_price"
+              ],
+              "output_filepath": null,
+              "fill_value": null
+            },
+            "planner_parameters": {
+              "strategy": "none",
+              "columns": [
+                "",
+                "cut",
+                "color",
+                "clarity",
+                "carat_weight",
+                "cut_quality",
+                "lab",
+                "symmetry",
+                "polish",
+                "eye_clean",
+                "culet_size",
+                "culet_condition",
+                "depth_percent",
+                "table_percent",
+                "meas_length",
+                "meas_width",
+                "meas_depth",
+                "girdle_min",
+                "girdle_max",
+                "fluor_color",
+                "fluor_intensity",
+                "fancy_color_dominant_color",
+                "fancy_color_secondary_color",
+                "fancy_color_overtone",
+                "fancy_color_intensity",
+                "total_sales_price"
+              ],
+              "fill_value": null
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "scale_features",
+            "description": "Standardize numeric features to improve ensemble model convergence.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds.csv",
+              "columns": [
+                "carat_weight",
+                "depth_percent",
+                "table_percent",
+                "meas_length",
+                "meas_width",
+                "meas_depth"
+              ],
+              "method": "standard",
+              "output_filepath": null,
+              "scaler": "standard",
+              "with_mean": true,
+              "with_std": true
+            },
+            "planner_parameters": {
+              "columns": [
+                "carat_weight",
+                "depth_percent",
+                "table_percent",
+                "meas_length",
+                "meas_width",
+                "meas_depth"
+              ],
+              "scaler": "standard",
+              "with_mean": true,
+              "with_std": true
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Prepare the dataset for regression: no missing values, encode categoricals, scale numerics."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": null,
+          "name": "Feature Engineer",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "feature_engineer",
+            "agent_name": "Feature Engineer"
+          }
+        },
+        "planner_mcp_server": "mcp_feature_engineering",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": null,
+        "rationale": "Drop low-information columns to reduce dimensionality and improve model robustness."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": "model_trainer",
+          "name": "model_trainer",
+          "yaml_path": "config/agents/model_trainer.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_trainer",
+            "agent_name": "Model Trainer"
+          }
+        },
+        "planner_mcp_server": "mcp_training",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "train_regression_model",
+            "description": "Train an ensemble model (Random Forest + Gradient Boosting) to predict diamond price.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds.csv",
+              "target_column": "total_sales_price",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "n_estimators": 300,
+                "max_depth": 20,
+                "min_samples_split": 5,
+                "min_samples_leaf": 2
+              },
+              "model_save_path": null,
+              "cross_validation_folds": 5,
+              "scoring_metric": "r2"
+            },
+            "planner_parameters": {
+              "model_type": "random_forest",
+              "target_column": "total_sales_price",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "n_estimators": 300,
+                "max_depth": 20,
+                "min_samples_split": 5,
+                "min_samples_leaf": 2
+              },
+              "cross_validation_folds": 5,
+              "scoring_metric": "r2"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "train_regression_model",
+            "description": "Train a Gradient Boosting model as second ensemble member for model diversity.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds.csv",
+              "target_column": "total_sales_price",
+              "model_type": "gradient_boosting",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "n_estimators": 200,
+                "learning_rate": 0.05,
+                "max_depth": 5,
+                "subsample": 0.8
+              },
+              "model_save_path": null,
+              "cross_validation_folds": 5,
+              "scoring_metric": "r2"
+            },
+            "planner_parameters": {
+              "model_type": "gradient_boosting",
+              "target_column": "total_sales_price",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "n_estimators": 200,
+                "learning_rate": 0.05,
+                "max_depth": 5,
+                "subsample": 0.8
+              },
+              "cross_validation_folds": 5,
+              "scoring_metric": "r2"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "train_regression_model",
+            "description": "Optionally train a stacking ensemble combiner to blend predictions from both base models.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds.csv",
+              "target_column": "total_sales_price",
+              "model_type": "linear",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "fit_intercept": true
+              },
+              "model_save_path": null,
+              "use_stack_generator": true,
+              "base_models": [
+                "random_forest",
+                "gradient_boosting"
+              ],
+              "scoring_metric": "r2"
+            },
+            "planner_parameters": {
+              "model_type": "linear",
+              "target_column": "total_sales_price",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "fit_intercept": true
+              },
+              "use_stack_generator": true,
+              "base_models": [
+                "random_forest",
+                "gradient_boosting"
+              ],
+              "scoring_metric": "r2"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "ridge",
+        "rationale": "Ensemble methods (Random Forest and Gradient Boosting) with optional stacking adhere to the diversity hint and improve predictive accuracy."
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": "model_evaluator",
+          "name": "model_evaluator",
+          "yaml_path": "config/agents/model_evaluator.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_evaluator",
+            "agent_name": "Model Evaluator"
+          }
+        },
+        "planner_mcp_server": "mcp_evaluation",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": "ridge",
+        "rationale": "Comprehensive evaluation using multiple metrics and diagnostics to select the best ensemble model."
+      }
+    ],
+    "mcp_servers": [],
+    "validation": {
+      "status": "invalid",
+      "issue_count": 12,
+      "blocking_issue_count": 3,
+      "issues": [
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'mcp_preprocessing'",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'encode_categorical_features' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='feature_engineer' name='Feature Engineer'",
+          "phase_number": 2
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'mcp_feature_engineering'",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'remove_irrelevant_columns' not found in mcp-catalog.yaml",
+          "phase_number": 2
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 2
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'mcp_training'",
+          "phase_number": 3
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'mcp_evaluation'",
+          "phase_number": 4
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'evaluate_regression' not found in mcp-catalog.yaml",
+          "phase_number": 4
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'plot_residuals' not found in mcp-catalog.yaml",
+          "phase_number": 4
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'feature_importance' not found in mcp-catalog.yaml",
+          "phase_number": 4
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 4
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_preprocessor",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "feature_engineer",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_trainer",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "model_evaluator",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      }
+    ]
+  }
+}

@@ -1,0 +1,286 @@
+{
+  "dataset_id": "classification__hard__andrewmvd_cyberbullying-classification__cyberbullying_tweets",
+  "filename": "cyberbullying_tweets.csv",
+  "file_path": "/app/data/uploads/datasets/classification/hard/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+  "task_type": "classification",
+  "tier": "hard",
+  "target_column": null,
+  "variant_id": 5,
+  "total_variants": 5,
+  "generated_at": "2026-05-02T00:00:27.027958+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build an interpretable text classification model to predict cyberbullying type from tweet text based on the cyberbullying_tweets dataset.",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/hard/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/hard/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": null,
+          "name": "Data Preprocessing Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "data_preprocessing_agent",
+            "agent_name": "Data Preprocessing Agent"
+          }
+        },
+        "planner_mcp_server": "preprocessing_server",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": null,
+        "rationale": "Text data requires cleaning to remove noise before feature extraction."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": null,
+          "name": "Feature Extraction Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "feature_extraction_agent",
+            "agent_name": "Feature Extraction Agent"
+          }
+        },
+        "planner_mcp_server": "feature_extraction_server",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": null,
+        "rationale": "TF-IDF vectorization is effective for text classification and produces interpretable feature weights."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": null,
+          "name": "Model Training Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_training_agent",
+            "agent_name": "Model Training Agent"
+          }
+        },
+        "planner_mcp_server": "training_server",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": "logistic",
+        "rationale": "Logistic regression is highly interpretable, providing feature coefficients that can be explained."
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": null,
+          "name": "Model Evaluation Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_evaluation_agent",
+            "agent_name": "Model Evaluation Agent"
+          }
+        },
+        "planner_mcp_server": "evaluation_server",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": null,
+        "rationale": "Evaluation provides quantitative insights necessary to validate model performance."
+      },
+      {
+        "phase_number": 5,
+        "agent": {
+          "id": null,
+          "name": "Model Explanation Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_explanation_agent",
+            "agent_name": "Model Explanation Agent"
+          }
+        },
+        "planner_mcp_server": "explanation_server",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": null,
+        "rationale": "SHAP explanations provide interpretable feature importance and highlight why individual tweets are classified as cyberbullying or not."
+      }
+    ],
+    "mcp_servers": [],
+    "validation": {
+      "status": "invalid",
+      "issue_count": 20,
+      "blocking_issue_count": 10,
+      "issues": [
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='data_preprocessing_agent' name='Data Preprocessing Agent'",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'preprocessing_server'",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'clean_text_tool' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 1
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='feature_extraction_agent' name='Feature Extraction Agent'",
+          "phase_number": 2
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'feature_extraction_server'",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'tfidf_vectorizer_tool' not found in mcp-catalog.yaml",
+          "phase_number": 2
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 2
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_training_agent' name='Model Training Agent'",
+          "phase_number": 3
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'training_server'",
+          "phase_number": 3
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'train_logistic_regression_tool' not found in mcp-catalog.yaml",
+          "phase_number": 3
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 3
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_evaluation_agent' name='Model Evaluation Agent'",
+          "phase_number": 4
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'evaluation_server'",
+          "phase_number": 4
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'evaluate_classification_tool' not found in mcp-catalog.yaml",
+          "phase_number": 4
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 4
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_explanation_agent' name='Model Explanation Agent'",
+          "phase_number": 5
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'explanation_server'",
+          "phase_number": 5
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'shap_explainer_tool' not found in mcp-catalog.yaml",
+          "phase_number": 5
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 5
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_preprocessing_agent",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "feature_extraction_agent",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_training_agent",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "model_evaluation_agent",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-5",
+        "agentId": "model_explanation_agent",
+        "position": {
+          "x": 1100,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      },
+      {
+        "id": "conn-4",
+        "fromInstanceId": "phase-4",
+        "toInstanceId": "phase-5"
+      }
+    ]
+  }
+}

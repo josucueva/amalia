@@ -1,0 +1,148 @@
+{
+  "dataset_id": "classification__mid__tanishqdublish_text-classification-documentation__df_file",
+  "filename": "df_file.csv",
+  "file_path": "/app/data/uploads/datasets/classification/mid/tanishqdublish_text-classification-documentation/df_file.csv",
+  "task_type": "classification",
+  "tier": "mid",
+  "target_column": null,
+  "variant_id": 5,
+  "total_variants": 5,
+  "generated_at": "2026-05-02T00:31:31.311536+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build an interpretable text classification model on a small dataset of 100 news articles labeled 0/1 using logistic regression and LIME explanations.",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/mid/tanishqdublish_text-classification-documentation/df_file.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/mid/tanishqdublish_text-classification-documentation/df_file.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "orchestrator_agent",
+          "name": "Orchestrator Agent",
+          "yaml_path": "config/agents/orchestrator_agent.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "orchestrator_agent",
+            "agent_name": "Orchestrator Agent"
+          }
+        },
+        "planner_mcp_server": "default",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": "logistic",
+        "rationale": "Standard ML pipeline: split, vectorize, train a simple linear model, evaluate with metrics. Logistic regression is chosen for interpretability (coefficients directly indicate feature importance)."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "orchestrator_agent",
+          "name": "Orchestrator Agent",
+          "yaml_path": "config/agents/orchestrator_agent.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "orchestrator_agent",
+            "agent_name": "Orchestrator Agent"
+          }
+        },
+        "planner_mcp_server": "default",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": null,
+        "rationale": "Adds explainability layer: LIME for instance-level explanations (model-agnostic) and permutation importance for global feature relevance, both aligning with the interpretability focus."
+      }
+    ],
+    "mcp_servers": [],
+    "validation": {
+      "status": "invalid",
+      "issue_count": 11,
+      "blocking_issue_count": 2,
+      "issues": [
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'default'",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'train_test_split' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'tfidf_vectorizer' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'logistic_regression' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'classification_report' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'confusion_matrix' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'default'",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'lime_explainer' not found in mcp-catalog.yaml",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'permutation_importance' not found in mcp-catalog.yaml",
+          "phase_number": 2
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 2
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "orchestrator_agent",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "orchestrator_agent",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      }
+    ]
+  }
+}

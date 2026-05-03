@@ -1,908 +1,908 @@
 ﻿[
-    {
-        "dataset_id":  "classification__easy__abhishek14398_heart-disease-classification__heart",
-        "task_type":  "classification",
-        "tier":  "easy",
-        "file_path":  "/app/data/uploads/datasets/classification/easy/abhishek14398_heart-disease-classification/heart.csv",
-        "filename":  "heart.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/abhishek14398_heart-disease-classification",
-        "target_column":  "target",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "target",
-                                 "count":  27
-                             },
-        "source":  "batch_artifacts"
+  {
+    "dataset_id": "classification__easy__abhishek14398_heart-disease-classification__heart",
+    "task_type": "classification",
+    "tier": "easy",
+    "file_path": "/app/data/uploads/datasets/classification/easy/abhishek14398_heart-disease-classification/heart.csv",
+    "filename": "heart.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/abhishek14398_heart-disease-classification",
+    "target_column": "target",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "target",
+      "count": 27
     },
-    {
-        "dataset_id":  "classification__easy__brsahan_genomic-data-for-cancer__gene_expression",
-        "task_type":  "classification",
-        "tier":  "easy",
-        "file_path":  "/app/data/uploads/datasets/classification/easy/brsahan_genomic-data-for-cancer/gene_expression.csv",
-        "filename":  "gene_expression.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/brsahan_genomic-data-for-cancer",
-        "target_column":  "Cancer Present",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "Cancer Present",
-                                 "count":  16
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "classification__easy__brsahan_genomic-data-for-cancer__gene_expression",
+    "task_type": "classification",
+    "tier": "easy",
+    "file_path": "/app/data/uploads/datasets/classification/easy/brsahan_genomic-data-for-cancer/gene_expression.csv",
+    "filename": "gene_expression.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/brsahan_genomic-data-for-cancer",
+    "target_column": "Cancer Present",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "Cancer Present",
+      "count": 16
     },
-    {
-        "dataset_id":  "classification__easy__fedesoriano_stellar-classification-dataset-sdss17__star_classification",
-        "task_type":  "classification",
-        "tier":  "easy",
-        "file_path":  "/app/data/uploads/datasets/classification/easy/fedesoriano_stellar-classification-dataset-sdss17/star_classification.csv",
-        "filename":  "star_classification.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/fedesoriano_stellar-classification-dataset-sdss17",
-        "target_column":  "class",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "class",
-                                 "count":  16
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "classification__easy__fedesoriano_stellar-classification-dataset-sdss17__star_classification",
+    "task_type": "classification",
+    "tier": "easy",
+    "file_path": "/app/data/uploads/datasets/classification/easy/fedesoriano_stellar-classification-dataset-sdss17/star_classification.csv",
+    "filename": "star_classification.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/fedesoriano_stellar-classification-dataset-sdss17",
+    "target_column": "class",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "class",
+      "count": 16
     },
-    {
-        "dataset_id":  "classification__easy__himanshunakrani_naive-bayes-classification-data__Naive-Bayes-Classification-Data",
-        "task_type":  "classification",
-        "tier":  "easy",
-        "file_path":  "/app/data/uploads/datasets/classification/easy/himanshunakrani_naive-bayes-classification-data/Naive-Bayes-Classification-Data.csv",
-        "filename":  "Naive-Bayes-Classification-Data.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/himanshunakrani_naive-bayes-classification-data",
-        "target_column":  "diabetes",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "diabetes",
-                                 "count":  14
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "classification__easy__himanshunakrani_naive-bayes-classification-data__Naive-Bayes-Classification-Data",
+    "task_type": "classification",
+    "tier": "easy",
+    "file_path": "/app/data/uploads/datasets/classification/easy/himanshunakrani_naive-bayes-classification-data/Naive-Bayes-Classification-Data.csv",
+    "filename": "Naive-Bayes-Classification-Data.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/himanshunakrani_naive-bayes-classification-data",
+    "target_column": "diabetes",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "diabetes",
+      "count": 14
     },
-    {
-        "dataset_id":  "classification__easy__mahmoudshaheen1134_heart-disease-data__heart disease",
-        "task_type":  "classification",
-        "tier":  "easy",
-        "file_path":  "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/heart disease.csv",
-        "filename":  "heart disease.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/mahmoudshaheen1134_heart-disease-data",
-        "target_column":  "target",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "target",
-                                 "count":  16
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "classification__easy__mahmoudshaheen1134_heart-disease-data__heart disease",
+    "task_type": "classification",
+    "tier": "easy",
+    "file_path": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/heart disease.csv",
+    "filename": "heart disease.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/mahmoudshaheen1134_heart-disease-data",
+    "target_column": "target",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "target",
+      "count": 16
     },
-    {
-        "dataset_id":  "classification__easy__priyanshusethi_happiness-classification-dataset__happydata",
-        "task_type":  "classification",
-        "tier":  "easy",
-        "file_path":  "/app/data/uploads/datasets/classification/easy/priyanshusethi_happiness-classification-dataset/happydata.csv",
-        "filename":  "happydata.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/priyanshusethi_happiness-classification-dataset",
-        "target_column":  "happy",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "happy",
-                                 "count":  14
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "classification__easy__priyanshusethi_happiness-classification-dataset__happydata",
+    "task_type": "classification",
+    "tier": "easy",
+    "file_path": "/app/data/uploads/datasets/classification/easy/priyanshusethi_happiness-classification-dataset/happydata.csv",
+    "filename": "happydata.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/priyanshusethi_happiness-classification-dataset",
+    "target_column": "happy",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "happy",
+      "count": 14
     },
-    {
-        "dataset_id":  "classification__easy__ritwikb3_heart-disease-cleveland__Heart_disease_cleveland_new",
-        "task_type":  "classification",
-        "tier":  "easy",
-        "file_path":  "/app/data/uploads/datasets/classification/easy/ritwikb3_heart-disease-cleveland/Heart_disease_cleveland_new.csv",
-        "filename":  "Heart_disease_cleveland_new.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/ritwikb3_heart-disease-cleveland",
-        "target_column":  "target",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "target",
-                                 "count":  16
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "classification__easy__ritwikb3_heart-disease-cleveland__Heart_disease_cleveland_new",
+    "task_type": "classification",
+    "tier": "easy",
+    "file_path": "/app/data/uploads/datasets/classification/easy/ritwikb3_heart-disease-cleveland/Heart_disease_cleveland_new.csv",
+    "filename": "Heart_disease_cleveland_new.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/ritwikb3_heart-disease-cleveland",
+    "target_column": "target",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "target",
+      "count": 16
     },
-    {
-        "dataset_id":  "classification__easy__ritwikb3_heart-disease-statlog__Heart_disease_statlog",
-        "task_type":  "classification",
-        "tier":  "easy",
-        "file_path":  "/app/data/uploads/datasets/classification/easy/ritwikb3_heart-disease-statlog/Heart_disease_statlog.csv",
-        "filename":  "Heart_disease_statlog.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/ritwikb3_heart-disease-statlog",
-        "target_column":  "target",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "target",
-                                 "count":  16
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "classification__easy__ritwikb3_heart-disease-statlog__Heart_disease_statlog",
+    "task_type": "classification",
+    "tier": "easy",
+    "file_path": "/app/data/uploads/datasets/classification/easy/ritwikb3_heart-disease-statlog/Heart_disease_statlog.csv",
+    "filename": "Heart_disease_statlog.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/ritwikb3_heart-disease-statlog",
+    "target_column": "target",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "target",
+      "count": 16
     },
-    {
-        "dataset_id":  "classification__easy__robikscube_eye-state-classification-eeg-dataset__EEG_Eye_State_Classification",
-        "task_type":  "classification",
-        "tier":  "easy",
-        "file_path":  "/app/data/uploads/datasets/classification/easy/robikscube_eye-state-classification-eeg-dataset/EEG_Eye_State_Classification.csv",
-        "filename":  "EEG_Eye_State_Classification.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/robikscube_eye-state-classification-eeg-dataset",
-        "target_column":  "eyeDetection",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "eyeDetection",
-                                 "count":  16
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "classification__easy__robikscube_eye-state-classification-eeg-dataset__EEG_Eye_State_Classification",
+    "task_type": "classification",
+    "tier": "easy",
+    "file_path": "/app/data/uploads/datasets/classification/easy/robikscube_eye-state-classification-eeg-dataset/EEG_Eye_State_Classification.csv",
+    "filename": "EEG_Eye_State_Classification.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/robikscube_eye-state-classification-eeg-dataset",
+    "target_column": "eyeDetection",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "eyeDetection",
+      "count": 16
     },
-    {
-        "dataset_id":  "classification__easy__uciml_glass__glass",
-        "task_type":  "classification",
-        "tier":  "easy",
-        "file_path":  "/app/data/uploads/datasets/classification/easy/uciml_glass/glass.csv",
-        "filename":  "glass.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/uciml_glass",
-        "target_column":  "Type",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "Type",
-                                 "count":  15
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "classification__easy__uciml_glass__glass",
+    "task_type": "classification",
+    "tier": "easy",
+    "file_path": "/app/data/uploads/datasets/classification/easy/uciml_glass/glass.csv",
+    "filename": "glass.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/uciml_glass",
+    "target_column": "Type",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "Type",
+      "count": 15
     },
-    {
-        "dataset_id":  "classification__easy__yasserh_heart-disease-dataset__heart",
-        "task_type":  "classification",
-        "tier":  "easy",
-        "file_path":  "/app/data/uploads/datasets/classification/easy/yasserh_heart-disease-dataset/heart.csv",
-        "filename":  "heart.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/yasserh_heart-disease-dataset",
-        "target_column":  "target",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "target",
-                                 "count":  13
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "classification__easy__yasserh_heart-disease-dataset__heart",
+    "task_type": "classification",
+    "tier": "easy",
+    "file_path": "/app/data/uploads/datasets/classification/easy/yasserh_heart-disease-dataset/heart.csv",
+    "filename": "heart.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/yasserh_heart-disease-dataset",
+    "target_column": "target",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "target",
+      "count": 13
     },
-    {
-        "dataset_id":  "classification__easy__yasserh_wine-quality-dataset__WineQT",
-        "task_type":  "classification",
-        "tier":  "easy",
-        "file_path":  "/app/data/uploads/datasets/classification/easy/yasserh_wine-quality-dataset/WineQT.csv",
-        "filename":  "WineQT.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/yasserh_wine-quality-dataset",
-        "target_column":  "quality",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "quality",
-                                 "count":  12
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "classification__easy__yasserh_wine-quality-dataset__WineQT",
+    "task_type": "classification",
+    "tier": "easy",
+    "file_path": "/app/data/uploads/datasets/classification/easy/yasserh_wine-quality-dataset/WineQT.csv",
+    "filename": "WineQT.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/yasserh_wine-quality-dataset",
+    "target_column": "quality",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "quality",
+      "count": 12
     },
-    {
-        "dataset_id":  "classification__hard__abhishek14398_loan-dataset__loan",
-        "task_type":  "classification",
-        "tier":  "hard",
-        "file_path":  "/app/data/uploads/datasets/classification/hard/abhishek14398_loan-dataset/loan.csv",
-        "filename":  "loan.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/abhishek14398_loan-dataset",
-        "target_column":  "total_il_high_credit_limit",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "total_il_high_credit_limit",
-                                 "count":  6
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "classification__hard__abhishek14398_loan-dataset__loan",
+    "task_type": "classification",
+    "tier": "hard",
+    "file_path": "/app/data/uploads/datasets/classification/hard/abhishek14398_loan-dataset/loan.csv",
+    "filename": "loan.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/abhishek14398_loan-dataset",
+    "target_column": "total_il_high_credit_limit",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "total_il_high_credit_limit",
+      "count": 6
     },
-    {
-        "dataset_id":  "classification__hard__andrewmvd_cyberbullying-classification__cyberbullying_tweets",
-        "task_type":  "classification",
-        "tier":  "hard",
-        "file_path":  "/app/data/uploads/datasets/classification/hard/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
-        "filename":  "cyberbullying_tweets.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/andrewmvd_cyberbullying-classification",
-        "target_column":  "cyberbullying_type",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "cyberbullying_type",
-                                 "count":  9
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "classification__hard__andrewmvd_cyberbullying-classification__cyberbullying_tweets",
+    "task_type": "classification",
+    "tier": "hard",
+    "file_path": "/app/data/uploads/datasets/classification/hard/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+    "filename": "cyberbullying_tweets.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/andrewmvd_cyberbullying-classification",
+    "target_column": "cyberbullying_type",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "cyberbullying_type",
+      "count": 9
     },
-    {
-        "dataset_id":  "classification__hard__balaka18_email-spam-classification-dataset-csv__emails",
-        "task_type":  "classification",
-        "tier":  "hard",
-        "file_path":  "/app/data/uploads/datasets/classification/hard/balaka18_email-spam-classification-dataset-csv/emails.csv",
-        "filename":  "emails.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/balaka18_email-spam-classification-dataset-csv",
-        "target_column":  "target",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "target",
-                                 "count":  6
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "classification__hard__balaka18_email-spam-classification-dataset-csv__emails",
+    "task_type": "classification",
+    "tier": "hard",
+    "file_path": "/app/data/uploads/datasets/classification/hard/balaka18_email-spam-classification-dataset-csv/emails.csv",
+    "filename": "emails.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/balaka18_email-spam-classification-dataset-csv",
+    "target_column": "target",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "target",
+      "count": 6
     },
-    {
-        "dataset_id":  "classification__hard__ddosad_ecommerce-customer-service-satisfaction__Customer_support_data",
-        "task_type":  "classification",
-        "tier":  "hard",
-        "file_path":  "/app/data/uploads/datasets/classification/hard/ddosad_ecommerce-customer-service-satisfaction/Customer_support_data.csv",
-        "filename":  "Customer_support_data.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/ddosad_ecommerce-customer-service-satisfaction",
-        "target_column":  "CSAT Score",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "CSAT Score",
-                                 "count":  12
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "classification__hard__ddosad_ecommerce-customer-service-satisfaction__Customer_support_data",
+    "task_type": "classification",
+    "tier": "hard",
+    "file_path": "/app/data/uploads/datasets/classification/hard/ddosad_ecommerce-customer-service-satisfaction/Customer_support_data.csv",
+    "filename": "Customer_support_data.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/ddosad_ecommerce-customer-service-satisfaction",
+    "target_column": "CSAT Score",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "CSAT Score",
+      "count": 12
     },
-    {
-        "dataset_id":  "classification__hard__hetulmehta_website-classification__website_classification",
-        "task_type":  "classification",
-        "tier":  "hard",
-        "file_path":  "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification.csv",
-        "filename":  "website_classification.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/hetulmehta_website-classification",
-        "target_column":  "Category",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "Category",
-                                 "count":  11
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "classification__hard__hetulmehta_website-classification__website_classification",
+    "task_type": "classification",
+    "tier": "hard",
+    "file_path": "/app/data/uploads/datasets/classification/hard/hetulmehta_website-classification/website_classification.csv",
+    "filename": "website_classification.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/hetulmehta_website-classification",
+    "target_column": "Category",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "Category",
+      "count": 11
     },
-    {
-        "dataset_id":  "classification__hard__jocelyndumlao_consumer-review-of-clothing-product__Consumer Review of Clothing Product__data_amazon.xlsx - Sheet1",
-        "task_type":  "classification",
-        "tier":  "hard",
-        "file_path":  "/app/data/uploads/datasets/classification/hard/jocelyndumlao_consumer-review-of-clothing-product/Consumer Review of Clothing Product/data_amazon.xlsx - Sheet1.csv",
-        "filename":  "data_amazon.xlsx - Sheet1.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/jocelyndumlao_consumer-review-of-clothing-product",
-        "target_column":  "Durability",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "Durability",
-                                 "count":  11
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "classification__hard__jocelyndumlao_consumer-review-of-clothing-product__Consumer Review of Clothing Product__data_amazon.xlsx - Sheet1",
+    "task_type": "classification",
+    "tier": "hard",
+    "file_path": "/app/data/uploads/datasets/classification/hard/jocelyndumlao_consumer-review-of-clothing-product/Consumer Review of Clothing Product/data_amazon.xlsx - Sheet1.csv",
+    "filename": "data_amazon.xlsx - Sheet1.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/jocelyndumlao_consumer-review-of-clothing-product",
+    "target_column": "Durability",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "Durability",
+      "count": 11
     },
-    {
-        "dataset_id":  "classification__hard__pashupatigupta_emotion-detection-from-text__tweet_emotions",
-        "task_type":  "classification",
-        "tier":  "hard",
-        "file_path":  "/app/data/uploads/datasets/classification/hard/pashupatigupta_emotion-detection-from-text/tweet_emotions.csv",
-        "filename":  "tweet_emotions.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/pashupatigupta_emotion-detection-from-text",
-        "target_column":  "sentiment",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "sentiment",
-                                 "count":  9
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "classification__hard__pashupatigupta_emotion-detection-from-text__tweet_emotions",
+    "task_type": "classification",
+    "tier": "hard",
+    "file_path": "/app/data/uploads/datasets/classification/hard/pashupatigupta_emotion-detection-from-text/tweet_emotions.csv",
+    "filename": "tweet_emotions.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/pashupatigupta_emotion-detection-from-text",
+    "target_column": "sentiment",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "sentiment",
+      "count": 9
     },
-    {
-        "dataset_id":  "classification__hard__prox37_twitter-multilabel-classification-dataset__mLabel_tweets",
-        "task_type":  "classification",
-        "tier":  "hard",
-        "file_path":  "/app/data/uploads/datasets/classification/hard/prox37_twitter-multilabel-classification-dataset/mLabel_tweets.csv",
-        "filename":  "mLabel_tweets.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/prox37_twitter-multilabel-classification-dataset",
-        "target_column":  "labels",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "labels",
-                                 "count":  9
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "classification__hard__prox37_twitter-multilabel-classification-dataset__mLabel_tweets",
+    "task_type": "classification",
+    "tier": "hard",
+    "file_path": "/app/data/uploads/datasets/classification/hard/prox37_twitter-multilabel-classification-dataset/mLabel_tweets.csv",
+    "filename": "mLabel_tweets.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/prox37_twitter-multilabel-classification-dataset",
+    "target_column": "labels",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "labels",
+      "count": 9
     },
-    {
-        "dataset_id":  "classification__hard__saurabhshahane_ecommerce-text-classification__ecommerceDataset",
-        "task_type":  "classification",
-        "tier":  "hard",
-        "file_path":  "/app/data/uploads/datasets/classification/hard/saurabhshahane_ecommerce-text-classification/ecommerceDataset.csv",
-        "filename":  "ecommerceDataset.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/saurabhshahane_ecommerce-text-classification",
-        "target_column":  "category",
-        "confidence":  "medium",
-        "candidate_counts":  [
-                                 {
-                                     "target":  "category",
-                                     "count":  6
-                                 },
-                                 {
-                                     "target":  "Household",
-                                     "count":  3
-                                 }
-                             ],
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "classification__hard__saurabhshahane_ecommerce-text-classification__ecommerceDataset",
+    "task_type": "classification",
+    "tier": "hard",
+    "file_path": "/app/data/uploads/datasets/classification/hard/saurabhshahane_ecommerce-text-classification/ecommerceDataset.csv",
+    "filename": "ecommerceDataset.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/saurabhshahane_ecommerce-text-classification",
+    "target_column": "category",
+    "confidence": "medium",
+    "candidate_counts": [
+      {
+        "target": "category",
+        "count": 6
+      },
+      {
+        "target": "Household",
+        "count": 3
+      }
+    ],
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "classification__hard__shivamb_spam-url-prediction__url_spam_classification",
+    "task_type": "classification",
+    "tier": "hard",
+    "file_path": "/app/data/uploads/datasets/classification/hard/shivamb_spam-url-prediction/url_spam_classification.csv",
+    "filename": "url_spam_classification.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/shivamb_spam-url-prediction",
+    "target_column": "is_spam",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "is_spam",
+      "count": 12
     },
-    {
-        "dataset_id":  "classification__hard__shivamb_spam-url-prediction__url_spam_classification",
-        "task_type":  "classification",
-        "tier":  "hard",
-        "file_path":  "/app/data/uploads/datasets/classification/hard/shivamb_spam-url-prediction/url_spam_classification.csv",
-        "filename":  "url_spam_classification.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/shivamb_spam-url-prediction",
-        "target_column":  "is_spam",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "is_spam",
-                                 "count":  12
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "classification__mid__andrewmvd_cyberbullying-classification__cyberbullying_tweets",
+    "task_type": "classification",
+    "tier": "mid",
+    "file_path": "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+    "filename": "cyberbullying_tweets.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/andrewmvd_cyberbullying-classification",
+    "target_column": "cyberbullying_type",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "cyberbullying_type",
+      "count": 9
     },
-    {
-        "dataset_id":  "classification__mid__andrewmvd_cyberbullying-classification__cyberbullying_tweets",
-        "task_type":  "classification",
-        "tier":  "mid",
-        "file_path":  "/app/data/uploads/datasets/classification/mid/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
-        "filename":  "cyberbullying_tweets.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/andrewmvd_cyberbullying-classification",
-        "target_column":  "cyberbullying_type",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "cyberbullying_type",
-                                 "count":  9
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "classification__mid__christianlillelund_csgo-round-winner-classification__csgo_round_snapshots",
+    "task_type": "classification",
+    "tier": "mid",
+    "file_path": "/app/data/uploads/datasets/classification/mid/christianlillelund_csgo-round-winner-classification/csgo_round_snapshots.csv",
+    "filename": "csgo_round_snapshots.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/christianlillelund_csgo-round-winner-classification",
+    "target_column": "round_winner",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "round_winner",
+      "count": 10
     },
-    {
-        "dataset_id":  "classification__mid__christianlillelund_csgo-round-winner-classification__csgo_round_snapshots",
-        "task_type":  "classification",
-        "tier":  "mid",
-        "file_path":  "/app/data/uploads/datasets/classification/mid/christianlillelund_csgo-round-winner-classification/csgo_round_snapshots.csv",
-        "filename":  "csgo_round_snapshots.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/christianlillelund_csgo-round-winner-classification",
-        "target_column":  "round_winner",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "round_winner",
-                                 "count":  10
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "classification__mid__fedesoriano_heart-failure-prediction__heart",
+    "task_type": "classification",
+    "tier": "mid",
+    "file_path": "/app/data/uploads/datasets/classification/mid/fedesoriano_heart-failure-prediction/heart.csv",
+    "filename": "heart.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/fedesoriano_heart-failure-prediction",
+    "target_column": "HeartDisease",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "HeartDisease",
+      "count": 15
     },
-    {
-        "dataset_id":  "classification__mid__fedesoriano_heart-failure-prediction__heart",
-        "task_type":  "classification",
-        "tier":  "mid",
-        "file_path":  "/app/data/uploads/datasets/classification/mid/fedesoriano_heart-failure-prediction/heart.csv",
-        "filename":  "heart.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/fedesoriano_heart-failure-prediction",
-        "target_column":  "HeartDisease",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "HeartDisease",
-                                 "count":  15
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "classification__mid__fedesoriano_stellar-classification-dataset-sdss17__star_classification",
+    "task_type": "classification",
+    "tier": "mid",
+    "file_path": "/app/data/uploads/datasets/classification/mid/fedesoriano_stellar-classification-dataset-sdss17/star_classification.csv",
+    "filename": "star_classification.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/fedesoriano_stellar-classification-dataset-sdss17",
+    "target_column": "class",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "class",
+      "count": 14
     },
-    {
-        "dataset_id":  "classification__mid__fedesoriano_stellar-classification-dataset-sdss17__star_classification",
-        "task_type":  "classification",
-        "tier":  "mid",
-        "file_path":  "/app/data/uploads/datasets/classification/mid/fedesoriano_stellar-classification-dataset-sdss17/star_classification.csv",
-        "filename":  "star_classification.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/fedesoriano_stellar-classification-dataset-sdss17",
-        "target_column":  "class",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "class",
-                                 "count":  14
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "classification__mid__nimapourmoradi_dry-bean-dataset-classification__Dry_Bean_Dataset",
+    "task_type": "classification",
+    "tier": "mid",
+    "file_path": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv",
+    "filename": "Dry_Bean_Dataset.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/nimapourmoradi_dry-bean-dataset-classification",
+    "target_column": "Class",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "Class",
+      "count": 13
     },
-    {
-        "dataset_id":  "classification__mid__nimapourmoradi_dry-bean-dataset-classification__Dry_Bean_Dataset",
-        "task_type":  "classification",
-        "tier":  "mid",
-        "file_path":  "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv",
-        "filename":  "Dry_Bean_Dataset.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/nimapourmoradi_dry-bean-dataset-classification",
-        "target_column":  "Class",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "Class",
-                                 "count":  13
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "classification__mid__tanishqdublish_text-classification-documentation__df_file",
+    "task_type": "classification",
+    "tier": "mid",
+    "file_path": "/app/data/uploads/datasets/classification/mid/tanishqdublish_text-classification-documentation/df_file.csv",
+    "filename": "df_file.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/tanishqdublish_text-classification-documentation",
+    "target_column": "Label",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "Label",
+      "count": 11
     },
-    {
-        "dataset_id":  "classification__mid__tanishqdublish_text-classification-documentation__df_file",
-        "task_type":  "classification",
-        "tier":  "mid",
-        "file_path":  "/app/data/uploads/datasets/classification/mid/tanishqdublish_text-classification-documentation/df_file.csv",
-        "filename":  "df_file.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/tanishqdublish_text-classification-documentation",
-        "target_column":  "Label",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "Label",
-                                 "count":  11
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "classification__mid__uciml_iris__Iris",
+    "task_type": "classification",
+    "tier": "mid",
+    "file_path": "/app/data/uploads/datasets/classification/mid/uciml_iris/Iris.csv",
+    "filename": "Iris.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/uciml_iris",
+    "target_column": "Species",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "Species",
+      "count": 15
     },
-    {
-        "dataset_id":  "classification__mid__uciml_iris__Iris",
-        "task_type":  "classification",
-        "tier":  "mid",
-        "file_path":  "/app/data/uploads/datasets/classification/mid/uciml_iris/Iris.csv",
-        "filename":  "Iris.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/uciml_iris",
-        "target_column":  "Species",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "Species",
-                                 "count":  15
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "classification__mid__uciml_pima-indians-diabetes-database__diabetes",
+    "task_type": "classification",
+    "tier": "mid",
+    "file_path": "/app/data/uploads/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes.csv",
+    "filename": "diabetes.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/uciml_pima-indians-diabetes-database",
+    "target_column": "Outcome",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "Outcome",
+      "count": 15
     },
-    {
-        "dataset_id":  "classification__mid__uciml_pima-indians-diabetes-database__diabetes",
-        "task_type":  "classification",
-        "tier":  "mid",
-        "file_path":  "/app/data/uploads/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes.csv",
-        "filename":  "diabetes.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/uciml_pima-indians-diabetes-database",
-        "target_column":  "Outcome",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "Outcome",
-                                 "count":  15
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "classification__mid__xhlulu_cpc-codes__titles",
+    "task_type": "classification",
+    "tier": "mid",
+    "file_path": "/app/data/uploads/datasets/classification/mid/xhlulu_cpc-codes/titles.csv",
+    "filename": "titles.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/xhlulu_cpc-codes",
+    "target_column": "class",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "class",
+      "count": 10
     },
-    {
-        "dataset_id":  "classification__mid__xhlulu_cpc-codes__titles",
-        "task_type":  "classification",
-        "tier":  "mid",
-        "file_path":  "/app/data/uploads/datasets/classification/mid/xhlulu_cpc-codes/titles.csv",
-        "filename":  "titles.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/xhlulu_cpc-codes",
-        "target_column":  "class",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "class",
-                                 "count":  10
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "classification__mid__yasserh_titanic-dataset__Titanic-Dataset",
+    "task_type": "classification",
+    "tier": "mid",
+    "file_path": "/app/data/uploads/datasets/classification/mid/yasserh_titanic-dataset/Titanic-Dataset.csv",
+    "filename": "Titanic-Dataset.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/yasserh_titanic-dataset",
+    "target_column": "Embarked",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "Embarked",
+      "count": 13
     },
-    {
-        "dataset_id":  "classification__mid__yasserh_titanic-dataset__Titanic-Dataset",
-        "task_type":  "classification",
-        "tier":  "mid",
-        "file_path":  "/app/data/uploads/datasets/classification/mid/yasserh_titanic-dataset/Titanic-Dataset.csv",
-        "filename":  "Titanic-Dataset.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/yasserh_titanic-dataset",
-        "target_column":  "Embarked",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "Embarked",
-                                 "count":  13
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "regression__easy__ganjerlawrence_mobile-phone-price-prediction-cleaned-dataset__Mobile-Price-Prediction-cleaned_data",
+    "task_type": "regression",
+    "tier": "easy",
+    "file_path": "/app/data/uploads/datasets/regression/easy/ganjerlawrence_mobile-phone-price-prediction-cleaned-dataset/Mobile-Price-Prediction-cleaned_data.csv",
+    "filename": "Mobile-Price-Prediction-cleaned_data.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/ganjerlawrence_mobile-phone-price-prediction-cleaned-dataset",
+    "target_column": "Price",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "Price",
+      "count": 8
     },
-    {
-        "dataset_id":  "regression__easy__ganjerlawrence_mobile-phone-price-prediction-cleaned-dataset__Mobile-Price-Prediction-cleaned_data",
-        "task_type":  "regression",
-        "tier":  "easy",
-        "file_path":  "/app/data/uploads/datasets/regression/easy/ganjerlawrence_mobile-phone-price-prediction-cleaned-dataset/Mobile-Price-Prediction-cleaned_data.csv",
-        "filename":  "Mobile-Price-Prediction-cleaned_data.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/ganjerlawrence_mobile-phone-price-prediction-cleaned-dataset",
-        "target_column":  "Price",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "Price",
-                                 "count":  8
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "regression__easy__govindaramsriram_crop-yield-of-a-farm__crop_yield_data",
+    "task_type": "regression",
+    "tier": "easy",
+    "file_path": "/app/data/uploads/datasets/regression/easy/govindaramsriram_crop-yield-of-a-farm/crop_yield_data.csv",
+    "filename": "crop_yield_data.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/govindaramsriram_crop-yield-of-a-farm",
+    "target_column": "crop_yield",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "crop_yield",
+      "count": 10
     },
-    {
-        "dataset_id":  "regression__easy__govindaramsriram_crop-yield-of-a-farm__crop_yield_data",
-        "task_type":  "regression",
-        "tier":  "easy",
-        "file_path":  "/app/data/uploads/datasets/regression/easy/govindaramsriram_crop-yield-of-a-farm/crop_yield_data.csv",
-        "filename":  "crop_yield_data.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/govindaramsriram_crop-yield-of-a-farm",
-        "target_column":  "crop_yield",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "crop_yield",
-                                 "count":  10
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "regression__easy__nalisha_numerical-feature-based-target-prediction-using-ml__practice_dataset",
+    "task_type": "regression",
+    "tier": "easy",
+    "file_path": "/app/data/uploads/datasets/regression/easy/nalisha_numerical-feature-based-target-prediction-using-ml/practice_dataset.csv",
+    "filename": "practice_dataset.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/nalisha_numerical-feature-based-target-prediction-using-ml",
+    "target_column": "target",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "target",
+      "count": 8
     },
-    {
-        "dataset_id":  "regression__easy__nalisha_numerical-feature-based-target-prediction-using-ml__practice_dataset",
-        "task_type":  "regression",
-        "tier":  "easy",
-        "file_path":  "/app/data/uploads/datasets/regression/easy/nalisha_numerical-feature-based-target-prediction-using-ml/practice_dataset.csv",
-        "filename":  "practice_dataset.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/nalisha_numerical-feature-based-target-prediction-using-ml",
-        "target_column":  "target",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "target",
-                                 "count":  8
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "regression__easy__quantbruce_real-estate-price-prediction__Real estate",
+    "task_type": "regression",
+    "tier": "easy",
+    "file_path": "/app/data/uploads/datasets/regression/easy/quantbruce_real-estate-price-prediction/Real estate.csv",
+    "filename": "Real estate.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/quantbruce_real-estate-price-prediction",
+    "target_column": "Y house price of unit area",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "Y house price of unit area",
+      "count": 11
     },
-    {
-        "dataset_id":  "regression__easy__quantbruce_real-estate-price-prediction__Real estate",
-        "task_type":  "regression",
-        "tier":  "easy",
-        "file_path":  "/app/data/uploads/datasets/regression/easy/quantbruce_real-estate-price-prediction/Real estate.csv",
-        "filename":  "Real estate.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/quantbruce_real-estate-price-prediction",
-        "target_column":  "Y house price of unit area",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "Y house price of unit area",
-                                 "count":  11
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "regression__easy__ranitsarkar01_porter-delivery-time-estimation__dataset",
+    "task_type": "regression",
+    "tier": "easy",
+    "file_path": "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset.csv",
+    "filename": "dataset.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/ranitsarkar01_porter-delivery-time-estimation",
+    "target_column": "total_outstanding_orders",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "total_outstanding_orders",
+      "count": 10
     },
-    {
-        "dataset_id":  "regression__easy__ranitsarkar01_porter-delivery-time-estimation__dataset",
-        "task_type":  "regression",
-        "tier":  "easy",
-        "file_path":  "/app/data/uploads/datasets/regression/easy/ranitsarkar01_porter-delivery-time-estimation/dataset.csv",
-        "filename":  "dataset.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/ranitsarkar01_porter-delivery-time-estimation",
-        "target_column":  "total_outstanding_orders",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "total_outstanding_orders",
-                                 "count":  10
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "regression__easy__sakshisatre_the-boston-housing-dataset__Boston (1)",
+    "task_type": "regression",
+    "tier": "easy",
+    "file_path": "/app/data/uploads/datasets/regression/easy/sakshisatre_the-boston-housing-dataset/Boston (1).csv",
+    "filename": "Boston (1).csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/sakshisatre_the-boston-housing-dataset",
+    "target_column": "MEDV",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "MEDV",
+      "count": 12
     },
-    {
-        "dataset_id":  "regression__easy__sakshisatre_the-boston-housing-dataset__Boston (1)",
-        "task_type":  "regression",
-        "tier":  "easy",
-        "file_path":  "/app/data/uploads/datasets/regression/easy/sakshisatre_the-boston-housing-dataset/Boston (1).csv",
-        "filename":  "Boston (1).csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/sakshisatre_the-boston-housing-dataset",
-        "target_column":  "MEDV",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "MEDV",
-                                 "count":  12
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "regression__easy__thedevastator_age-prediction-for-individuals-using-multi-omic__test_rows",
+    "task_type": "regression",
+    "tier": "easy",
+    "file_path": "/app/data/uploads/datasets/regression/easy/thedevastator_age-prediction-for-individuals-using-multi-omic/test_rows.csv",
+    "filename": "test_rows.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/thedevastator_age-prediction-for-individuals-using-multi-omic",
+    "target_column": "KLF14_2",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "KLF14_2",
+      "count": 10
     },
-    {
-        "dataset_id":  "regression__easy__thedevastator_age-prediction-for-individuals-using-multi-omic__test_rows",
-        "task_type":  "regression",
-        "tier":  "easy",
-        "file_path":  "/app/data/uploads/datasets/regression/easy/thedevastator_age-prediction-for-individuals-using-multi-omic/test_rows.csv",
-        "filename":  "test_rows.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/thedevastator_age-prediction-for-individuals-using-multi-omic",
-        "target_column":  "KLF14_2",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "KLF14_2",
-                                 "count":  10
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "regression__easy__zubairdhuddi_linear-regression__test",
+    "task_type": "regression",
+    "tier": "easy",
+    "file_path": "/app/data/uploads/datasets/regression/easy/zubairdhuddi_linear-regression/test.csv",
+    "filename": "test.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/zubairdhuddi_linear-regression",
+    "target_column": "y",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "y",
+      "count": 8
     },
-    {
-        "dataset_id":  "regression__easy__zubairdhuddi_linear-regression__test",
-        "task_type":  "regression",
-        "tier":  "easy",
-        "file_path":  "/app/data/uploads/datasets/regression/easy/zubairdhuddi_linear-regression/test.csv",
-        "filename":  "test.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/zubairdhuddi_linear-regression",
-        "target_column":  "y",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "y",
-                                 "count":  8
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "regression__hard__anujsaha0123456789_house-prices-cleaned-dataset-for-regression-ml__house_prices_cleaned",
+    "task_type": "regression",
+    "tier": "hard",
+    "file_path": "/app/data/uploads/datasets/regression/hard/anujsaha0123456789_house-prices-cleaned-dataset-for-regression-ml/house_prices_cleaned.csv",
+    "filename": "house_prices_cleaned.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/anujsaha0123456789_house-prices-cleaned-dataset-for-regression-ml",
+    "target_column": "SalePrice",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "SalePrice",
+      "count": 4
     },
-    {
-        "dataset_id":  "regression__hard__anujsaha0123456789_house-prices-cleaned-dataset-for-regression-ml__house_prices_cleaned",
-        "task_type":  "regression",
-        "tier":  "hard",
-        "file_path":  "/app/data/uploads/datasets/regression/hard/anujsaha0123456789_house-prices-cleaned-dataset-for-regression-ml/house_prices_cleaned.csv",
-        "filename":  "house_prices_cleaned.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/anujsaha0123456789_house-prices-cleaned-dataset-for-regression-ml",
-        "target_column":  "SalePrice",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "SalePrice",
-                                 "count":  4
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "regression__hard__bharatsahu_house-price-prediction-dataset-insurancehub-usa__House_price_multifeatures",
+    "task_type": "regression",
+    "tier": "hard",
+    "file_path": "/app/data/uploads/datasets/regression/hard/bharatsahu_house-price-prediction-dataset-insurancehub-usa/House_price_multifeatures.csv",
+    "filename": "House_price_multifeatures.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/bharatsahu_house-price-prediction-dataset-insurancehub-usa",
+    "target_column": "TTTerritory",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "TTTerritory",
+      "count": 4
     },
-    {
-        "dataset_id":  "regression__hard__bharatsahu_house-price-prediction-dataset-insurancehub-usa__House_price_multifeatures",
-        "task_type":  "regression",
-        "tier":  "hard",
-        "file_path":  "/app/data/uploads/datasets/regression/hard/bharatsahu_house-price-prediction-dataset-insurancehub-usa/House_price_multifeatures.csv",
-        "filename":  "House_price_multifeatures.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/bharatsahu_house-price-prediction-dataset-insurancehub-usa",
-        "target_column":  "TTTerritory",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "TTTerritory",
-                                 "count":  4
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "regression__hard__bjaton_housepricesadvancedregressiontechniquestrain__train",
+    "task_type": "regression",
+    "tier": "hard",
+    "file_path": "/app/data/uploads/datasets/regression/hard/bjaton_housepricesadvancedregressiontechniquestrain/train.csv",
+    "filename": "train.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/bjaton_housepricesadvancedregressiontechniquestrain",
+    "target_column": "SalePrice",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "SalePrice",
+      "count": 4
     },
-    {
-        "dataset_id":  "regression__hard__bjaton_housepricesadvancedregressiontechniquestrain__train",
-        "task_type":  "regression",
-        "tier":  "hard",
-        "file_path":  "/app/data/uploads/datasets/regression/hard/bjaton_housepricesadvancedregressiontechniquestrain/train.csv",
-        "filename":  "train.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/bjaton_housepricesadvancedregressiontechniquestrain",
-        "target_column":  "SalePrice",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "SalePrice",
-                                 "count":  4
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "regression__hard__bobnau_daily-website-visitors__daily-website-visitors",
+    "task_type": "regression",
+    "tier": "hard",
+    "file_path": "/app/data/uploads/datasets/regression/hard/bobnau_daily-website-visitors/daily-website-visitors.csv",
+    "filename": "daily-website-visitors.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/bobnau_daily-website-visitors",
+    "target_column": "ReturningVisits",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "ReturningVisits",
+      "count": 12
     },
-    {
-        "dataset_id":  "regression__hard__bobnau_daily-website-visitors__daily-website-visitors",
-        "task_type":  "regression",
-        "tier":  "hard",
-        "file_path":  "/app/data/uploads/datasets/regression/hard/bobnau_daily-website-visitors/daily-website-visitors.csv",
-        "filename":  "daily-website-visitors.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/bobnau_daily-website-visitors",
-        "target_column":  "ReturningVisits",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "ReturningVisits",
-                                 "count":  12
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "regression__hard__deepcontractor_car-price-prediction-challenge__car_price_prediction",
+    "task_type": "regression",
+    "tier": "hard",
+    "file_path": "/app/data/uploads/datasets/regression/hard/deepcontractor_car-price-prediction-challenge/car_price_prediction.csv",
+    "filename": "car_price_prediction.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/deepcontractor_car-price-prediction-challenge",
+    "target_column": "Price",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "Price",
+      "count": 8
     },
-    {
-        "dataset_id":  "regression__hard__deepcontractor_car-price-prediction-challenge__car_price_prediction",
-        "task_type":  "regression",
-        "tier":  "hard",
-        "file_path":  "/app/data/uploads/datasets/regression/hard/deepcontractor_car-price-prediction-challenge/car_price_prediction.csv",
-        "filename":  "car_price_prediction.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/deepcontractor_car-price-prediction-challenge",
-        "target_column":  "Price",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "Price",
-                                 "count":  8
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "regression__hard__kanchana1990_colorado-real-estate-market-2026__colorado_real_estate_2026",
+    "task_type": "regression",
+    "tier": "hard",
+    "file_path": "/app/data/uploads/datasets/regression/hard/kanchana1990_colorado-real-estate-market-2026/colorado_real_estate_2026.csv",
+    "filename": "colorado_real_estate_2026.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/kanchana1990_colorado-real-estate-market-2026",
+    "target_column": "garage",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "garage",
+      "count": 6
     },
-    {
-        "dataset_id":  "regression__hard__kanchana1990_colorado-real-estate-market-2026__colorado_real_estate_2026",
-        "task_type":  "regression",
-        "tier":  "hard",
-        "file_path":  "/app/data/uploads/datasets/regression/hard/kanchana1990_colorado-real-estate-market-2026/colorado_real_estate_2026.csv",
-        "filename":  "colorado_real_estate_2026.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/kanchana1990_colorado-real-estate-market-2026",
-        "target_column":  "garage",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "garage",
-                                 "count":  6
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "regression__hard__milanvaddoriya_old-car-price-prediction__car_price",
+    "task_type": "regression",
+    "tier": "hard",
+    "file_path": "/app/data/uploads/datasets/regression/hard/milanvaddoriya_old-car-price-prediction/car_price.csv",
+    "filename": "car_price.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/milanvaddoriya_old-car-price-prediction",
+    "target_column": "car_prices_in_rupee",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "car_prices_in_rupee",
+      "count": 8
     },
-    {
-        "dataset_id":  "regression__hard__milanvaddoriya_old-car-price-prediction__car_price",
-        "task_type":  "regression",
-        "tier":  "hard",
-        "file_path":  "/app/data/uploads/datasets/regression/hard/milanvaddoriya_old-car-price-prediction/car_price.csv",
-        "filename":  "car_price.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/milanvaddoriya_old-car-price-prediction",
-        "target_column":  "car_prices_in_rupee",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "car_prices_in_rupee",
-                                 "count":  8
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "regression__hard__spittman1248_cdc-data-nutrition-physical-activity-obesity__Nutrition__Physical_Activity__and_Obesity_-_Behavioral_Risk_Factor_Surveillance_System",
+    "task_type": "regression",
+    "tier": "hard",
+    "file_path": "/app/data/uploads/datasets/regression/hard/spittman1248_cdc-data-nutrition-physical-activity-obesity/Nutrition__Physical_Activity__and_Obesity_-_Behavioral_Risk_Factor_Surveillance_System.csv",
+    "filename": "Nutrition__Physical_Activity__and_Obesity_-_Behavioral_Risk_Factor_Surveillance_System.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/spittman1248_cdc-data-nutrition-physical-activity-obesity",
+    "target_column": "Class",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "Class",
+      "count": 4
     },
-    {
-        "dataset_id":  "regression__hard__spittman1248_cdc-data-nutrition-physical-activity-obesity__Nutrition__Physical_Activity__and_Obesity_-_Behavioral_Risk_Factor_Surveillance_System",
-        "task_type":  "regression",
-        "tier":  "hard",
-        "file_path":  "/app/data/uploads/datasets/regression/hard/spittman1248_cdc-data-nutrition-physical-activity-obesity/Nutrition__Physical_Activity__and_Obesity_-_Behavioral_Risk_Factor_Surveillance_System.csv",
-        "filename":  "Nutrition__Physical_Activity__and_Obesity_-_Behavioral_Risk_Factor_Surveillance_System.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/spittman1248_cdc-data-nutrition-physical-activity-obesity",
-        "target_column":  "Class",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "Class",
-                                 "count":  4
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "regression__hard__taweilo_mba-admission-dataset__MBA",
+    "task_type": "regression",
+    "tier": "hard",
+    "file_path": "/app/data/uploads/datasets/regression/hard/taweilo_mba-admission-dataset/MBA.csv",
+    "filename": "MBA.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/taweilo_mba-admission-dataset",
+    "target_column": "admission",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "admission",
+      "count": 10
     },
-    {
-        "dataset_id":  "regression__hard__taweilo_mba-admission-dataset__MBA",
-        "task_type":  "regression",
-        "tier":  "hard",
-        "file_path":  "/app/data/uploads/datasets/regression/hard/taweilo_mba-admission-dataset/MBA.csv",
-        "filename":  "MBA.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/taweilo_mba-admission-dataset",
-        "target_column":  "admission",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "admission",
-                                 "count":  10
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "regression__hard__valakhorasani_tehran-house-prices-dataset__TehranHouse",
+    "task_type": "regression",
+    "tier": "hard",
+    "file_path": "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse.csv",
+    "filename": "TehranHouse.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/valakhorasani_tehran-house-prices-dataset",
+    "target_column": "Price(USD)",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "Price(USD)",
+      "count": 8
     },
-    {
-        "dataset_id":  "regression__hard__valakhorasani_tehran-house-prices-dataset__TehranHouse",
-        "task_type":  "regression",
-        "tier":  "hard",
-        "file_path":  "/app/data/uploads/datasets/regression/hard/valakhorasani_tehran-house-prices-dataset/TehranHouse.csv",
-        "filename":  "TehranHouse.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/valakhorasani_tehran-house-prices-dataset",
-        "target_column":  "Price(USD)",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "Price(USD)",
-                                 "count":  8
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "regression__mid__alamshihab075_health-and-lifestyle-data-for-diabetes-prediction__Diabetes_and_LifeStyle_Dataset ",
+    "task_type": "regression",
+    "tier": "mid",
+    "file_path": "/app/data/uploads/datasets/regression/mid/alamshihab075_health-and-lifestyle-data-for-diabetes-prediction/Diabetes_and_LifeStyle_Dataset .csv",
+    "filename": "Diabetes_and_LifeStyle_Dataset .csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/alamshihab075_health-and-lifestyle-data-for-diabetes-prediction",
+    "target_column": "diabetes_risk_score",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "diabetes_risk_score",
+      "count": 8
     },
-    {
-        "dataset_id":  "regression__mid__alamshihab075_health-and-lifestyle-data-for-diabetes-prediction__Diabetes_and_LifeStyle_Dataset ",
-        "task_type":  "regression",
-        "tier":  "mid",
-        "file_path":  "/app/data/uploads/datasets/regression/mid/alamshihab075_health-and-lifestyle-data-for-diabetes-prediction/Diabetes_and_LifeStyle_Dataset .csv",
-        "filename":  "Diabetes_and_LifeStyle_Dataset .csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/alamshihab075_health-and-lifestyle-data-for-diabetes-prediction",
-        "target_column":  "diabetes_risk_score",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "diabetes_risk_score",
-                                 "count":  8
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "regression__mid__camnugent_california-housing-prices__housing",
+    "task_type": "regression",
+    "tier": "mid",
+    "file_path": "/app/data/uploads/datasets/regression/mid/camnugent_california-housing-prices/housing.csv",
+    "filename": "housing.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/camnugent_california-housing-prices",
+    "target_column": "median_house_value",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "median_house_value",
+      "count": 6
     },
-    {
-        "dataset_id":  "regression__mid__camnugent_california-housing-prices__housing",
-        "task_type":  "regression",
-        "tier":  "mid",
-        "file_path":  "/app/data/uploads/datasets/regression/mid/camnugent_california-housing-prices/housing.csv",
-        "filename":  "housing.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/camnugent_california-housing-prices",
-        "target_column":  "median_house_value",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "median_house_value",
-                                 "count":  6
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "regression__mid__CooperUnion_cardataset__data",
+    "task_type": "regression",
+    "tier": "mid",
+    "file_path": "/app/data/uploads/datasets/regression/mid/CooperUnion_cardataset/data.csv",
+    "filename": "data.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/CooperUnion_cardataset",
+    "target_column": "MSRP",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "MSRP",
+      "count": 8
     },
-    {
-        "dataset_id":  "regression__mid__CooperUnion_cardataset__data",
-        "task_type":  "regression",
-        "tier":  "mid",
-        "file_path":  "/app/data/uploads/datasets/regression/mid/CooperUnion_cardataset/data.csv",
-        "filename":  "data.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/CooperUnion_cardataset",
-        "target_column":  "MSRP",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "MSRP",
-                                 "count":  8
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "regression__mid__harlfoxem_housesalesprediction__kc_house_data",
+    "task_type": "regression",
+    "tier": "mid",
+    "file_path": "/app/data/uploads/datasets/regression/mid/harlfoxem_housesalesprediction/kc_house_data.csv",
+    "filename": "kc_house_data.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/harlfoxem_housesalesprediction",
+    "target_column": "sqft_lot15",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "sqft_lot15",
+      "count": 8
     },
-    {
-        "dataset_id":  "regression__mid__harlfoxem_housesalesprediction__kc_house_data",
-        "task_type":  "regression",
-        "tier":  "mid",
-        "file_path":  "/app/data/uploads/datasets/regression/mid/harlfoxem_housesalesprediction/kc_house_data.csv",
-        "filename":  "kc_house_data.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/harlfoxem_housesalesprediction",
-        "target_column":  "sqft_lot15",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "sqft_lot15",
-                                 "count":  8
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "regression__mid__hrokrin_the-largest-diamond-dataset-currely-on-kaggle__diamonds",
+    "task_type": "regression",
+    "tier": "mid",
+    "file_path": "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds.csv",
+    "filename": "diamonds.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/hrokrin_the-largest-diamond-dataset-currely-on-kaggle",
+    "target_column": "total_sales_price",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "total_sales_price",
+      "count": 8
     },
-    {
-        "dataset_id":  "regression__mid__hrokrin_the-largest-diamond-dataset-currely-on-kaggle__diamonds",
-        "task_type":  "regression",
-        "tier":  "mid",
-        "file_path":  "/app/data/uploads/datasets/regression/mid/hrokrin_the-largest-diamond-dataset-currely-on-kaggle/diamonds.csv",
-        "filename":  "diamonds.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/hrokrin_the-largest-diamond-dataset-currely-on-kaggle",
-        "target_column":  "total_sales_price",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "total_sales_price",
-                                 "count":  8
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "regression__mid__lorenzozoppelletto_financial-risk-for-loan-approval__Loan",
+    "task_type": "regression",
+    "tier": "mid",
+    "file_path": "/app/data/uploads/datasets/regression/mid/lorenzozoppelletto_financial-risk-for-loan-approval/Loan.csv",
+    "filename": "Loan.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/lorenzozoppelletto_financial-risk-for-loan-approval",
+    "target_column": "RiskScore",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "RiskScore",
+      "count": 6
     },
-    {
-        "dataset_id":  "regression__mid__lorenzozoppelletto_financial-risk-for-loan-approval__Loan",
-        "task_type":  "regression",
-        "tier":  "mid",
-        "file_path":  "/app/data/uploads/datasets/regression/mid/lorenzozoppelletto_financial-risk-for-loan-approval/Loan.csv",
-        "filename":  "Loan.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/lorenzozoppelletto_financial-risk-for-loan-approval",
-        "target_column":  "RiskScore",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "RiskScore",
-                                 "count":  6
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "regression__mid__mirichoi0218_insurance__insurance",
+    "task_type": "regression",
+    "tier": "mid",
+    "file_path": "/app/data/uploads/datasets/regression/mid/mirichoi0218_insurance/insurance.csv",
+    "filename": "insurance.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/mirichoi0218_insurance",
+    "target_column": "charges",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "charges",
+      "count": 8
     },
-    {
-        "dataset_id":  "regression__mid__mirichoi0218_insurance__insurance",
-        "task_type":  "regression",
-        "tier":  "mid",
-        "file_path":  "/app/data/uploads/datasets/regression/mid/mirichoi0218_insurance/insurance.csv",
-        "filename":  "insurance.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/mirichoi0218_insurance",
-        "target_column":  "charges",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "charges",
-                                 "count":  8
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "regression__mid__ranitsarkar01_porter-delivery-time-estimation__dataset",
+    "task_type": "regression",
+    "tier": "mid",
+    "file_path": "/app/data/uploads/datasets/regression/mid/ranitsarkar01_porter-delivery-time-estimation/dataset.csv",
+    "filename": "dataset.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/ranitsarkar01_porter-delivery-time-estimation",
+    "target_column": "total_outstanding_orders",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "total_outstanding_orders",
+      "count": 8
     },
-    {
-        "dataset_id":  "regression__mid__ranitsarkar01_porter-delivery-time-estimation__dataset",
-        "task_type":  "regression",
-        "tier":  "mid",
-        "file_path":  "/app/data/uploads/datasets/regression/mid/ranitsarkar01_porter-delivery-time-estimation/dataset.csv",
-        "filename":  "dataset.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/ranitsarkar01_porter-delivery-time-estimation",
-        "target_column":  "total_outstanding_orders",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "total_outstanding_orders",
-                                 "count":  8
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "regression__mid__rupals_gpu-runtime__sgemm_product",
+    "task_type": "regression",
+    "tier": "mid",
+    "file_path": "/app/data/uploads/datasets/regression/mid/rupals_gpu-runtime/sgemm_product.csv",
+    "filename": "sgemm_product.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/rupals_gpu-runtime",
+    "target_column": "Run4 (ms)",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "Run4 (ms)",
+      "count": 4
     },
-    {
-        "dataset_id":  "regression__mid__rupals_gpu-runtime__sgemm_product",
-        "task_type":  "regression",
-        "tier":  "mid",
-        "file_path":  "/app/data/uploads/datasets/regression/mid/rupals_gpu-runtime/sgemm_product.csv",
-        "filename":  "sgemm_product.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/rupals_gpu-runtime",
-        "target_column":  "Run4 (ms)",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "Run4 (ms)",
-                                 "count":  4
-                             },
-        "source":  "batch_artifacts"
+    "source": "batch_artifacts"
+  },
+  {
+    "dataset_id": "regression__mid__yasserh_uber-fares-dataset__uber",
+    "task_type": "regression",
+    "tier": "mid",
+    "file_path": "/app/data/uploads/datasets/regression/mid/yasserh_uber-fares-dataset/uber.csv",
+    "filename": "uber.csv",
+    "kaggle_url": "https://www.kaggle.com/datasets/yasserh_uber-fares-dataset",
+    "target_column": "fare_amount",
+    "confidence": "high",
+    "candidate_counts": {
+      "target": "fare_amount",
+      "count": 8
     },
-    {
-        "dataset_id":  "regression__mid__yasserh_uber-fares-dataset__uber",
-        "task_type":  "regression",
-        "tier":  "mid",
-        "file_path":  "/app/data/uploads/datasets/regression/mid/yasserh_uber-fares-dataset/uber.csv",
-        "filename":  "uber.csv",
-        "kaggle_url":  "https://www.kaggle.com/datasets/yasserh_uber-fares-dataset",
-        "target_column":  "fare_amount",
-        "confidence":  "high",
-        "candidate_counts":  {
-                                 "target":  "fare_amount",
-                                 "count":  8
-                             },
-        "source":  "batch_artifacts"
-    }
+    "source": "batch_artifacts"
+  }
 ]

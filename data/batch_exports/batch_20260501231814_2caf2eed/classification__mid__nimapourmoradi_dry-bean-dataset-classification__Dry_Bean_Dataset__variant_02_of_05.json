@@ -1,0 +1,393 @@
+{
+  "dataset_id": "classification__mid__nimapourmoradi_dry-bean-dataset-classification__Dry_Bean_Dataset",
+  "filename": "Dry_Bean_Dataset.csv",
+  "file_path": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv",
+  "task_type": "classification",
+  "tier": "mid",
+  "target_column": null,
+  "variant_id": 2,
+  "total_variants": 5,
+  "generated_at": "2026-05-02T00:29:18.237048+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a robust multi-class classification model to predict the type of dry bean (Class) from 16 geometric features using a random forest algorithm with preprocessing and evaluation.",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "orchestrator_agent",
+          "name": "Orchestrator Agent",
+          "yaml_path": "config/agents/orchestrator_agent.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "orchestrator_agent",
+            "agent_name": "Orchestrator Agent"
+          }
+        },
+        "planner_mcp_server": "data_transformation_server",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": null,
+        "rationale": "Phase 1 loads the dataset to make it available for subsequent preprocessing and modeling steps."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "orchestrator_agent",
+          "name": "Orchestrator Agent",
+          "yaml_path": "config/agents/orchestrator_agent.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "orchestrator_agent",
+            "agent_name": "Orchestrator Agent"
+          }
+        },
+        "planner_mcp_server": "data_transformation_server",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "scale_features",
+            "description": "Standardize all numeric features to zero mean and unit variance for robust model training.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv",
+              "columns": [
+                "\ufeffArea",
+                "Perimeter",
+                "MajorAxisLength",
+                "MinorAxisLength",
+                "AspectRation",
+                "Eccentricity",
+                "ConvexArea",
+                "EquivDiameter",
+                "Extent",
+                "Solidity",
+                "roundness",
+                "Compactness",
+                "ShapeFactor1",
+                "ShapeFactor2",
+                "ShapeFactor3",
+                "ShapeFactor4"
+              ],
+              "method": "standard",
+              "output_filepath": null,
+              "data_source": "phase_2b_output",
+              "features": [
+                "Area",
+                "Perimeter",
+                "MajorAxisLength",
+                "MinorAxisLength",
+                "AspectRation",
+                "Eccentricity",
+                "ConvexArea",
+                "EquivDiameter",
+                "Extent",
+                "Solidity",
+                "roundness",
+                "Compactness",
+                "ShapeFactor1",
+                "ShapeFactor2",
+                "ShapeFactor3",
+                "ShapeFactor4"
+              ],
+              "scaler_type": "standard",
+              "exclude_columns": [
+                "Class",
+                "Class_label"
+              ]
+            },
+            "planner_parameters": {
+              "data_source": "phase_2b_output",
+              "features": [
+                "Area",
+                "Perimeter",
+                "MajorAxisLength",
+                "MinorAxisLength",
+                "AspectRation",
+                "Eccentricity",
+                "ConvexArea",
+                "EquivDiameter",
+                "Extent",
+                "Solidity",
+                "roundness",
+                "Compactness",
+                "ShapeFactor1",
+                "ShapeFactor2",
+                "ShapeFactor3",
+                "ShapeFactor4"
+              ],
+              "scaler_type": "standard",
+              "exclude_columns": [
+                "Class",
+                "Class_label"
+              ]
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "logistic",
+        "rationale": "Phase 2 handles all necessary preprocessing: fixing column names, encoding the target, scaling features for improved model convergence, and splitting data for honest evaluation."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": "orchestrator_agent",
+          "name": "Orchestrator Agent",
+          "yaml_path": "config/agents/orchestrator_agent.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "orchestrator_agent",
+            "agent_name": "Orchestrator Agent"
+          }
+        },
+        "planner_mcp_server": "model_training_server",
+        "resolved_mcp_server": {
+          "id": "python-model_training",
+          "name": "Model Training Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "train_classification_model",
+            "description": "Train a Random Forest classifier on the training data. Random Forest was chosen for its robustness, ability to handle non-linear relationships, and high accuracy on tabular multi-class data.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv",
+              "target_column": "Class",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "fit_intercept": true
+              },
+              "model_save_path": null,
+              "train_features": "phase_2_split_train_X",
+              "train_labels": "phase_2_split_train_y",
+              "n_estimators": 100,
+              "max_depth": null,
+              "min_samples_split": 2,
+              "min_samples_leaf": 1,
+              "max_features": "sqrt",
+              "class_weight": "balanced",
+              "n_jobs": -1
+            },
+            "planner_parameters": {
+              "train_features": "phase_2_split_train_X",
+              "train_labels": "phase_2_split_train_y",
+              "model_type": "random_forest",
+              "random_state": 42,
+              "n_estimators": 100,
+              "max_depth": null,
+              "min_samples_split": 2,
+              "min_samples_leaf": 1,
+              "max_features": "sqrt",
+              "class_weight": "balanced",
+              "n_jobs": -1
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "linear",
+        "rationale": "Phase 3 trains a Random Forest model, which is known for high accuracy and robustness on multi-class problems like dry bean classification."
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": "orchestrator_agent",
+          "name": "Orchestrator Agent",
+          "yaml_path": "config/agents/orchestrator_agent.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "orchestrator_agent",
+            "agent_name": "Orchestrator Agent"
+          }
+        },
+        "planner_mcp_server": "model_evaluation_server",
+        "resolved_mcp_server": {
+          "id": "python-model_evaluation",
+          "name": "Model Evaluation Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "evaluate_classification_model",
+            "description": "Evaluate the trained Random Forest model on the held-out test set and report metrics for robustness and accuracy.",
+            "tool_parameters": {
+              "model_path": null,
+              "test_data_path": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv",
+              "target_column": "Class",
+              "model": "phase_3_model",
+              "test_features": "phase_2_split_test_X",
+              "test_labels": "phase_2_split_test_y",
+              "metrics": [
+                "accuracy",
+                "precision_macro",
+                "recall_macro",
+                "f1_macro",
+                "confusion_matrix"
+              ],
+              "output_format": "dict",
+              "filepath": "/app/data/uploads/datasets/classification/mid/nimapourmoradi_dry-bean-dataset-classification/Dry_Bean_Dataset.csv"
+            },
+            "planner_parameters": {
+              "model": "phase_3_model",
+              "test_features": "phase_2_split_test_X",
+              "test_labels": "phase_2_split_test_y",
+              "metrics": [
+                "accuracy",
+                "precision_macro",
+                "recall_macro",
+                "f1_macro",
+                "confusion_matrix"
+              ],
+              "output_format": "dict"
+            },
+            "missing_required_parameters": [
+              "model_path"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "logistic",
+        "rationale": "Phase 4 provides a comprehensive evaluation of model performance, confirming robustness and accuracy as required by the pipeline variant."
+      }
+    ],
+    "mcp_servers": [
+      {
+        "id": "python-model_evaluation",
+        "name": "Model Evaluation Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_evaluation/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Model evaluation, metrics calculation, and error analysis tools"
+      },
+      {
+        "id": "python-model_training",
+        "name": "Model Training Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_training/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Machine learning model training, hyperparameter tuning, and optimization"
+      }
+    ],
+    "validation": {
+      "status": "invalid",
+      "issue_count": 8,
+      "blocking_issue_count": 1,
+      "issues": [
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'data_transformation_server'",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'read_csv' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'data_transformation_server'",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'clean_column_names' not found in mcp-catalog.yaml",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'label_encode_target' not found in mcp-catalog.yaml",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'split_data' not found in mcp-catalog.yaml",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'evaluate_classification_model' has unresolved required parameters: model_path",
+          "phase_number": 4,
+          "tool_name": "evaluate_classification_model",
+          "missing_parameters": [
+            "model_path"
+          ]
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "orchestrator_agent",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "orchestrator_agent",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "orchestrator_agent",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "orchestrator_agent",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      }
+    ]
+  }
+}

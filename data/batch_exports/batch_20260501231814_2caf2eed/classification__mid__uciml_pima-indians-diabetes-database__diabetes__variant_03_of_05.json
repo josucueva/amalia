@@ -1,0 +1,337 @@
+{
+  "dataset_id": "classification__mid__uciml_pima-indians-diabetes-database__diabetes",
+  "filename": "diabetes.csv",
+  "file_path": "/app/data/uploads/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes.csv",
+  "task_type": "classification",
+  "tier": "mid",
+  "target_column": null,
+  "variant_id": 3,
+  "total_variants": 5,
+  "generated_at": "2026-05-02T00:36:04.921588+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a binary classification model to predict diabetes outcome (0/1) using the Pima Indians Diabetes dataset with a focus on feature engineering and preprocessing.",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": null,
+          "name": "data_loading_agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "data_loading_agent",
+            "agent_name": "data_loading_agent"
+          }
+        },
+        "planner_mcp_server": "filesystem_server",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "load_csv",
+            "description": "Load the diabetes CSV file into memory for further processing.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes.csv",
+              "encoding": "utf-8",
+              "delimiter": ",",
+              "file_path": "/app/data/uploads/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes.csv",
+              "target_column": "Outcome",
+              "task_type": "classification"
+            },
+            "planner_parameters": {
+              "file_path": "/app/data/uploads/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes.csv",
+              "target_column": "Outcome",
+              "task_type": "classification"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Load the dataset and identify feature and target columns before preprocessing."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": null,
+          "name": "data_preprocessing_agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "data_preprocessing_agent",
+            "agent_name": "data_preprocessing_agent"
+          }
+        },
+        "planner_mcp_server": "preprocessing_server",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "handle_missing_values",
+            "description": "Replace zero values in Glucose, BloodPressure, SkinThickness, Insulin, BMI with NaN and impute with median (or mean) to avoid data leakage.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes.csv",
+              "strategy": "median_imputation",
+              "columns": [
+                "Pregnancies",
+                "Glucose",
+                "BloodPressure",
+                "SkinThickness",
+                "Insulin",
+                "BMI",
+                "DiabetesPedigreeFunction",
+                "Age"
+              ],
+              "output_filepath": null,
+              "columns_to_impute": [
+                "Glucose",
+                "BloodPressure",
+                "SkinThickness",
+                "Insulin",
+                "BMI"
+              ],
+              "zero_is_missing": true
+            },
+            "planner_parameters": {
+              "strategy": "median_imputation",
+              "columns_to_impute": [
+                "Glucose",
+                "BloodPressure",
+                "SkinThickness",
+                "Insulin",
+                "BMI"
+              ],
+              "zero_is_missing": true
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "logistic",
+        "rationale": "Address data quality issues (zeros as missing values) and apply feature scaling; split data to prepare for model training."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": null,
+          "name": "model_training_agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_training_agent",
+            "agent_name": "model_training_agent"
+          }
+        },
+        "planner_mcp_server": "training_server",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "train_classification_model",
+            "description": "Train a Random Forest classifier given the dataset size and need for interpretability.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes.csv",
+              "target_column": "Outcome",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": null,
+              "hyperparameters": {
+                "n_estimators": 100,
+                "max_depth": 5,
+                "random_state": 42
+              },
+              "model_save_path": null,
+              "features": [
+                "Pregnancies",
+                "Glucose",
+                "BloodPressure",
+                "SkinThickness",
+                "Insulin",
+                "BMI",
+                "DiabetesPedigreeFunction",
+                "Age"
+              ],
+              "target": "Outcome"
+            },
+            "planner_parameters": {
+              "model_type": "random_forest",
+              "hyperparameters": {
+                "n_estimators": 100,
+                "max_depth": 5,
+                "random_state": 42
+              },
+              "features": [
+                "Pregnancies",
+                "Glucose",
+                "BloodPressure",
+                "SkinThickness",
+                "Insulin",
+                "BMI",
+                "DiabetesPedigreeFunction",
+                "Age"
+              ],
+              "target": "Outcome"
+            },
+            "missing_required_parameters": [
+              "random_state"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "linear",
+        "rationale": "Random Forest handles non-linear relationships and is robust to outliers; suitable for this small dataset."
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": null,
+          "name": "evaluation_agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "evaluation_agent",
+            "agent_name": "evaluation_agent"
+          }
+        },
+        "planner_mcp_server": "evaluation_server",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": "logistic",
+        "rationale": "Assess model performance and report key classification metrics to validate the model."
+      }
+    ],
+    "mcp_servers": [],
+    "validation": {
+      "status": "invalid",
+      "issue_count": 13,
+      "blocking_issue_count": 5,
+      "issues": [
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='data_loading_agent' name='data_loading_agent'",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'filesystem_server'",
+          "phase_number": 1
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='data_preprocessing_agent' name='data_preprocessing_agent'",
+          "phase_number": 2
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'preprocessing_server'",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'feature_scaling' not found in mcp-catalog.yaml",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'train_test_split' not found in mcp-catalog.yaml",
+          "phase_number": 2
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_training_agent' name='model_training_agent'",
+          "phase_number": 3
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'training_server'",
+          "phase_number": 3
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'train_classification_model' has unresolved required parameters: random_state",
+          "phase_number": 3,
+          "tool_name": "train_classification_model",
+          "missing_parameters": [
+            "random_state"
+          ]
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='evaluation_agent' name='evaluation_agent'",
+          "phase_number": 4
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'evaluation_server'",
+          "phase_number": 4
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'evaluate_classification' not found in mcp-catalog.yaml",
+          "phase_number": 4
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 4
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loading_agent",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "data_preprocessing_agent",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_training_agent",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "evaluation_agent",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      }
+    ]
+  }
+}

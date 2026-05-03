@@ -1,0 +1,215 @@
+{
+  "dataset_id": "regression__easy__thedevastator_age-prediction-for-individuals-using-multi-omic__test_rows",
+  "filename": "test_rows.csv",
+  "file_path": "/app/data/uploads/datasets/regression/easy/thedevastator_age-prediction-for-individuals-using-multi-omic/test_rows.csv",
+  "task_type": "regression",
+  "tier": "easy",
+  "target_column": null,
+  "variant_id": 3,
+  "total_variants": 5,
+  "generated_at": "2026-05-02T00:57:19.287264+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a regression model to predict KLF14_2 from the 12 methylation features using feature engineering and preprocessing, followed by model training and evaluation.",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/regression/easy/thedevastator_age-prediction-for-individuals-using-multi-omic/test_rows.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/regression/easy/thedevastator_age-prediction-for-individuals-using-multi-omic/test_rows.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "orchestrator_agent",
+          "name": "Orchestrator Agent",
+          "yaml_path": "config/agents/orchestrator_agent.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "orchestrator_agent",
+            "agent_name": "orchestrator_agent"
+          }
+        },
+        "planner_mcp_server": "default",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": "linear",
+        "rationale": "Preprocessing is essential to center and scale the features, which is especially important for linear models and distance-based algorithms. Standard scaling is chosen because the data has no missing values and all columns are numeric."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "orchestrator_agent",
+          "name": "Orchestrator Agent",
+          "yaml_path": "config/agents/orchestrator_agent.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "orchestrator_agent",
+            "agent_name": "orchestrator_agent"
+          }
+        },
+        "planner_mcp_server": "default",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": "linear",
+        "rationale": "A standard 80-20 split is appropriate for a small dataset of 100 rows, providing enough training data while retaining a meaningful test set."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": "orchestrator_agent",
+          "name": "Orchestrator Agent",
+          "yaml_path": "config/agents/orchestrator_agent.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "orchestrator_agent",
+            "agent_name": "orchestrator_agent"
+          }
+        },
+        "planner_mcp_server": "default",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": "linear",
+        "rationale": "Random forest is a strong default for regression on small tabular data; it handles numeric features well and provides feature importance for interpretation."
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": "orchestrator_agent",
+          "name": "Orchestrator Agent",
+          "yaml_path": "config/agents/orchestrator_agent.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "orchestrator_agent",
+            "agent_name": "orchestrator_agent"
+          }
+        },
+        "planner_mcp_server": "default",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": "linear",
+        "rationale": "Evaluation is necessary to quantify model performance. R\u00b2, MSE, and MAE provide a comprehensive understanding of prediction accuracy and error magnitude."
+      }
+    ],
+    "mcp_servers": [],
+    "validation": {
+      "status": "invalid",
+      "issue_count": 12,
+      "blocking_issue_count": 4,
+      "issues": [
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'default'",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'preprocess_data' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'default'",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'split_data' not found in mcp-catalog.yaml",
+          "phase_number": 2
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 2
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'default'",
+          "phase_number": 3
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'train_model' not found in mcp-catalog.yaml",
+          "phase_number": 3
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 3
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'default'",
+          "phase_number": 4
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'evaluate_model' not found in mcp-catalog.yaml",
+          "phase_number": 4
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 4
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "orchestrator_agent",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "orchestrator_agent",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "orchestrator_agent",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "orchestrator_agent",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      }
+    ]
+  }
+}

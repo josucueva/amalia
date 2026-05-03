@@ -1,0 +1,294 @@
+{
+  "dataset_id": "classification__easy__priyanshusethi_happiness-classification-dataset__happydata",
+  "filename": "happydata.csv",
+  "file_path": "/app/data/uploads/datasets/classification/easy/priyanshusethi_happiness-classification-dataset/happydata.csv",
+  "task_type": "classification",
+  "tier": "easy",
+  "target_column": null,
+  "variant_id": 5,
+  "total_variants": 5,
+  "generated_at": "2026-05-01T23:43:27.584324+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build an interpretable binary classification model to predict happiness from six socioeconomic features",
+    "complexity": "simple",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/easy/priyanshusethi_happiness-classification-dataset/happydata.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/easy/priyanshusethi_happiness-classification-dataset/happydata.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": null,
+          "name": "Data Splitter",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "data_splitter",
+            "agent_name": "Data Splitter"
+          }
+        },
+        "planner_mcp_server": "data_processing_server",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": "logistic",
+        "rationale": "Prepare separate training and test sets to evaluate model performance on unseen data"
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "model_trainer",
+          "name": "model_trainer",
+          "yaml_path": "config/agents/model_trainer.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_trainer",
+            "agent_name": "Model Trainer"
+          }
+        },
+        "planner_mcp_server": "ml_training_server",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "train_classification_model",
+            "description": "Train a logistic regression model for interpretability",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/priyanshusethi_happiness-classification-dataset/happydata.csv",
+              "target_column": "happy",
+              "model_type": "logistic",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "max_iter": 1000,
+                "C": 1.0,
+                "solver": "lbfgs"
+              },
+              "model_save_path": null,
+              "feature_columns": [
+                "infoavail",
+                "housecost",
+                "schoolquality",
+                "policetrust",
+                "streetquality",
+                "\u00ebvents"
+              ],
+              "max_iter": 1000,
+              "data_path": null
+            },
+            "planner_parameters": {
+              "feature_columns": [
+                "infoavail",
+                "housecost",
+                "schoolquality",
+                "policetrust",
+                "streetquality",
+                "\u00ebvents"
+              ],
+              "target_column": "happy",
+              "model_type": "logistic",
+              "random_state": 42,
+              "max_iter": 1000,
+              "data_path": null
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "logistic",
+        "rationale": "Logistic regression provides high interpretability through coefficients, aligning with the focus on explainability"
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": "model_evaluator",
+          "name": "model_evaluator",
+          "yaml_path": "config/agents/model_evaluator.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_evaluator",
+            "agent_name": "Model Evaluator"
+          }
+        },
+        "planner_mcp_server": "evaluation_server",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "evaluate_classification_model",
+            "description": "Compute accuracy, precision, recall, F1-score, and confusion matrix",
+            "tool_parameters": {
+              "model_path": null,
+              "test_data_path": "/app/data/uploads/datasets/classification/easy/priyanshusethi_happiness-classification-dataset/happydata.csv",
+              "target_column": "happy",
+              "predictions_path": null,
+              "metrics": [
+                "accuracy",
+                "precision",
+                "recall",
+                "f1",
+                "confusion_matrix"
+              ],
+              "filepath": "/app/data/uploads/datasets/classification/easy/priyanshusethi_happiness-classification-dataset/happydata.csv"
+            },
+            "planner_parameters": {
+              "test_data_path": null,
+              "predictions_path": null,
+              "target_column": "happy",
+              "metrics": [
+                "accuracy",
+                "precision",
+                "recall",
+                "f1",
+                "confusion_matrix"
+              ]
+            },
+            "missing_required_parameters": [
+              "model_path"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Evaluate model performance on the held-out test set to ensure quality before interpretation"
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": null,
+          "name": "Model Interpreter",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_interpreter",
+            "agent_name": "Model Interpreter"
+          }
+        },
+        "planner_mcp_server": "interpretability_server",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": "logistic",
+        "rationale": "SHAP values provide per-feature contribution insights, fulfilling the interpretability requirement"
+      }
+    ],
+    "mcp_servers": [],
+    "validation": {
+      "status": "invalid",
+      "issue_count": 11,
+      "blocking_issue_count": 4,
+      "issues": [
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='data_splitter' name='Data Splitter'",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'data_processing_server'",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'split_data' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'ml_training_server'",
+          "phase_number": 2
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'evaluation_server'",
+          "phase_number": 3
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'evaluate_classification_model' has unresolved required parameters: model_path",
+          "phase_number": 3,
+          "tool_name": "evaluate_classification_model",
+          "missing_parameters": [
+            "model_path"
+          ]
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_interpreter' name='Model Interpreter'",
+          "phase_number": 4
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'interpretability_server'",
+          "phase_number": 4
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'explain_model' not found in mcp-catalog.yaml",
+          "phase_number": 4
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 4
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_splitter",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "model_trainer",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_evaluator",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "model_interpreter",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      }
+    ]
+  }
+}

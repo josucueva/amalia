@@ -11,6 +11,7 @@ import argparse
 import inspect
 import json
 import math
+import os
 import pickle
 import re
 from dataclasses import dataclass
@@ -66,6 +67,7 @@ class PipelineExecutionContext:
     output_models_dir: Path
     current_dataset_path: Optional[Path]
     current_model_path: Optional[Path] = None
+    current_test_indices_file: Optional[Path] = None
     task_type: str = "unknown"
     target_column: Optional[str] = None
     model_type: Optional[str] = None
@@ -897,11 +899,19 @@ def train_classification_model_tool(
     train_score = float(model.score(X_train, y_train))
     test_score = float(model.score(X_test, y_test))
     saved_to = None
+    test_indices_file = None
     if model_save_path:
         out_path = resolve_output_path(model_save_path, "model.pkl")
         with open(out_path, "wb") as file:
             pickle.dump(model, file)
         saved_to = str(out_path)
+        
+        # Save test set indices for later evaluation
+        indices_path = str(out_path).replace('.pkl', '_test_indices.json')
+        test_indices = list(X_test.index)
+        with open(indices_path, 'w') as f:
+            json.dump(test_indices, f)
+        test_indices_file = str(indices_path)
 
     return {
         "model_type": model_type,
@@ -914,6 +924,7 @@ def train_classification_model_tool(
         "features": X.columns.tolist(),
         "n_classes": int(len(np.unique(y))),
         "model_saved": saved_to,
+        "test_indices_file": test_indices_file,
     }
 
 
@@ -968,11 +979,19 @@ def train_regression_model_tool(
     mae = float(mean_absolute_error(y_test, y_pred))
 
     saved_to = None
+    test_indices_file = None
     if model_save_path:
         out_path = resolve_output_path(model_save_path, "model.pkl")
         with open(out_path, "wb") as file:
             pickle.dump(model, file)
         saved_to = str(out_path)
+        
+        # Save test set indices for later evaluation
+        indices_path = str(out_path).replace('.pkl', '_test_indices.json')
+        test_indices = list(X_test.index)
+        with open(indices_path, 'w') as f:
+            json.dump(test_indices, f)
+        test_indices_file = str(indices_path)
 
     return {
         "model_type": model_type,
@@ -987,11 +1006,12 @@ def train_regression_model_tool(
         "test_samples": len(X_test),
         "features": X.columns.tolist(),
         "model_saved": saved_to,
+        "test_indices_file": test_indices_file,
     }
 
 
 def evaluate_classification_model_tool(
-    model_path: str, test_data_path: str, target_column: str
+    model_path: str, test_data_path: str, target_column: str, test_indices_file: str = None
 ) -> dict:
     with open(resolve_input_path(model_path), "rb") as file:
         model = pickle.load(file)
@@ -999,6 +1019,18 @@ def evaluate_classification_model_tool(
     df = pd.read_csv(resolve_input_path(test_data_path))
     if target_column not in df.columns:
         return {"error": f"Target column '{target_column}' not found"}
+
+    # Filter to only test set if indices file is provided
+    if test_indices_file:
+        try:
+            indices_path = resolve_input_path(test_indices_file)
+            if os.path.exists(indices_path):
+                with open(indices_path, 'r') as f:
+                    test_indices = json.load(f)
+                df = df.iloc[test_indices]  # Filter to only test set
+        except Exception as e:
+            print(f"Warning: Could not load test indices: {e}")
+            pass
 
     X_test = _encode_features(df.drop(columns=[target_column]))
     y_test = df[target_column]
@@ -1027,7 +1059,7 @@ def evaluate_classification_model_tool(
 
 
 def evaluate_regression_model_tool(
-    model_path: str, test_data_path: str, target_column: str
+    model_path: str, test_data_path: str, target_column: str, test_indices_file: str = None
 ) -> dict:
     with open(resolve_input_path(model_path), "rb") as file:
         model = pickle.load(file)
@@ -1035,6 +1067,18 @@ def evaluate_regression_model_tool(
     df = pd.read_csv(resolve_input_path(test_data_path))
     if target_column not in df.columns:
         return {"error": f"Target column '{target_column}' not found"}
+
+    # Filter to only test set if indices file is provided
+    if test_indices_file:
+        try:
+            indices_path = resolve_input_path(test_indices_file)
+            if os.path.exists(indices_path):
+                with open(indices_path, 'r') as f:
+                    test_indices = json.load(f)
+                df = df.iloc[test_indices]  # Filter to only test set
+        except Exception as e:
+            print(f"Warning: Could not load test indices: {e}")
+            pass
 
     X_test = _encode_features(df.drop(columns=[target_column]))
     y_test = df[target_column]
@@ -1061,13 +1105,26 @@ def evaluate_regression_model_tool(
 
 
 def get_classification_report_tool(
-    model_path: str, test_data_path: str, target_column: str
+    model_path: str, test_data_path: str, target_column: str, test_indices_file: str = None
 ) -> dict:
     with open(resolve_input_path(model_path), "rb") as file:
         model = pickle.load(file)
     df = pd.read_csv(resolve_input_path(test_data_path))
     if target_column not in df.columns:
         return {"error": f"Target column '{target_column}' not found"}
+    
+    # Filter to only test set if indices file is provided
+    if test_indices_file:
+        try:
+            indices_path = resolve_input_path(test_indices_file)
+            if os.path.exists(indices_path):
+                with open(indices_path, 'r') as f:
+                    test_indices = json.load(f)
+                df = df.iloc[test_indices]  # Filter to only test set
+        except Exception as e:
+            print(f"Warning: Could not load test indices: {e}")
+            pass
+    
     X_test = _encode_features(df.drop(columns=[target_column]))
     y_test = df[target_column]
     y_pred = model.predict(X_test)
@@ -1080,12 +1137,26 @@ def calculate_confusion_matrix_tool(
     test_data_path: str,
     target_column: str,
     normalize: Optional[str] = None,
+    test_indices_file: str = None,
 ) -> dict:
     with open(resolve_input_path(model_path), "rb") as file:
         model = pickle.load(file)
     df = pd.read_csv(resolve_input_path(test_data_path))
     if target_column not in df.columns:
         return {"error": f"Target column '{target_column}' not found"}
+    
+    # Filter to only test set if indices file is provided
+    if test_indices_file:
+        try:
+            indices_path = resolve_input_path(test_indices_file)
+            if os.path.exists(indices_path):
+                with open(indices_path, 'r') as f:
+                    test_indices = json.load(f)
+                df = df.iloc[test_indices]  # Filter to only test set
+        except Exception as e:
+            print(f"Warning: Could not load test indices: {e}")
+            pass
+    
     X_test = _encode_features(df.drop(columns=[target_column]))
     y_test = df[target_column]
     y_pred = model.predict(X_test)
@@ -1112,12 +1183,25 @@ def predict_with_model_tool(
     return {"predictions": predictions.tolist(), "saved_to": saved_to}
 
 
-def calculate_residuals_tool(model_path: str, test_data_path: str, target_column: str) -> dict:
+def calculate_residuals_tool(model_path: str, test_data_path: str, target_column: str, test_indices_file: str = None) -> dict:
     with open(resolve_input_path(model_path), "rb") as file:
         model = pickle.load(file)
     df = pd.read_csv(resolve_input_path(test_data_path))
     if target_column not in df.columns:
         return {"error": f"Target column '{target_column}' not found"}
+    
+    # Filter to only test set if indices file is provided
+    if test_indices_file:
+        try:
+            indices_path = resolve_input_path(test_indices_file)
+            if os.path.exists(indices_path):
+                with open(indices_path, 'r') as f:
+                    test_indices = json.load(f)
+                df = df.iloc[test_indices]  # Filter to only test set
+        except Exception as e:
+            print(f"Warning: Could not load test indices: {e}")
+            pass
+    
     X = _encode_features(df.drop(columns=[target_column]))
     y = pd.to_numeric(df[target_column], errors="coerce")
     y_pred = pd.Series(model.predict(X), index=y.index)
@@ -1602,6 +1686,8 @@ def run_single_pipeline(artifact_path: Path, output_models_dir: Path) -> Pipelin
                                 params["test_data_path"] = str(context.current_dataset_path)
                     if not params.get("target_column") and context.target_column:
                         params["target_column"] = context.target_column
+                    if not params.get("test_indices_file") and context.current_test_indices_file:
+                        params["test_indices_file"] = str(context.current_test_indices_file)
 
                 result = execute_tool(tool_name, params)
                 if result.get("error"):
@@ -1634,6 +1720,10 @@ def run_single_pipeline(artifact_path: Path, output_models_dir: Path) -> Pipelin
                     if result.get("model_saved"):
                         context.current_model_path = resolve_artifact_path(
                             str(result["model_saved"])
+                        )
+                    if result.get("test_indices_file"):
+                        context.current_test_indices_file = resolve_artifact_path(
+                            str(result["test_indices_file"])
                         )
                 if tool_name in {
                     "evaluate_classification_model",

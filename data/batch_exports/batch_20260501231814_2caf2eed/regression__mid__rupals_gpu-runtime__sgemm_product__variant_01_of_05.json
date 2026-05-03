@@ -1,0 +1,355 @@
+{
+  "dataset_id": "regression__mid__rupals_gpu-runtime__sgemm_product",
+  "filename": "sgemm_product.csv",
+  "file_path": "/app/data/uploads/datasets/regression/mid/rupals_gpu-runtime/sgemm_product.csv",
+  "task_type": "regression",
+  "tier": "mid",
+  "target_column": null,
+  "variant_id": 1,
+  "total_variants": 5,
+  "generated_at": "2026-05-02T01:42:19.168648+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a simple linear regression model to predict GPU kernel run time (Run4 ms) from OpenCL tuning parameters.",
+    "complexity": "simple",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/regression/mid/rupals_gpu-runtime/sgemm_product.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/regression/mid/rupals_gpu-runtime/sgemm_product.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": null,
+          "name": "csv_loader_agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "csv_loader_agent",
+            "agent_name": "csv_loader_agent"
+          }
+        },
+        "planner_mcp_server": "filesystem_server",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "load_csv",
+            "description": "Load the sgemm_product.csv file from the given path.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/rupals_gpu-runtime/sgemm_product.csv",
+              "encoding": "utf-8",
+              "delimiter": ",",
+              "file_path": "/app/data/uploads/datasets/regression/mid/rupals_gpu-runtime/sgemm_product.csv",
+              "header": true,
+              "dtype": null
+            },
+            "planner_parameters": {
+              "file_path": "/app/data/uploads/datasets/regression/mid/rupals_gpu-runtime/sgemm_product.csv",
+              "delimiter": ",",
+              "header": true,
+              "encoding": "utf-8",
+              "dtype": null
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Load the dataset into memory for processing."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": null,
+          "name": "data_splitter_agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "data_splitter_agent",
+            "agent_name": "data_splitter_agent"
+          }
+        },
+        "planner_mcp_server": "data_prep_server",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": "linear",
+        "rationale": "Separate features and target to enable supervised learning, and reserve a portion for evaluation."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": null,
+          "name": "regression_trainer_agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "regression_trainer_agent",
+            "agent_name": "regression_trainer_agent"
+          }
+        },
+        "planner_mcp_server": "ml_trainer_server",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "train_regression_model",
+            "description": "Train a linear regression model on the training set for speed and interpretability.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/rupals_gpu-runtime/sgemm_product.csv",
+              "target_column": "Run4 (ms)",
+              "model_type": "linear",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "fit_intercept": true,
+                "normalize": false
+              },
+              "model_save_path": null,
+              "features": null,
+              "target": null
+            },
+            "planner_parameters": {
+              "model_type": "linear",
+              "features": null,
+              "target": null,
+              "hyperparameters": {
+                "fit_intercept": true,
+                "normalize": false
+              },
+              "random_state": 42
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "linear",
+        "rationale": "Linear regression offers fast training and straightforward interpretation, suitable for this small dataset."
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": null,
+          "name": "regression_evaluator_agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "regression_evaluator_agent",
+            "agent_name": "regression_evaluator_agent"
+          }
+        },
+        "planner_mcp_server": "ml_evaluator_server",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "evaluate_regression_model",
+            "description": "Compute evaluation metrics (MSE, RMSE, MAE, R\u00b2) on the test set.",
+            "tool_parameters": {
+              "model_path": null,
+              "test_data_path": "/app/data/uploads/datasets/regression/mid/rupals_gpu-runtime/sgemm_product.csv",
+              "target_column": "Run4 (ms)",
+              "model": null,
+              "test_features": null,
+              "test_target": null,
+              "metrics": [
+                "mse",
+                "rmse",
+                "mae",
+                "r2"
+              ],
+              "output_format": "json",
+              "filepath": "/app/data/uploads/datasets/regression/mid/rupals_gpu-runtime/sgemm_product.csv"
+            },
+            "planner_parameters": {
+              "model": null,
+              "test_features": null,
+              "test_target": null,
+              "metrics": [
+                "mse",
+                "rmse",
+                "mae",
+                "r2"
+              ],
+              "output_format": "json"
+            },
+            "missing_required_parameters": [
+              "model_path"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Measure model performance to verify its predictive quality."
+      },
+      {
+        "phase_number": 5,
+        "agent": {
+          "id": null,
+          "name": "model_saver_agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_saver_agent",
+            "agent_name": "model_saver_agent"
+          }
+        },
+        "planner_mcp_server": "artifact_server",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": "linear",
+        "rationale": "Save the model to disk for later use or deployment."
+      }
+    ],
+    "mcp_servers": [],
+    "validation": {
+      "status": "invalid",
+      "issue_count": 15,
+      "blocking_issue_count": 7,
+      "issues": [
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='csv_loader_agent' name='csv_loader_agent'",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'filesystem_server'",
+          "phase_number": 1
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='data_splitter_agent' name='data_splitter_agent'",
+          "phase_number": 2
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'data_prep_server'",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'train_test_split' not found in mcp-catalog.yaml",
+          "phase_number": 2
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 2
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='regression_trainer_agent' name='regression_trainer_agent'",
+          "phase_number": 3
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'ml_trainer_server'",
+          "phase_number": 3
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='regression_evaluator_agent' name='regression_evaluator_agent'",
+          "phase_number": 4
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'ml_evaluator_server'",
+          "phase_number": 4
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'evaluate_regression_model' has unresolved required parameters: model_path",
+          "phase_number": 4,
+          "tool_name": "evaluate_regression_model",
+          "missing_parameters": [
+            "model_path"
+          ]
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_saver_agent' name='model_saver_agent'",
+          "phase_number": 5
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'artifact_server'",
+          "phase_number": 5
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'save_model' not found in mcp-catalog.yaml",
+          "phase_number": 5
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 5
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "csv_loader_agent",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "data_splitter_agent",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "regression_trainer_agent",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "regression_evaluator_agent",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-5",
+        "agentId": "model_saver_agent",
+        "position": {
+          "x": 1100,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      },
+      {
+        "id": "conn-4",
+        "fromInstanceId": "phase-4",
+        "toInstanceId": "phase-5"
+      }
+    ]
+  }
+}

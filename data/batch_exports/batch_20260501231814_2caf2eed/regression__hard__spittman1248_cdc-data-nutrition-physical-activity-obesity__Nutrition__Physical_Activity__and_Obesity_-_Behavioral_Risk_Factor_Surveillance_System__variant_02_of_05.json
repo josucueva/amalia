@@ -1,0 +1,406 @@
+{
+  "dataset_id": "regression__hard__spittman1248_cdc-data-nutrition-physical-activity-obesity__Nutrition__Physical_Activity__and_Obesity_-_Behavioral_Risk_Factor_Surveillance_System",
+  "filename": "Nutrition__Physical_Activity__and_Obesity_-_Behavioral_Risk_Factor_Surveillance_System.csv",
+  "file_path": "/app/data/uploads/datasets/regression/hard/spittman1248_cdc-data-nutrition-physical-activity-obesity/Nutrition__Physical_Activity__and_Obesity_-_Behavioral_Risk_Factor_Surveillance_System.csv",
+  "task_type": "regression",
+  "tier": "hard",
+  "target_column": null,
+  "variant_id": 2,
+  "total_variants": 5,
+  "generated_at": "2026-05-02T01:17:39.076905+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a robust regression model to predict the continuous Data_Value (e.g., obesity prevalence) using demographic and geographic features from the BRFSS dataset.",
+    "complexity": "complex",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/regression/hard/spittman1248_cdc-data-nutrition-physical-activity-obesity/Nutrition__Physical_Activity__and_Obesity_-_Behavioral_Risk_Factor_Surveillance_System.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/regression/hard/spittman1248_cdc-data-nutrition-physical-activity-obesity/Nutrition__Physical_Activity__and_Obesity_-_Behavioral_Risk_Factor_Surveillance_System.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": null,
+          "name": "Data Scientist - Preprocessing & EDA",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "data_scientist_preprocessing_eda",
+            "agent_name": "Data Scientist - Preprocessing & EDA"
+          }
+        },
+        "planner_mcp_server": "python_ml_toolkit",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "load_csv",
+            "description": "Load dataset into dataframe",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/spittman1248_cdc-data-nutrition-physical-activity-obesity/Nutrition__Physical_Activity__and_Obesity_-_Behavioral_Risk_Factor_Surveillance_System.csv",
+              "encoding": "utf-8",
+              "delimiter": ",",
+              "file_path": "/app/data/uploads/datasets/regression/hard/spittman1248_cdc-data-nutrition-physical-activity-obesity/Nutrition__Physical_Activity__and_Obesity_-_Behavioral_Risk_Factor_Surveillance_System.csv",
+              "header_row": 0,
+              "dtypes": null,
+              "parse_dates": null
+            },
+            "planner_parameters": {
+              "file_path": "/app/data/uploads/datasets/regression/hard/spittman1248_cdc-data-nutrition-physical-activity-obesity/Nutrition__Physical_Activity__and_Obesity_-_Behavioral_Risk_Factor_Surveillance_System.csv",
+              "delimiter": ",",
+              "encoding": "utf-8",
+              "header_row": 0,
+              "dtypes": null,
+              "parse_dates": null
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "handle_missing_values",
+            "description": "Drop columns with >50% missing and impute remaining numeric with median, categorical with mode",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/spittman1248_cdc-data-nutrition-physical-activity-obesity/Nutrition__Physical_Activity__and_Obesity_-_Behavioral_Risk_Factor_Surveillance_System.csv",
+              "strategy": "mean",
+              "columns": [
+                "YearStart",
+                "YearEnd",
+                "Data_Value",
+                "Data_Value_Alt",
+                "Low_Confidence_Limit",
+                "High_Confidence_Limit ",
+                "Sample_Size",
+                "LocationID"
+              ],
+              "output_filepath": null,
+              "dataframe": "loaded_df",
+              "strategy_numeric": "median",
+              "strategy_categorical": "most_frequent",
+              "drop_threshold": 0.5,
+              "fill_value_numeric": null,
+              "fill_value_categorical": null,
+              "drop_rows": false,
+              "columns_to_process": null
+            },
+            "planner_parameters": {
+              "dataframe": "loaded_df",
+              "strategy_numeric": "median",
+              "strategy_categorical": "most_frequent",
+              "drop_threshold": 0.5,
+              "fill_value_numeric": null,
+              "fill_value_categorical": null,
+              "drop_rows": false,
+              "columns_to_process": null
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "ridge",
+        "rationale": "Load the BRFSS dataset, explore structure, handle abundant missing values (especially stratification columns with >75% missing), encode categoricals, and split data for regression."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": null,
+          "name": "Data Scientist - Feature Engineering & Selection",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "data_scientist_feature_engineering_selection",
+            "agent_name": "Data Scientist - Feature Engineering & Selection"
+          }
+        },
+        "planner_mcp_server": "python_ml_toolkit",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "feature_selection",
+            "description": "Select top features using mutual information regression to reduce dimensionality",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/spittman1248_cdc-data-nutrition-physical-activity-obesity/Nutrition__Physical_Activity__and_Obesity_-_Behavioral_Risk_Factor_Surveillance_System.csv",
+              "target_column": "Class",
+              "method": "mutual_info",
+              "k": 30,
+              "dataframe": "X_train",
+              "target": "y_train",
+              "threshold": null,
+              "model_type": null
+            },
+            "planner_parameters": {
+              "dataframe": "X_train",
+              "target": "y_train",
+              "method": "mutual_info",
+              "k": 30,
+              "threshold": null,
+              "model_type": null
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "scale_features",
+            "description": "Standardize numeric features for regression",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/spittman1248_cdc-data-nutrition-physical-activity-obesity/Nutrition__Physical_Activity__and_Obesity_-_Behavioral_Risk_Factor_Surveillance_System.csv",
+              "columns": [
+                "YearStart",
+                "YearEnd",
+                "Data_Value",
+                "Data_Value_Alt",
+                "Low_Confidence_Limit",
+                "High_Confidence_Limit ",
+                "Sample_Size",
+                "LocationID"
+              ],
+              "method": "standard",
+              "output_filepath": null,
+              "dataframe": "X_train_selected",
+              "with_mean": true,
+              "with_std": true
+            },
+            "planner_parameters": {
+              "dataframe": "X_train_selected",
+              "method": "standard",
+              "columns": null,
+              "with_mean": true,
+              "with_std": true
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Select the most informative features and scale them to improve regression model convergence and performance."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": null,
+          "name": "Machine Learning Engineer - Model Training",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "ml_engineer_model_training",
+            "agent_name": "Machine Learning Engineer - Model Training"
+          }
+        },
+        "planner_mcp_server": "python_ml_toolkit",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "train_regression_model",
+            "description": "Train a Gradient Boosting regressor for high accuracy and robustness",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/spittman1248_cdc-data-nutrition-physical-activity-obesity/Nutrition__Physical_Activity__and_Obesity_-_Behavioral_Risk_Factor_Surveillance_System.csv",
+              "target_column": "Class",
+              "model_type": "gradient_boosting",
+              "test_size": 0.2,
+              "random_state": null,
+              "hyperparameters": {
+                "n_estimators": 200,
+                "max_depth": 6,
+                "learning_rate": 0.05,
+                "subsample": 0.8,
+                "min_samples_split": 20,
+                "random_state": 42
+              },
+              "model_save_path": null,
+              "X_train": "X_train_scaled",
+              "y_train": "y_train",
+              "cv": 5,
+              "scoring": "neg_mean_squared_error",
+              "return_train_score": false,
+              "cache_model": true
+            },
+            "planner_parameters": {
+              "X_train": "X_train_scaled",
+              "y_train": "y_train",
+              "model_type": "gradient_boosting",
+              "hyperparameters": {
+                "n_estimators": 200,
+                "max_depth": 6,
+                "learning_rate": 0.05,
+                "subsample": 0.8,
+                "min_samples_split": 20,
+                "random_state": 42
+              },
+              "cv": 5,
+              "scoring": "neg_mean_squared_error",
+              "return_train_score": false,
+              "cache_model": true
+            },
+            "missing_required_parameters": [
+              "random_state"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "ridge",
+        "rationale": "Train a Gradient Boosting regressor (proven robust for tabular data with mixed feature types) and evaluate thoroughly."
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": null,
+          "name": "MLOps Engineer - Model Registration & Reporting",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "mlops_engineer_registration_reporting",
+            "agent_name": "MLOps Engineer - Model Registration & Reporting"
+          }
+        },
+        "planner_mcp_server": "python_ml_toolkit",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": "ridge",
+        "rationale": "Persist the final model and generate a comprehensive report with feature importance and SHAP explanations for interpretability."
+      }
+    ],
+    "mcp_servers": [],
+    "validation": {
+      "status": "invalid",
+      "issue_count": 16,
+      "blocking_issue_count": 5,
+      "issues": [
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='data_scientist_preprocessing_eda' name='Data Scientist - Preprocessing & EDA'",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'python_ml_toolkit'",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'explore_data' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'encode_categoricals' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'split_data' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='data_scientist_feature_engineering_selection' name='Data Scientist - Feature Engineering & Selection'",
+          "phase_number": 2
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'python_ml_toolkit'",
+          "phase_number": 2
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='ml_engineer_model_training' name='Machine Learning Engineer - Model Training'",
+          "phase_number": 3
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'python_ml_toolkit'",
+          "phase_number": 3
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'train_regression_model' has unresolved required parameters: random_state",
+          "phase_number": 3,
+          "tool_name": "train_regression_model",
+          "missing_parameters": [
+            "random_state"
+          ]
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'evaluate_regression' not found in mcp-catalog.yaml",
+          "phase_number": 3
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='mlops_engineer_registration_reporting' name='MLOps Engineer - Model Registration & Reporting'",
+          "phase_number": 4
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'python_ml_toolkit'",
+          "phase_number": 4
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'export_trained_model' not found in mcp-catalog.yaml",
+          "phase_number": 4
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'generate_report' not found in mcp-catalog.yaml",
+          "phase_number": 4
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 4
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_scientist_preprocessing_eda",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "data_scientist_feature_engineering_selection",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "ml_engineer_model_training",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "mlops_engineer_registration_reporting",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      }
+    ]
+  }
+}

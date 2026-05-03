@@ -1,0 +1,240 @@
+{
+  "dataset_id": "classification__mid__xhlulu_cpc-codes__titles",
+  "filename": "titles.csv",
+  "file_path": "/app/data/uploads/datasets/classification/mid/xhlulu_cpc-codes/titles.csv",
+  "task_type": "classification",
+  "tier": "mid",
+  "target_column": null,
+  "variant_id": 5,
+  "total_variants": 5,
+  "generated_at": "2026-05-02T00:38:20.598687+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build an interpretable classification model to predict the 'class' column from CPC code titles and hierarchy features.",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/mid/xhlulu_cpc-codes/titles.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/mid/xhlulu_cpc-codes/titles.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": null,
+          "name": "Data Preprocessing Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "data_preprocessing_agent",
+            "agent_name": "Data Preprocessing Agent"
+          }
+        },
+        "planner_mcp_server": "ml_tools_server",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "handle_missing_values",
+            "description": "Impute or drop missing values in the dataset; target column 'class' has 1 missing, other columns have up to 3 missing.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/xhlulu_cpc-codes/titles.csv",
+              "strategy": "most_frequent",
+              "columns": [
+                "class",
+                "subclass",
+                "group",
+                "main_group"
+              ],
+              "output_filepath": null,
+              "fill_value": null
+            },
+            "planner_parameters": {
+              "strategy": "most_frequent",
+              "columns": [
+                "class",
+                "subclass",
+                "group",
+                "main_group"
+              ],
+              "fill_value": null
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "encode_categorical",
+            "description": "Encode categorical features ('code', 'title', 'section', 'subclass') for model consumption.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/xhlulu_cpc-codes/titles.csv",
+              "columns": [
+                "code",
+                "title",
+                "section",
+                "subclass"
+              ],
+              "method": "onehot",
+              "output_filepath": null,
+              "encoding_method": "label_encoding"
+            },
+            "planner_parameters": {
+              "columns": [
+                "code",
+                "title",
+                "section",
+                "subclass"
+              ],
+              "encoding_method": "label_encoding"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "logistic",
+        "rationale": "Dataset has missing values and categorical columns that must be handled before modeling. A train-test split enables fair evaluation."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": null,
+          "name": "Model Training Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_training_agent",
+            "agent_name": "Model Training Agent"
+          }
+        },
+        "planner_mcp_server": "ml_tools_server",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": "logistic",
+        "rationale": "Decision tree provides a transparent, interpretable model suitable for explaining CPC class predictions."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": null,
+          "name": "Evaluation & Explainability Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "evaluation_explainability_agent",
+            "agent_name": "Evaluation & Explainability Agent"
+          }
+        },
+        "planner_mcp_server": "ml_tools_server",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": null,
+        "rationale": "Evaluating model performance and providing explanations aligns with the interpretability focus, allowing users to understand predictions."
+      }
+    ],
+    "mcp_servers": [],
+    "validation": {
+      "status": "invalid",
+      "issue_count": 12,
+      "blocking_issue_count": 5,
+      "issues": [
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='data_preprocessing_agent' name='Data Preprocessing Agent'",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'ml_tools_server'",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'split_data' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_training_agent' name='Model Training Agent'",
+          "phase_number": 2
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'ml_tools_server'",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'train_classifier' not found in mcp-catalog.yaml",
+          "phase_number": 2
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 2
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='evaluation_explainability_agent' name='Evaluation & Explainability Agent'",
+          "phase_number": 3
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'ml_tools_server'",
+          "phase_number": 3
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'evaluate_classifier' not found in mcp-catalog.yaml",
+          "phase_number": 3
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'explain_model' not found in mcp-catalog.yaml",
+          "phase_number": 3
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 3
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_preprocessing_agent",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "model_training_agent",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "evaluation_explainability_agent",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      }
+    ]
+  }
+}

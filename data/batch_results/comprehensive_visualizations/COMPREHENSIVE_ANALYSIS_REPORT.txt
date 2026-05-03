@@ -1,0 +1,122 @@
+================================================================================
+COMPREHENSIVE MODEL COMPARISON REPORT
+================================================================================
+
+1. OVERALL SUCCESS STATISTICS
+--------------------------------------------------------------------------------
+DeepSeek (Corrected)     : 235/325 ( 72.3%)
+Mistral                  :  35/ 60 ( 58.3%)
+Llama                    :  24/ 60 ( 40.0%)
+DeepSeek (Original)      :  45/ 61 ( 73.8%)
+
+2. TASK-SPECIFIC ANALYSIS
+--------------------------------------------------------------------------------
+
+CLASSIFICATION:
+  DeepSeek (Corrected)   : 165/221 ( 74.7%) | Avg Acc: 0.6550 | Avg F1: 0.6167
+  Mistral                :  21/ 35 ( 60.0%) | Avg Acc: 0.8039 | Avg F1: 0.7765
+  Llama                  :  14/ 34 ( 41.2%) | Avg Acc: 0.8557 | Avg F1: 0.8235
+  DeepSeek (Original)    :  26/ 36 ( 72.2%) | Avg Acc: 0.8544 | Avg F1: 0.8134
+
+REGRESSION:
+  DeepSeek (Corrected)   :  70/104 ( 67.3%) | Avg R²: 0.3742
+  Mistral                :  14/ 25 ( 56.0%) | Avg R²: 0.6906
+  Llama                  :  10/ 26 ( 38.5%) | Avg R²: 0.7314
+  DeepSeek (Original)    :  19/ 24 ( 79.2%) | Avg R²: 0.7979
+
+3. PERFORMANCE BY DIFFICULTY LEVEL
+--------------------------------------------------------------------------------
+
+EASY DIFFICULTY:
+  DeepSeek (Corrected)   : 115/125 ( 92.0%)
+  Mistral                :  16/ 20 ( 80.0%)
+  Llama                  :  10/ 20 ( 50.0%)
+  DeepSeek (Original)    :  19/ 21 ( 90.5%)
+
+MEDIUM DIFFICULTY:
+
+HARD DIFFICULTY:
+  DeepSeek (Corrected)   :  48/100 ( 48.0%)
+  Mistral                :   9/ 20 ( 45.0%)
+  Llama                  :   5/ 20 ( 25.0%)
+  DeepSeek (Original)    :  11/ 20 ( 55.0%)
+
+4. BEST PERFORMING DATASETS (by average metric)
+--------------------------------------------------------------------------------
+
+Classification (by Accuracy):
+  1. classification__mid__uciml_iris__Iris: Acc=1.0000, F1=1.0000
+  2. regression__hard__taweilo_mba-admission-dataset__MBA: Acc=1.0000, F1=1.0000
+  3. classification__hard__balaka18_email-spam-classification-dataset-csv__emails: Acc=0.9873, F1=0.9810
+  4. classification__easy__ritwikb3_heart-disease-statlog__Heart_disease_statlog: Acc=0.9204, F1=0.8983
+  5. classification__easy__himanshunakrani_naive-bayes-classification-data__Naive-Bayes-Classification-Data: Acc=0.9094, F1=0.9239
+
+Regression (by R² Score):
+  1. regression__mid__rupals_gpu-runtime__sgemm_product: R²=1.0000
+  2. regression__hard__valakhorasani_tehran-house-prices-dataset__TehranHouse: R²=1.0000
+  3. regression__easy__govindaramsriram_crop-yield-of-a-farm__crop_yield_data: R²=1.0000
+  4. regression__easy__zubairdhuddi_linear-regression__test: R²=0.9905
+  5. regression__mid__CooperUnion_cardataset__data: R²=0.9738
+
+5. WORST PERFORMING DATASETS
+--------------------------------------------------------------------------------
+
+Classification (by Accuracy):
+  1. classification__hard__pashupatigupta_emotion-detection-from-text__tweet_emotions: Acc=0.0397, F1=0.0376
+  2. classification__hard__prox37_twitter-multilabel-classification-dataset__mLabel_tweets: Acc=0.2907, F1=0.1309
+  3. classification__mid__andrewmvd_cyberbullying-classification__cyberbullying_tweets: Acc=0.3130, F1=0.2258
+  4. classification__hard__hetulmehta_website-classification__website_classification: Acc=0.3242, F1=0.2777
+  5. classification__hard__andrewmvd_cyberbullying-classification__cyberbullying_tweets: Acc=0.3488, F1=0.2700
+
+Regression (by R² Score):
+  1. regression__mid__mirichoi0218_insurance__insurance: R²=-1.3080
+  2. regression__mid__yasserh_uber-fares-dataset__uber: R²=-0.0691
+  3. regression__hard__kanchana1990_colorado-real-estate-market-2026__colorado_real_estate_2026: R²=-0.0675
+  4. regression__hard__anujsaha0123456789_house-prices-cleaned-dataset-for-regression-ml__house_prices_cleaned: R²=-0.0303
+  5. classification__easy__yasserh_wine-quality-dataset__WineQT: R²=0.1226
+
+6. MOST POPULAR ML MODELS BY LLM
+--------------------------------------------------------------------------------
+
+DeepSeek (Corrected):
+  logistic                      : 118 times
+  linear                        :  50 times
+  random_forest                 :   9 times
+  decision_tree                 :   7 times
+  gradient_boosting             :   5 times
+
+Mistral:
+  logistic                      :  17 times
+  linear                        :   9 times
+  naive_bayes                   :   2 times
+  ridge                         :   2 times
+  svm                           :   1 times
+
+Llama:
+  logistic                      :   8 times
+  linear                        :   6 times
+  random_forest                 :   4 times
+  ridge                         :   2 times
+  svm                           :   1 times
+
+DeepSeek (Original):
+  random_forest                 :  39 times
+  gradient_boosting             :   2 times
+  naive_bayes                   :   1 times
+  svm                           :   1 times
+  svr                           :   1 times
+
+7. IMPACT OF DATA LEAKAGE FIX (DeepSeek)
+--------------------------------------------------------------------------------
+
+Classification Accuracy:
+  Original: 0.8544
+  Corrected: 0.6550
+  Difference: 0.1994 (inflation due to data leakage)
+
+Regression R² Score:
+  Original: 0.7979
+  Corrected: 0.3742
+  Difference: 0.4237 (inflation due to data leakage)
+
+================================================================================

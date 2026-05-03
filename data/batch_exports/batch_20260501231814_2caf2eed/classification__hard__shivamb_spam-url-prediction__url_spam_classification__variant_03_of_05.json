@@ -1,0 +1,324 @@
+{
+  "dataset_id": "classification__hard__shivamb_spam-url-prediction__url_spam_classification",
+  "filename": "url_spam_classification.csv",
+  "file_path": "/app/data/uploads/datasets/classification/hard/shivamb_spam-url-prediction/url_spam_classification.csv",
+  "task_type": "classification",
+  "tier": "hard",
+  "target_column": null,
+  "variant_id": 3,
+  "total_variants": 5,
+  "generated_at": "2026-05-02T00:18:55.002339+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a binary classification model to predict whether a URL is spam based on its textual features.",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/hard/shivamb_spam-url-prediction/url_spam_classification.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/hard/shivamb_spam-url-prediction/url_spam_classification.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": null,
+          "name": "Data Loading Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "data_loading_agent",
+            "agent_name": "Data Loading Agent"
+          }
+        },
+        "planner_mcp_server": "default",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "load_csv",
+            "description": "Load the dataset from CSV file into memory for processing.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/shivamb_spam-url-prediction/url_spam_classification.csv",
+              "encoding": "utf-8",
+              "delimiter": ",",
+              "file_path": "/app/data/uploads/datasets/classification/hard/shivamb_spam-url-prediction/url_spam_classification.csv",
+              "header": true,
+              "dtype": "auto",
+              "nrows": null
+            },
+            "planner_parameters": {
+              "file_path": "/app/data/uploads/datasets/classification/hard/shivamb_spam-url-prediction/url_spam_classification.csv",
+              "delimiter": ",",
+              "header": true,
+              "encoding": "utf-8",
+              "dtype": "auto",
+              "nrows": null
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Load the dataset to make it available for preprocessing and feature engineering."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": null,
+          "name": "Preprocessing Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "preprocessing_agent",
+            "agent_name": "Preprocessing Agent"
+          }
+        },
+        "planner_mcp_server": "default",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "remove_duplicates",
+            "description": "Remove duplicate rows from the dataset to avoid data leakage.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/shivamb_spam-url-prediction/url_spam_classification.csv",
+              "subset": null,
+              "keep": "first",
+              "output_filepath": null,
+              "inplace": true
+            },
+            "planner_parameters": {
+              "subset": null,
+              "keep": "first",
+              "inplace": true
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Clean the dataset and encode the categorical target for classification."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": null,
+          "name": "Feature Engineering Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "feature_engineering_agent",
+            "agent_name": "Feature Engineering Agent"
+          }
+        },
+        "planner_mcp_server": "default",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": null,
+        "rationale": "Transform raw URL strings into machine\u2011learning\u2011ready numerical features, focusing on meaningful indicators of spam."
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": null,
+          "name": "Model Training Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_training_agent",
+            "agent_name": "Model Training Agent"
+          }
+        },
+        "planner_mcp_server": "default",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": "linear",
+        "rationale": "Split data to evaluate generalization, then train a robust ensemble classifier capable of capturing nonlinear patterns in URL features."
+      },
+      {
+        "phase_number": 5,
+        "agent": {
+          "id": null,
+          "name": "Evaluation Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "evaluation_agent",
+            "agent_name": "Evaluation Agent"
+          }
+        },
+        "planner_mcp_server": "default",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": "logistic",
+        "rationale": "Assess model performance and provide interpretable metrics to validate the pipeline's effectiveness."
+      }
+    ],
+    "mcp_servers": [],
+    "validation": {
+      "status": "invalid",
+      "issue_count": 19,
+      "blocking_issue_count": 8,
+      "issues": [
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='data_loading_agent' name='Data Loading Agent'",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'default'",
+          "phase_number": 1
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='preprocessing_agent' name='Preprocessing Agent'",
+          "phase_number": 2
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'default'",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'encode_target' not found in mcp-catalog.yaml",
+          "phase_number": 2
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='feature_engineering_agent' name='Feature Engineering Agent'",
+          "phase_number": 3
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'default'",
+          "phase_number": 3
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'extract_url_features' not found in mcp-catalog.yaml",
+          "phase_number": 3
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'standardize_features' not found in mcp-catalog.yaml",
+          "phase_number": 3
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 3
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_training_agent' name='Model Training Agent'",
+          "phase_number": 4
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'default'",
+          "phase_number": 4
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'train_test_split' not found in mcp-catalog.yaml",
+          "phase_number": 4
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'train_classifier' not found in mcp-catalog.yaml",
+          "phase_number": 4
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 4
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='evaluation_agent' name='Evaluation Agent'",
+          "phase_number": 5
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'default'",
+          "phase_number": 5
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'evaluate_model' not found in mcp-catalog.yaml",
+          "phase_number": 5
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 5
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loading_agent",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "preprocessing_agent",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "feature_engineering_agent",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "model_training_agent",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-5",
+        "agentId": "evaluation_agent",
+        "position": {
+          "x": 1100,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      },
+      {
+        "id": "conn-4",
+        "fromInstanceId": "phase-4",
+        "toInstanceId": "phase-5"
+      }
+    ]
+  }
+}

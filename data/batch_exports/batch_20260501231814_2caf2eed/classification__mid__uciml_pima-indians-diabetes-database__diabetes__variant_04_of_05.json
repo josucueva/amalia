@@ -1,0 +1,383 @@
+{
+  "dataset_id": "classification__mid__uciml_pima-indians-diabetes-database__diabetes",
+  "filename": "diabetes.csv",
+  "file_path": "/app/data/uploads/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes.csv",
+  "task_type": "classification",
+  "tier": "mid",
+  "target_column": null,
+  "variant_id": 4,
+  "total_variants": 5,
+  "generated_at": "2026-05-02T00:36:04.927024+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a binary classification model to predict diabetes outcome (Outcome) using ensemble methods with model diversity on the Pima Indians Diabetes dataset.",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": null,
+          "name": "Data Preparation Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "data_preparation_agent",
+            "agent_name": "Data Preparation Agent"
+          }
+        },
+        "planner_mcp_server": "data_processing_server",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": "logistic",
+        "rationale": "Prepare the dataset by loading it and splitting into train/test sets to enable model training and evaluation."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": null,
+          "name": "Model Training Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_training_agent",
+            "agent_name": "Model Training Agent"
+          }
+        },
+        "planner_mcp_server": "ml_training_server",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "train_classification_model",
+            "description": "Train a Random Forest classifier (ensemble method) for diversity",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes.csv",
+              "target_column": "Outcome",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": null,
+              "hyperparameters": {
+                "n_estimators": 100,
+                "max_depth": null,
+                "random_state": 42
+              },
+              "model_save_path": null,
+              "training_data": "from_phase_1_train",
+              "feature_columns": [
+                "Pregnancies",
+                "Glucose",
+                "BloodPressure",
+                "SkinThickness",
+                "Insulin",
+                "BMI",
+                "DiabetesPedigreeFunction",
+                "Age"
+              ]
+            },
+            "planner_parameters": {
+              "model_type": "random_forest",
+              "hyperparameters": {
+                "n_estimators": 100,
+                "max_depth": null,
+                "random_state": 42
+              },
+              "training_data": "from_phase_1_train",
+              "target_column": "Outcome",
+              "feature_columns": [
+                "Pregnancies",
+                "Glucose",
+                "BloodPressure",
+                "SkinThickness",
+                "Insulin",
+                "BMI",
+                "DiabetesPedigreeFunction",
+                "Age"
+              ]
+            },
+            "missing_required_parameters": [
+              "random_state"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "train_classification_model",
+            "description": "Train a Gradient Boosting classifier (ensemble method) for diversity",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes.csv",
+              "target_column": "Outcome",
+              "model_type": "gradient_boosting",
+              "test_size": 0.2,
+              "random_state": null,
+              "hyperparameters": {
+                "n_estimators": 100,
+                "learning_rate": 0.1,
+                "max_depth": 3,
+                "random_state": 42
+              },
+              "model_save_path": null,
+              "training_data": "from_phase_1_train",
+              "feature_columns": [
+                "Pregnancies",
+                "Glucose",
+                "BloodPressure",
+                "SkinThickness",
+                "Insulin",
+                "BMI",
+                "DiabetesPedigreeFunction",
+                "Age"
+              ]
+            },
+            "planner_parameters": {
+              "model_type": "gradient_boosting",
+              "hyperparameters": {
+                "n_estimators": 100,
+                "learning_rate": 0.1,
+                "max_depth": 3,
+                "random_state": 42
+              },
+              "training_data": "from_phase_1_train",
+              "target_column": "Outcome",
+              "feature_columns": [
+                "Pregnancies",
+                "Glucose",
+                "BloodPressure",
+                "SkinThickness",
+                "Insulin",
+                "BMI",
+                "DiabetesPedigreeFunction",
+                "Age"
+              ]
+            },
+            "missing_required_parameters": [
+              "random_state"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "logistic",
+        "rationale": "Train two diverse ensemble models (Random Forest and Gradient Boosting) as suggested by the approach hint to leverage ensemble methods for better predictive performance."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": null,
+          "name": "Evaluation Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "evaluation_agent",
+            "agent_name": "Evaluation Agent"
+          }
+        },
+        "planner_mcp_server": "evaluation_server",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "evaluate_classification_model",
+            "description": "Evaluate the Random Forest model on the test set",
+            "tool_parameters": {
+              "model_path": null,
+              "test_data_path": "/app/data/uploads/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes.csv",
+              "target_column": "Outcome",
+              "model": "from_phase_2_model_1",
+              "test_data": "from_phase_1_test",
+              "metrics": [
+                "accuracy",
+                "precision",
+                "recall",
+                "f1_score",
+                "roc_auc"
+              ],
+              "filepath": "/app/data/uploads/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes.csv"
+            },
+            "planner_parameters": {
+              "model": "from_phase_2_model_1",
+              "test_data": "from_phase_1_test",
+              "target_column": "Outcome",
+              "metrics": [
+                "accuracy",
+                "precision",
+                "recall",
+                "f1_score",
+                "roc_auc"
+              ]
+            },
+            "missing_required_parameters": [
+              "model_path"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "evaluate_classification_model",
+            "description": "Evaluate the Gradient Boosting model on the test set",
+            "tool_parameters": {
+              "model_path": null,
+              "test_data_path": "/app/data/uploads/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes.csv",
+              "target_column": "Outcome",
+              "model": "from_phase_2_model_2",
+              "test_data": "from_phase_1_test",
+              "metrics": [
+                "accuracy",
+                "precision",
+                "recall",
+                "f1_score",
+                "roc_auc"
+              ],
+              "filepath": "/app/data/uploads/datasets/classification/mid/uciml_pima-indians-diabetes-database/diabetes.csv"
+            },
+            "planner_parameters": {
+              "model": "from_phase_2_model_2",
+              "test_data": "from_phase_1_test",
+              "target_column": "Outcome",
+              "metrics": [
+                "accuracy",
+                "precision",
+                "recall",
+                "f1_score",
+                "roc_auc"
+              ]
+            },
+            "missing_required_parameters": [
+              "model_path"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "logistic",
+        "rationale": "Evaluate both trained models on the held-out test set to compare performance and ensure model quality."
+      }
+    ],
+    "mcp_servers": [],
+    "validation": {
+      "status": "invalid",
+      "issue_count": 13,
+      "blocking_issue_count": 4,
+      "issues": [
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='data_preparation_agent' name='Data Preparation Agent'",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'data_processing_server'",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'load_dataset' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'train_test_split' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 1
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_training_agent' name='Model Training Agent'",
+          "phase_number": 2
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'ml_training_server'",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'train_classification_model' has unresolved required parameters: random_state",
+          "phase_number": 2,
+          "tool_name": "train_classification_model",
+          "missing_parameters": [
+            "random_state"
+          ]
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'train_classification_model' has unresolved required parameters: random_state",
+          "phase_number": 2,
+          "tool_name": "train_classification_model",
+          "missing_parameters": [
+            "random_state"
+          ]
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='evaluation_agent' name='Evaluation Agent'",
+          "phase_number": 3
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'evaluation_server'",
+          "phase_number": 3
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'evaluate_classification_model' has unresolved required parameters: model_path",
+          "phase_number": 3,
+          "tool_name": "evaluate_classification_model",
+          "missing_parameters": [
+            "model_path"
+          ]
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'evaluate_classification_model' has unresolved required parameters: model_path",
+          "phase_number": 3,
+          "tool_name": "evaluate_classification_model",
+          "missing_parameters": [
+            "model_path"
+          ]
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_preparation_agent",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "model_training_agent",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "evaluation_agent",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      }
+    ]
+  }
+}

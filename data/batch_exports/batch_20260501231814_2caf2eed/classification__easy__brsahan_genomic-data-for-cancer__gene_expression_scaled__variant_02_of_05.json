@@ -1,0 +1,231 @@
+{
+  "dataset_id": "classification__easy__brsahan_genomic-data-for-cancer__gene_expression_scaled",
+  "filename": "gene_expression_scaled.csv",
+  "file_path": "/app/data/uploads/datasets/classification/easy/brsahan_genomic-data-for-cancer/gene_expression_scaled.csv",
+  "task_type": "classification",
+  "tier": "easy",
+  "target_column": null,
+  "variant_id": 2,
+  "total_variants": 5,
+  "generated_at": "2026-05-01T23:27:24.245246+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a binary classification model to predict 'Cancer Present' from gene expression features, focusing on accuracy and robustness.",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/easy/brsahan_genomic-data-for-cancer/gene_expression_scaled.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/easy/brsahan_genomic-data-for-cancer/gene_expression_scaled.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": null,
+          "name": "DataAgent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "data_agent",
+            "agent_name": "DataAgent"
+          }
+        },
+        "planner_mcp_server": "default_mcp",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": "logistic",
+        "rationale": "The dataset has only 100 rows; using stratified splitting and 5-fold cross-validation ensures robust evaluation without overfitting to a small test set."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": null,
+          "name": "ModelAgent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_agent",
+            "agent_name": "ModelAgent"
+          }
+        },
+        "planner_mcp_server": "default_mcp",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "train_classification_model",
+            "description": "Train a Gradient Boosting classifier (robust, high accuracy) on the training data.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/brsahan_genomic-data-for-cancer/gene_expression_scaled.csv",
+              "target_column": "Cancer Present",
+              "model_type": "gradient_boosting",
+              "test_size": 0.2,
+              "random_state": null,
+              "hyperparameters": {
+                "n_estimators": 100,
+                "learning_rate": 0.1,
+                "max_depth": 3,
+                "random_state": 42
+              },
+              "model_save_path": null,
+              "features": [
+                "Gene One",
+                "Gene Two"
+              ],
+              "target": "Cancer Present",
+              "cross_validation": true,
+              "cv_folds": 5,
+              "scoring": "accuracy"
+            },
+            "planner_parameters": {
+              "model_type": "gradient_boosting",
+              "features": [
+                "Gene One",
+                "Gene Two"
+              ],
+              "target": "Cancer Present",
+              "hyperparameters": {
+                "n_estimators": 100,
+                "learning_rate": 0.1,
+                "max_depth": 3,
+                "random_state": 42
+              },
+              "cross_validation": true,
+              "cv_folds": 5,
+              "scoring": "accuracy"
+            },
+            "missing_required_parameters": [
+              "random_state"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "logistic",
+        "rationale": "Gradient Boosting is chosen for its high accuracy and built-in robustness to outliers and feature interactions; cross-validation helps prevent overfitting on the small dataset."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": null,
+          "name": "EvaluationAgent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "evaluation_agent",
+            "agent_name": "EvaluationAgent"
+          }
+        },
+        "planner_mcp_server": "default_mcp",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": null,
+        "rationale": "Provides a complete picture of model performance; metrics and confusion matrix are essential for assessing robustness and accuracy."
+      }
+    ],
+    "mcp_servers": [],
+    "validation": {
+      "status": "invalid",
+      "issue_count": 11,
+      "blocking_issue_count": 5,
+      "issues": [
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='data_agent' name='DataAgent'",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'default_mcp'",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'split_data' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 1
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_agent' name='ModelAgent'",
+          "phase_number": 2
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'default_mcp'",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'train_classification_model' has unresolved required parameters: random_state",
+          "phase_number": 2,
+          "tool_name": "train_classification_model",
+          "missing_parameters": [
+            "random_state"
+          ]
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='evaluation_agent' name='EvaluationAgent'",
+          "phase_number": 3
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'default_mcp'",
+          "phase_number": 3
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'evaluate_model' not found in mcp-catalog.yaml",
+          "phase_number": 3
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 3
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_agent",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "model_agent",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "evaluation_agent",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      }
+    ]
+  }
+}

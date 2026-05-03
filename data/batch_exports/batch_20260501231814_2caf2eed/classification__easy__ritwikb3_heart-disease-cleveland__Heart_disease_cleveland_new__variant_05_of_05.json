@@ -1,0 +1,304 @@
+{
+  "dataset_id": "classification__easy__ritwikb3_heart-disease-cleveland__Heart_disease_cleveland_new",
+  "filename": "Heart_disease_cleveland_new.csv",
+  "file_path": "/app/data/uploads/datasets/classification/easy/ritwikb3_heart-disease-cleveland/Heart_disease_cleveland_new.csv",
+  "task_type": "classification",
+  "tier": "easy",
+  "target_column": null,
+  "variant_id": 5,
+  "total_variants": 5,
+  "generated_at": "2026-05-01T23:45:38.232902+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build an interpretable classification model for heart disease prediction using decision tree and explainability techniques.",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/easy/ritwikb3_heart-disease-cleveland/Heart_disease_cleveland_new.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/easy/ritwikb3_heart-disease-cleveland/Heart_disease_cleveland_new.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": null,
+          "name": "DataPreprocessingAgent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "data_preprocessing_agent",
+            "agent_name": "DataPreprocessingAgent"
+          }
+        },
+        "planner_mcp_server": "mcp-data",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": "logistic",
+        "rationale": "Load the dataset and perform a train-test split to prepare for model training and evaluation. No missing value handling required."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": null,
+          "name": "ModelTrainingAgent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_training_agent",
+            "agent_name": "ModelTrainingAgent"
+          }
+        },
+        "planner_mcp_server": "mcp-ml",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "train_classification_model",
+            "description": "Train a decision tree classifier for interpretability and good performance on small tabular data.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/ritwikb3_heart-disease-cleveland/Heart_disease_cleveland_new.csv",
+              "target_column": "target",
+              "model_type": "decision_tree",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "max_depth": 5,
+                "min_samples_split": 10,
+                "min_samples_leaf": 5,
+                "criterion": "gini"
+              },
+              "model_save_path": null,
+              "use_grid_search": false,
+              "cross_validation_folds": null
+            },
+            "planner_parameters": {
+              "model_type": "decision_tree",
+              "hyperparameters": {
+                "max_depth": 5,
+                "min_samples_split": 10,
+                "min_samples_leaf": 5,
+                "criterion": "gini"
+              },
+              "random_state": 42,
+              "use_grid_search": false,
+              "cross_validation_folds": null
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "logistic",
+        "rationale": "Decision tree provides inherent interpretability through tree structure and feature splits, aligning with the focus on explainability."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": null,
+          "name": "ModelEvaluationAgent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_evaluation_agent",
+            "agent_name": "ModelEvaluationAgent"
+          }
+        },
+        "planner_mcp_server": "mcp-ml",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "evaluate_classification_model",
+            "description": "Evaluate the trained model on the test set and generate standard metrics.",
+            "tool_parameters": {
+              "model_path": null,
+              "test_data_path": "/app/data/uploads/datasets/classification/easy/ritwikb3_heart-disease-cleveland/Heart_disease_cleveland_new.csv",
+              "target_column": "target",
+              "metrics": [
+                "accuracy",
+                "precision",
+                "recall",
+                "f1_score",
+                "roc_auc"
+              ],
+              "output_confusion_matrix": true,
+              "output_classification_report": true,
+              "filepath": "/app/data/uploads/datasets/classification/easy/ritwikb3_heart-disease-cleveland/Heart_disease_cleveland_new.csv"
+            },
+            "planner_parameters": {
+              "metrics": [
+                "accuracy",
+                "precision",
+                "recall",
+                "f1_score",
+                "roc_auc"
+              ],
+              "output_confusion_matrix": true,
+              "output_classification_report": true
+            },
+            "missing_required_parameters": [
+              "model_path"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "logistic",
+        "rationale": "Assess model performance to confirm that interpretability does not come at the cost of unacceptable accuracy."
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": null,
+          "name": "ExplainabilityAgent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "explainability_agent",
+            "agent_name": "ExplainabilityAgent"
+          }
+        },
+        "planner_mcp_server": "mcp-explain",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": null,
+        "rationale": "Provide both global feature importance and local explanation using SHAP to meet the explainability requirement."
+      }
+    ],
+    "mcp_servers": [],
+    "validation": {
+      "status": "invalid",
+      "issue_count": 15,
+      "blocking_issue_count": 6,
+      "issues": [
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='data_preprocessing_agent' name='DataPreprocessingAgent'",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'mcp-data'",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'load_dataset' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'split_data' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 1
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_training_agent' name='ModelTrainingAgent'",
+          "phase_number": 2
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'mcp-ml'",
+          "phase_number": 2
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_evaluation_agent' name='ModelEvaluationAgent'",
+          "phase_number": 3
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'mcp-ml'",
+          "phase_number": 3
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'evaluate_classification_model' has unresolved required parameters: model_path",
+          "phase_number": 3,
+          "tool_name": "evaluate_classification_model",
+          "missing_parameters": [
+            "model_path"
+          ]
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='explainability_agent' name='ExplainabilityAgent'",
+          "phase_number": 4
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'mcp-explain'",
+          "phase_number": 4
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'feature_importance' not found in mcp-catalog.yaml",
+          "phase_number": 4
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'shap_explanation' not found in mcp-catalog.yaml",
+          "phase_number": 4
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 4
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_preprocessing_agent",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "model_training_agent",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_evaluation_agent",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "explainability_agent",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      }
+    ]
+  }
+}

@@ -1,0 +1,318 @@
+{
+  "dataset_id": "classification__mid__xhlulu_cpc-codes__titles",
+  "filename": "titles.csv",
+  "file_path": "/app/data/uploads/datasets/classification/mid/xhlulu_cpc-codes/titles.csv",
+  "task_type": "classification",
+  "tier": "mid",
+  "target_column": null,
+  "variant_id": 1,
+  "total_variants": 5,
+  "generated_at": "2026-05-02T00:38:20.584092+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a simple and fast classification model to predict the 'class' column from the 'title' text column using logistic regression.",
+    "complexity": "simple",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/mid/xhlulu_cpc-codes/titles.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/mid/xhlulu_cpc-codes/titles.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": null,
+          "name": "DataPreprocessingAgent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "data_preprocessing_agent",
+            "agent_name": "DataPreprocessingAgent"
+          }
+        },
+        "planner_mcp_server": "ml_server",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "handle_missing_values",
+            "description": "Drop rows where the target column 'class' is missing.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/mid/xhlulu_cpc-codes/titles.csv",
+              "strategy": "drop_rows",
+              "columns": [
+                "class"
+              ],
+              "output_filepath": null,
+              "fill_value": null,
+              "axis": 0,
+              "threshold": null
+            },
+            "planner_parameters": {
+              "strategy": "drop_rows",
+              "columns": [
+                "class"
+              ],
+              "fill_value": null,
+              "axis": 0,
+              "threshold": null
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Clean the dataset by removing rows with missing target values and selecting only the relevant columns for classification."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": null,
+          "name": "FeatureEngineeringAgent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "feature_engineering_agent",
+            "agent_name": "FeatureEngineeringAgent"
+          }
+        },
+        "planner_mcp_server": "ml_server",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": "logistic",
+        "rationale": "Transform the textual 'title' column into numerical features suitable for logistic regression, keeping dimensionality manageable for speed."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": null,
+          "name": "DataSplitAgent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "data_split_agent",
+            "agent_name": "DataSplitAgent"
+          }
+        },
+        "planner_mcp_server": "ml_server",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": "logistic",
+        "rationale": "Create a test set to evaluate model performance on unseen data, using stratification to preserve class distribution."
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": null,
+          "name": "ModelTrainingAgent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_training_agent",
+            "agent_name": "ModelTrainingAgent"
+          }
+        },
+        "planner_mcp_server": "ml_server",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": "logistic",
+        "rationale": "Logistic regression is fast and interpretable, suitable for text classification with TF-IDF features."
+      },
+      {
+        "phase_number": 5,
+        "agent": {
+          "id": null,
+          "name": "ModelEvaluationAgent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_evaluation_agent",
+            "agent_name": "ModelEvaluationAgent"
+          }
+        },
+        "planner_mcp_server": "ml_server",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": null,
+        "rationale": "Assess model performance comprehensively to validate its effectiveness for the classification task."
+      }
+    ],
+    "mcp_servers": [],
+    "validation": {
+      "status": "invalid",
+      "issue_count": 21,
+      "blocking_issue_count": 9,
+      "issues": [
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='data_preprocessing_agent' name='DataPreprocessingAgent'",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'ml_server'",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'load_dataset' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'select_features' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='feature_engineering_agent' name='FeatureEngineeringAgent'",
+          "phase_number": 2
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'ml_server'",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'text_vectorizer' not found in mcp-catalog.yaml",
+          "phase_number": 2
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 2
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='data_split_agent' name='DataSplitAgent'",
+          "phase_number": 3
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'ml_server'",
+          "phase_number": 3
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'train_test_split' not found in mcp-catalog.yaml",
+          "phase_number": 3
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 3
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_training_agent' name='ModelTrainingAgent'",
+          "phase_number": 4
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'ml_server'",
+          "phase_number": 4
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'train_classifier' not found in mcp-catalog.yaml",
+          "phase_number": 4
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 4
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_evaluation_agent' name='ModelEvaluationAgent'",
+          "phase_number": 5
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'ml_server'",
+          "phase_number": 5
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'evaluate_classifier' not found in mcp-catalog.yaml",
+          "phase_number": 5
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'classification_report' not found in mcp-catalog.yaml",
+          "phase_number": 5
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 5
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_preprocessing_agent",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "feature_engineering_agent",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "data_split_agent",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "model_training_agent",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-5",
+        "agentId": "model_evaluation_agent",
+        "position": {
+          "x": 1100,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      },
+      {
+        "id": "conn-4",
+        "fromInstanceId": "phase-4",
+        "toInstanceId": "phase-5"
+      }
+    ]
+  }
+}

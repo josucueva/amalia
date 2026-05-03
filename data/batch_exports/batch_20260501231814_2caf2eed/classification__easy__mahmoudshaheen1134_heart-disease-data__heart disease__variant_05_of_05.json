@@ -1,0 +1,308 @@
+{
+  "dataset_id": "classification__easy__mahmoudshaheen1134_heart-disease-data__heart disease",
+  "filename": "heart disease.csv",
+  "file_path": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/heart disease.csv",
+  "task_type": "classification",
+  "tier": "easy",
+  "target_column": null,
+  "variant_id": 5,
+  "total_variants": 5,
+  "generated_at": "2026-05-01T23:41:20.250128+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build an interpretable classification model to predict heart disease (target) using logistic regression, with full explainability analysis.",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/heart disease.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/heart disease.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": null,
+          "name": "Data Preprocessing Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "data_preprocessing_agent",
+            "agent_name": "Data Preprocessing Agent"
+          }
+        },
+        "planner_mcp_server": "preprocessing_server",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "split_dataset",
+            "description": "Split the dataset into training (80%) and testing (20%) sets, ensuring stratification on the target column.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/heart disease.csv",
+              "train_ratio": "0.8",
+              "random_state": 42,
+              "shuffle": "True",
+              "file_path": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/heart disease.csv",
+              "target_column": "target",
+              "test_size": 0.2,
+              "stratify": true,
+              "output_train_path": "/app/data/train.csv",
+              "output_test_path": "/app/data/test.csv"
+            },
+            "planner_parameters": {
+              "file_path": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/heart disease.csv",
+              "target_column": "target",
+              "test_size": 0.2,
+              "random_state": 42,
+              "stratify": true,
+              "output_train_path": "/app/data/train.csv",
+              "output_test_path": "/app/data/test.csv"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "logistic",
+        "rationale": "The dataset is clean (no missing values) and requires only splitting into training and test sets to prepare for model training and evaluation."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": null,
+          "name": "Model Training Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_training_agent",
+            "agent_name": "Model Training Agent"
+          }
+        },
+        "planner_mcp_server": "training_server",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "train_classification_model",
+            "description": "Train a logistic regression classifier for interpretability and baseline performance.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/heart disease.csv",
+              "target_column": "target",
+              "model_type": "logistic",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "penalty": "l2",
+                "C": 1.0,
+                "solver": "lbfgs",
+                "max_iter": 1000
+              },
+              "model_save_path": null,
+              "train_data_path": "/app/data/train.csv",
+              "output_model_path": "/app/data/model.pkl"
+            },
+            "planner_parameters": {
+              "model_type": "logistic",
+              "train_data_path": "/app/data/train.csv",
+              "target_column": "target",
+              "random_state": 42,
+              "hyperparameters": {
+                "penalty": "l2",
+                "C": 1.0,
+                "solver": "lbfgs",
+                "max_iter": 1000
+              },
+              "output_model_path": "/app/data/model.pkl"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "logistic",
+        "rationale": "Logistic regression is highly interpretable, providing feature coefficients directly, which aligns with the focus on explainability."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": null,
+          "name": "Model Evaluation Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_evaluation_agent",
+            "agent_name": "Model Evaluation Agent"
+          }
+        },
+        "planner_mcp_server": "evaluation_server",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "evaluate_classification_model",
+            "description": "Evaluate the trained model on the test set and compute accuracy, precision, recall, F1-score, and ROC-AUC.",
+            "tool_parameters": {
+              "model_path": "/app/data/model.pkl",
+              "test_data_path": "/app/data/test.csv",
+              "target_column": "target",
+              "metrics": [
+                "accuracy",
+                "precision",
+                "recall",
+                "f1",
+                "roc_auc"
+              ],
+              "output_report_path": "/app/data/evaluation_report.json",
+              "filepath": "/app/data/uploads/datasets/classification/easy/mahmoudshaheen1134_heart-disease-data/heart disease.csv"
+            },
+            "planner_parameters": {
+              "model_path": "/app/data/model.pkl",
+              "test_data_path": "/app/data/test.csv",
+              "target_column": "target",
+              "metrics": [
+                "accuracy",
+                "precision",
+                "recall",
+                "f1",
+                "roc_auc"
+              ],
+              "output_report_path": "/app/data/evaluation_report.json"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "logistic",
+        "rationale": "Standard evaluation metrics provide a quantitative assessment of model performance and help validate the model's predictive ability."
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": null,
+          "name": "Explainability Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "explainability_agent",
+            "agent_name": "Explainability Agent"
+          }
+        },
+        "planner_mcp_server": "explainability_server",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": "logistic",
+        "rationale": "Explainability is the core focus; logistic regression coefficients give global impact, while SHAP values provide detailed per-instance and global explanations."
+      }
+    ],
+    "mcp_servers": [],
+    "validation": {
+      "status": "invalid",
+      "issue_count": 11,
+      "blocking_issue_count": 5,
+      "issues": [
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='data_preprocessing_agent' name='Data Preprocessing Agent'",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'preprocessing_server'",
+          "phase_number": 1
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_training_agent' name='Model Training Agent'",
+          "phase_number": 2
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'training_server'",
+          "phase_number": 2
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_evaluation_agent' name='Model Evaluation Agent'",
+          "phase_number": 3
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'evaluation_server'",
+          "phase_number": 3
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='explainability_agent' name='Explainability Agent'",
+          "phase_number": 4
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'explainability_server'",
+          "phase_number": 4
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'explain_feature_importance' not found in mcp-catalog.yaml",
+          "phase_number": 4
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'shap_explanation' not found in mcp-catalog.yaml",
+          "phase_number": 4
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 4
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_preprocessing_agent",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "model_training_agent",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_evaluation_agent",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "explainability_agent",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      }
+    ]
+  }
+}

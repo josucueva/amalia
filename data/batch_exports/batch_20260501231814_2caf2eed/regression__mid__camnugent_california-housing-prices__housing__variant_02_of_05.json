@@ -1,0 +1,315 @@
+{
+  "dataset_id": "regression__mid__camnugent_california-housing-prices__housing",
+  "filename": "housing.csv",
+  "file_path": "/app/data/uploads/datasets/regression/mid/camnugent_california-housing-prices/housing.csv",
+  "task_type": "regression",
+  "tier": "mid",
+  "target_column": null,
+  "variant_id": 2,
+  "total_variants": 5,
+  "generated_at": "2026-05-02T01:28:05.712832+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build an accurate and robust regression model to predict median_house_value from housing features",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/regression/mid/camnugent_california-housing-prices/housing.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/regression/mid/camnugent_california-housing-prices/housing.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": null,
+          "name": "Data Preprocessor Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "data_preprocessor_agent",
+            "agent_name": "Data Preprocessor Agent"
+          }
+        },
+        "planner_mcp_server": "data_processing_server",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "handle_missing_values",
+            "description": "Impute missing values in total_bedrooms (known to have missing values) using median strategy",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/camnugent_california-housing-prices/housing.csv",
+              "strategy": "median",
+              "columns": [
+                "total_bedrooms"
+              ],
+              "output_filepath": null,
+              "fill_value": null
+            },
+            "planner_parameters": {
+              "strategy": "median",
+              "columns": [
+                "total_bedrooms"
+              ],
+              "fill_value": null
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "encode_categorical",
+            "description": "One-hot encode ocean_proximity since it is a nominal categorical feature",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/camnugent_california-housing-prices/housing.csv",
+              "columns": [
+                "ocean_proximity"
+              ],
+              "method": "onehot",
+              "output_filepath": null,
+              "encoding_type": "one_hot",
+              "drop_first": true
+            },
+            "planner_parameters": {
+              "columns": [
+                "ocean_proximity"
+              ],
+              "encoding_type": "one_hot",
+              "drop_first": true
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "linear",
+        "rationale": "Prepare the dataset by handling missing values, encoding categorical variables, and splitting for unbiased evaluation"
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": null,
+          "name": "Model Trainer Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_trainer_agent",
+            "agent_name": "Model Trainer Agent"
+          }
+        },
+        "planner_mcp_server": "ml_training_server",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "train_regression_model",
+            "description": "Train a Gradient Boosting regression model for accuracy and robustness on the training set",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/camnugent_california-housing-prices/housing.csv",
+              "target_column": "median_house_value",
+              "model_type": "gradient_boosting",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "n_estimators": 300,
+                "max_depth": 6,
+                "learning_rate": 0.1,
+                "subsample": 0.8,
+                "min_samples_leaf": 4
+              },
+              "model_save_path": null,
+              "feature_columns": [
+                "longitude",
+                "latitude",
+                "housing_median_age",
+                "total_rooms",
+                "total_bedrooms",
+                "population",
+                "households",
+                "median_income",
+                "ocean_proximity_NEAR BAY",
+                "ocean_proximity_<1H OCEAN",
+                "ocean_proximity_INLAND",
+                "ocean_proximity_NEAR OCEAN"
+              ]
+            },
+            "planner_parameters": {
+              "model_type": "gradient_boosting",
+              "target_column": "median_house_value",
+              "feature_columns": [
+                "longitude",
+                "latitude",
+                "housing_median_age",
+                "total_rooms",
+                "total_bedrooms",
+                "population",
+                "households",
+                "median_income",
+                "ocean_proximity_NEAR BAY",
+                "ocean_proximity_<1H OCEAN",
+                "ocean_proximity_INLAND",
+                "ocean_proximity_NEAR OCEAN"
+              ],
+              "random_state": 42,
+              "hyperparameters": {
+                "n_estimators": 300,
+                "max_depth": 6,
+                "learning_rate": 0.1,
+                "subsample": 0.8,
+                "min_samples_leaf": 4
+              }
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "linear",
+        "rationale": "Gradient Boosting is chosen for its high accuracy and robustness to outliers and nonlinear relationships in the housing data"
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": null,
+          "name": "Model Evaluator Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_evaluator_agent",
+            "agent_name": "Model Evaluator Agent"
+          }
+        },
+        "planner_mcp_server": "ml_evaluation_server",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "evaluate_regression_model",
+            "description": "Evaluate model performance on the test set using MAE, RMSE, and R\u00b2 metrics",
+            "tool_parameters": {
+              "model_path": null,
+              "test_data_path": "/app/data/uploads/datasets/regression/mid/camnugent_california-housing-prices/housing.csv",
+              "target_column": "ocean_proximity",
+              "metrics": [
+                "mae",
+                "rmse",
+                "r2"
+              ],
+              "test_data": null,
+              "filepath": "/app/data/uploads/datasets/regression/mid/camnugent_california-housing-prices/housing.csv"
+            },
+            "planner_parameters": {
+              "metrics": [
+                "mae",
+                "rmse",
+                "r2"
+              ],
+              "test_data": null
+            },
+            "missing_required_parameters": [
+              "model_path"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Quantify model performance and provide visual diagnostics to ensure robustness and identify potential issues"
+      }
+    ],
+    "mcp_servers": [],
+    "validation": {
+      "status": "invalid",
+      "issue_count": 10,
+      "blocking_issue_count": 3,
+      "issues": [
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='data_preprocessor_agent' name='Data Preprocessor Agent'",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'data_processing_server'",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'load_dataset' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'split_data' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_trainer_agent' name='Model Trainer Agent'",
+          "phase_number": 2
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'ml_training_server'",
+          "phase_number": 2
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_evaluator_agent' name='Model Evaluator Agent'",
+          "phase_number": 3
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'ml_evaluation_server'",
+          "phase_number": 3
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'evaluate_regression_model' has unresolved required parameters: model_path",
+          "phase_number": 3,
+          "tool_name": "evaluate_regression_model",
+          "missing_parameters": [
+            "model_path"
+          ]
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'plot_predictions_vs_actual' not found in mcp-catalog.yaml",
+          "phase_number": 3
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_preprocessor_agent",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "model_trainer_agent",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_evaluator_agent",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      }
+    ]
+  }
+}

@@ -1,0 +1,209 @@
+{
+  "dataset_id": "regression__hard__taweilo_mba-admission-dataset__MBA",
+  "filename": "MBA.csv",
+  "file_path": "/app/data/uploads/datasets/regression/hard/taweilo_mba-admission-dataset/MBA.csv",
+  "task_type": "regression",
+  "tier": "hard",
+  "target_column": null,
+  "variant_id": 1,
+  "total_variants": 5,
+  "generated_at": "2026-05-02T01:19:46.558510+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a simple linear regression model to predict a continuous target (admission score or similar) from MBA admission dataset with minimal preprocessing.",
+    "complexity": "simple",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/regression/hard/taweilo_mba-admission-dataset/MBA.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/regression/hard/taweilo_mba-admission-dataset/MBA.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": null,
+          "name": "Data Preprocessing Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "data_preprocessing_agent",
+            "agent_name": "Data Preprocessing Agent"
+          }
+        },
+        "planner_mcp_server": "preprocessing_server",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "load_csv",
+            "description": "Load the MBA.csv dataset",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/taweilo_mba-admission-dataset/MBA.csv",
+              "encoding": "utf-8",
+              "delimiter": ",",
+              "file_path": "/app/data/uploads/datasets/regression/hard/taweilo_mba-admission-dataset/MBA.csv",
+              "has_header": true
+            },
+            "planner_parameters": {
+              "file_path": "/app/data/uploads/datasets/regression/hard/taweilo_mba-admission-dataset/MBA.csv",
+              "delimiter": ",",
+              "has_header": true,
+              "encoding": "utf-8"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "handle_missing_values",
+            "description": "Fill missing values in 'race' and 'admission' columns (admission is target, if empty drop rows)",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/taweilo_mba-admission-dataset/MBA.csv",
+              "strategy": "drop_rows",
+              "columns": [
+                "admission"
+              ],
+              "output_filepath": null,
+              "fill_value": null
+            },
+            "planner_parameters": {
+              "strategy": "drop_rows",
+              "columns": [
+                "admission"
+              ],
+              "fill_value": null
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Clean the dataset: handle missing target rows, encode categoricals, and drop irrelevant ID column before modeling."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": null,
+          "name": "Model Training Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_training_agent",
+            "agent_name": "Model Training Agent"
+          }
+        },
+        "planner_mcp_server": "training_server",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "train_regression_model",
+            "description": "Train a linear regression model for speed and simplicity",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/hard/taweilo_mba-admission-dataset/MBA.csv",
+              "target_column": "admission",
+              "model_type": "linear",
+              "test_size": 0.2,
+              "random_state": null,
+              "hyperparameters": {},
+              "model_save_path": null,
+              "features": null
+            },
+            "planner_parameters": {
+              "model_type": "linear",
+              "target_column": "admission",
+              "features": null,
+              "hyperparameters": {}
+            },
+            "missing_required_parameters": [
+              "random_state"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "linear",
+        "rationale": "Train a quick linear regression model and evaluate performance. The dataset is small, so linear reg. is appropriate for a simple pipeline."
+      }
+    ],
+    "mcp_servers": [],
+    "validation": {
+      "status": "invalid",
+      "issue_count": 9,
+      "blocking_issue_count": 2,
+      "issues": [
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='data_preprocessing_agent' name='Data Preprocessing Agent'",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'preprocessing_server'",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'convert_to_numeric' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'drop_columns' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_training_agent' name='Model Training Agent'",
+          "phase_number": 2
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'training_server'",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'train_test_split' not found in mcp-catalog.yaml",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'train_regression_model' has unresolved required parameters: random_state",
+          "phase_number": 2,
+          "tool_name": "train_regression_model",
+          "missing_parameters": [
+            "random_state"
+          ]
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'evaluate_regression' not found in mcp-catalog.yaml",
+          "phase_number": 2
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_preprocessing_agent",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "model_training_agent",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      }
+    ]
+  }
+}

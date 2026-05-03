@@ -1,0 +1,197 @@
+{
+  "dataset_id": "classification__easy__brsahan_genomic-data-for-cancer__gene_expression",
+  "filename": "gene_expression.csv",
+  "file_path": "/app/data/uploads/datasets/classification/easy/brsahan_genomic-data-for-cancer/gene_expression.csv",
+  "task_type": "classification",
+  "tier": "easy",
+  "target_column": null,
+  "variant_id": 4,
+  "total_variants": 5,
+  "generated_at": "2026-05-01T23:22:55.663847+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Train an ensemble classification model (Random Forest) to predict Cancer Present from two gene expression features.",
+    "complexity": "simple",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/easy/brsahan_genomic-data-for-cancer/gene_expression.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/easy/brsahan_genomic-data-for-cancer/gene_expression.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": null,
+          "name": "Data Scientist",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "data_scientist_agent",
+            "agent_name": "Data Scientist"
+          }
+        },
+        "planner_mcp_server": "ml_workflow_server",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "split_dataset",
+            "description": "Split data into training and testing sets.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/brsahan_genomic-data-for-cancer/gene_expression.csv",
+              "train_ratio": "0.8",
+              "random_state": 42,
+              "shuffle": true,
+              "test_size": 0.3,
+              "stratify": true
+            },
+            "planner_parameters": {
+              "test_size": 0.3,
+              "random_state": 42,
+              "stratify": true,
+              "shuffle": true
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "logistic",
+        "rationale": "Load and split the dataset into train/test subsets to prepare for model training and evaluation."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": null,
+          "name": "ML Engineer",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "ml_engineer_agent",
+            "agent_name": "ML Engineer"
+          }
+        },
+        "planner_mcp_server": "ml_training_server",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "train_classification_model",
+            "description": "Train a Random Forest classifier on the training data.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/brsahan_genomic-data-for-cancer/gene_expression.csv",
+              "target_column": "Cancer Present",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": null,
+              "hyperparameters": {
+                "n_estimators": 100,
+                "max_depth": null,
+                "random_state": 42
+              },
+              "model_save_path": null,
+              "features": [
+                "Gene One",
+                "Gene Two"
+              ],
+              "target": "Cancer Present",
+              "cv_folds": 5,
+              "scoring_metric": "accuracy"
+            },
+            "planner_parameters": {
+              "model_type": "random_forest",
+              "features": [
+                "Gene One",
+                "Gene Two"
+              ],
+              "target": "Cancer Present",
+              "hyperparameters": {
+                "n_estimators": 100,
+                "max_depth": null,
+                "random_state": 42
+              },
+              "cv_folds": 5,
+              "scoring_metric": "accuracy"
+            },
+            "missing_required_parameters": [
+              "random_state"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "logistic",
+        "rationale": "Train an ensemble Random Forest model to leverage model diversity and evaluate its performance on unseen data."
+      }
+    ],
+    "mcp_servers": [],
+    "validation": {
+      "status": "invalid",
+      "issue_count": 7,
+      "blocking_issue_count": 2,
+      "issues": [
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='data_scientist_agent' name='Data Scientist'",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'ml_workflow_server'",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'load_dataset' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='ml_engineer_agent' name='ML Engineer'",
+          "phase_number": 2
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'ml_training_server'",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'train_classification_model' has unresolved required parameters: random_state",
+          "phase_number": 2,
+          "tool_name": "train_classification_model",
+          "missing_parameters": [
+            "random_state"
+          ]
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'evaluate_model' not found in mcp-catalog.yaml",
+          "phase_number": 2
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_scientist_agent",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "ml_engineer_agent",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      }
+    ]
+  }
+}

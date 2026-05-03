@@ -1,0 +1,317 @@
+{
+  "dataset_id": "classification__easy__priyanshusethi_happiness-classification-dataset__happydata",
+  "filename": "happydata.csv",
+  "file_path": "/app/data/uploads/datasets/classification/easy/priyanshusethi_happiness-classification-dataset/happydata.csv",
+  "task_type": "classification",
+  "tier": "easy",
+  "target_column": null,
+  "variant_id": 4,
+  "total_variants": 5,
+  "generated_at": "2026-05-01T23:43:27.579255+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a classification model to predict happiness using ensemble methods on a small dataset (100 rows, 6 features, binary target 'happy')",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/easy/priyanshusethi_happiness-classification-dataset/happydata.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/easy/priyanshusethi_happiness-classification-dataset/happydata.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "interaction_agent",
+          "name": "Interaction Agent",
+          "yaml_path": "config/agents/interaction_agent.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "interaction_agent",
+            "agent_name": "Interaction Agent"
+          }
+        },
+        "planner_mcp_server": "orchestrator_server",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": "logistic",
+        "rationale": "Prepare data for model training and evaluation; small dataset requires careful split to avoid overfitting"
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "orchestrator_agent",
+          "name": "Orchestrator Agent",
+          "yaml_path": "config/agents/orchestrator_agent.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "orchestrator_agent",
+            "agent_name": "Orchestrator Agent"
+          }
+        },
+        "planner_mcp_server": "orchestrator_server",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "train_classification_model",
+            "description": "Train Random Forest classifier (ensemble method) using training set",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/priyanshusethi_happiness-classification-dataset/happydata.csv",
+              "target_column": "happy",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": null,
+              "hyperparameters": {
+                "n_estimators": 100,
+                "max_depth": null,
+                "random_state": 42
+              },
+              "model_save_path": null,
+              "train_file": "/app/data/train_happy.csv",
+              "output_model_file": "/app/data/rf_model.pkl",
+              "feature_columns": [
+                "infoavail",
+                "housecost",
+                "schoolquality",
+                "policetrust",
+                "streetquality",
+                "\u00ebvents"
+              ]
+            },
+            "planner_parameters": {
+              "train_file": "/app/data/train_happy.csv",
+              "model_type": "random_forest",
+              "target_column": "happy",
+              "hyperparameters": {
+                "n_estimators": 100,
+                "max_depth": null,
+                "random_state": 42
+              },
+              "output_model_file": "/app/data/rf_model.pkl",
+              "feature_columns": [
+                "infoavail",
+                "housecost",
+                "schoolquality",
+                "policetrust",
+                "streetquality",
+                "\u00ebvents"
+              ]
+            },
+            "missing_required_parameters": [
+              "random_state"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "logistic",
+        "rationale": "Random Forest provides robust ensemble learning with feature importance; suitable for small datasets with mixed integer features"
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": "orchestrator_agent",
+          "name": "Orchestrator Agent",
+          "yaml_path": "config/agents/orchestrator_agent.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "orchestrator_agent",
+            "agent_name": "Orchestrator Agent"
+          }
+        },
+        "planner_mcp_server": "orchestrator_server",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "train_classification_model",
+            "description": "Train Gradient Boosting classifier (ensemble method) using same training set for diversity",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/priyanshusethi_happiness-classification-dataset/happydata.csv",
+              "target_column": "happy",
+              "model_type": "gradient_boosting",
+              "test_size": 0.2,
+              "random_state": null,
+              "hyperparameters": {
+                "n_estimators": 100,
+                "learning_rate": 0.1,
+                "max_depth": 3,
+                "random_state": 42
+              },
+              "model_save_path": null,
+              "train_file": "/app/data/train_happy.csv",
+              "output_model_file": "/app/data/gb_model.pkl",
+              "feature_columns": [
+                "infoavail",
+                "housecost",
+                "schoolquality",
+                "policetrust",
+                "streetquality",
+                "\u00ebvents"
+              ]
+            },
+            "planner_parameters": {
+              "train_file": "/app/data/train_happy.csv",
+              "model_type": "gradient_boosting",
+              "target_column": "happy",
+              "hyperparameters": {
+                "n_estimators": 100,
+                "learning_rate": 0.1,
+                "max_depth": 3,
+                "random_state": 42
+              },
+              "output_model_file": "/app/data/gb_model.pkl",
+              "feature_columns": [
+                "infoavail",
+                "housecost",
+                "schoolquality",
+                "policetrust",
+                "streetquality",
+                "\u00ebvents"
+              ]
+            },
+            "missing_required_parameters": [
+              "random_state"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "logistic",
+        "rationale": "Gradient Boosting offers an alternative ensemble approach, capturing different patterns; model diversity is emphasized as per approach hint"
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": "interaction_agent",
+          "name": "Interaction Agent",
+          "yaml_path": "config/agents/interaction_agent.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "interaction_agent",
+            "agent_name": "Interaction Agent"
+          }
+        },
+        "planner_mcp_server": "orchestrator_server",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": null,
+        "rationale": "Systematic evaluation to select the best ensemble model; report guides final decision"
+      }
+    ],
+    "mcp_servers": [],
+    "validation": {
+      "status": "invalid",
+      "issue_count": 10,
+      "blocking_issue_count": 2,
+      "issues": [
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'orchestrator_server'",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'split_data' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'orchestrator_server'",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'train_classification_model' has unresolved required parameters: random_state",
+          "phase_number": 2,
+          "tool_name": "train_classification_model",
+          "missing_parameters": [
+            "random_state"
+          ]
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'orchestrator_server'",
+          "phase_number": 3
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'train_classification_model' has unresolved required parameters: random_state",
+          "phase_number": 3,
+          "tool_name": "train_classification_model",
+          "missing_parameters": [
+            "random_state"
+          ]
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'orchestrator_server'",
+          "phase_number": 4
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'evaluate_model' not found in mcp-catalog.yaml",
+          "phase_number": 4
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 4
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "interaction_agent",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "orchestrator_agent",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "orchestrator_agent",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "interaction_agent",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      }
+    ]
+  }
+}

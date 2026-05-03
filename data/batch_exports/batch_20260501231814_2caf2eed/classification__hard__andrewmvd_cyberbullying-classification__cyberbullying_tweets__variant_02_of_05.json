@@ -1,0 +1,322 @@
+{
+  "dataset_id": "classification__hard__andrewmvd_cyberbullying-classification__cyberbullying_tweets",
+  "filename": "cyberbullying_tweets.csv",
+  "file_path": "/app/data/uploads/datasets/classification/hard/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+  "task_type": "classification",
+  "tier": "hard",
+  "target_column": null,
+  "variant_id": 2,
+  "total_variants": 5,
+  "generated_at": "2026-05-02T00:00:27.015471+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a robust text classification model to predict cyberbullying type from tweet text.",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/hard/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/hard/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": "data_loader",
+          "name": "Data Loader",
+          "yaml_path": "config/agents/data_loader.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_loader_agent",
+            "agent_name": "Data Loader"
+          }
+        },
+        "planner_mcp_server": "mcp_data_loading",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "load_csv",
+            "description": "Load the dataset from the given file path.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+              "encoding": "utf-8",
+              "delimiter": ",",
+              "file_path": "/app/data/uploads/datasets/classification/hard/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+              "header": true,
+              "columns_to_load": null,
+              "sample_rows": null
+            },
+            "planner_parameters": {
+              "file_path": "/app/data/uploads/datasets/classification/hard/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+              "delimiter": ",",
+              "encoding": "utf-8",
+              "header": true,
+              "columns_to_load": null,
+              "sample_rows": null
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Load the dataset into memory for further processing."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": "data_preprocessor",
+          "name": "data_preprocessor",
+          "yaml_path": "config/agents/data_preprocessor.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "data_preprocessor_agent",
+            "agent_name": "Data Preprocessor"
+          }
+        },
+        "planner_mcp_server": "mcp_data_preprocessing",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": null,
+        "rationale": "Text cleaning and label encoding are essential preprocessing steps for classification."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": null,
+          "name": "Feature Extractor",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "feature_extractor_agent",
+            "agent_name": "Feature Extractor"
+          }
+        },
+        "planner_mcp_server": "mcp_feature_extraction",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": null,
+        "rationale": "TF-IDF vectorization captures word importance and pairwise phrases, suitable for short text like tweets."
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": "model_trainer",
+          "name": "model_trainer",
+          "yaml_path": "config/agents/model_trainer.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_trainer_agent",
+            "agent_name": "Model Trainer"
+          }
+        },
+        "planner_mcp_server": "mcp_model_training",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "train_classification_model",
+            "description": "Train a Random Forest classifier for robust accuracy.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/hard/andrewmvd_cyberbullying-classification/cyberbullying_tweets.csv",
+              "target_column": "label",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "n_estimators": 100,
+                "max_depth": null,
+                "min_samples_split": 2,
+                "min_samples_leaf": 1,
+                "bootstrap": true,
+                "criterion": "gini"
+              },
+              "model_save_path": null,
+              "feature_columns": [
+                "tfidf_feature"
+              ],
+              "cv_folds": 5,
+              "scoring": "accuracy"
+            },
+            "planner_parameters": {
+              "model_type": "random_forest",
+              "feature_columns": [
+                "tfidf_feature"
+              ],
+              "target_column": "label",
+              "test_size": 0.2,
+              "random_state": 42,
+              "hyperparameters": {
+                "n_estimators": 100,
+                "max_depth": null,
+                "min_samples_split": 2,
+                "min_samples_leaf": 1,
+                "bootstrap": true,
+                "criterion": "gini"
+              },
+              "cv_folds": 5,
+              "scoring": "accuracy"
+            },
+            "missing_required_parameters": [],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "logistic",
+        "rationale": "Random Forest is robust, handles high-dimensional sparse data well, and aligns with accuracy focus."
+      },
+      {
+        "phase_number": 5,
+        "agent": {
+          "id": "model_evaluator",
+          "name": "model_evaluator",
+          "yaml_path": "config/agents/model_evaluator.yaml",
+          "yaml_exists": true,
+          "planner_reference": {
+            "agent_id": "model_evaluator_agent",
+            "agent_name": "Model Evaluator"
+          }
+        },
+        "planner_mcp_server": "mcp_model_evaluation",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": null,
+        "rationale": "Standard evaluation to measure model performance and diagnose class imbalance."
+      }
+    ],
+    "mcp_servers": [],
+    "validation": {
+      "status": "invalid",
+      "issue_count": 13,
+      "blocking_issue_count": 4,
+      "issues": [
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'mcp_data_loading'",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'mcp_data_preprocessing'",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'preprocess_text' not found in mcp-catalog.yaml",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'encode_labels' not found in mcp-catalog.yaml",
+          "phase_number": 2
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 2
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='feature_extractor_agent' name='Feature Extractor'",
+          "phase_number": 3
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'mcp_feature_extraction'",
+          "phase_number": 3
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'vectorize_text' not found in mcp-catalog.yaml",
+          "phase_number": 3
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 3
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'mcp_model_training'",
+          "phase_number": 4
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'mcp_model_evaluation'",
+          "phase_number": 5
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'evaluate_classification' not found in mcp-catalog.yaml",
+          "phase_number": 5
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 5
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "data_preprocessor",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "feature_extractor_agent",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "model_trainer",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-5",
+        "agentId": "model_evaluator",
+        "position": {
+          "x": 1100,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      },
+      {
+        "id": "conn-4",
+        "fromInstanceId": "phase-4",
+        "toInstanceId": "phase-5"
+      }
+    ]
+  }
+}

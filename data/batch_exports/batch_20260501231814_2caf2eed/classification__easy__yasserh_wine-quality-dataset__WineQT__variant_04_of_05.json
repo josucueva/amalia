@@ -1,0 +1,455 @@
+{
+  "dataset_id": "classification__easy__yasserh_wine-quality-dataset__WineQT",
+  "filename": "WineQT.csv",
+  "file_path": "/app/data/uploads/datasets/classification/easy/yasserh_wine-quality-dataset/WineQT.csv",
+  "task_type": "classification",
+  "tier": "easy",
+  "target_column": null,
+  "variant_id": 4,
+  "total_variants": 5,
+  "generated_at": "2026-05-01T23:55:56.141545+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build a multi-class classification ensemble pipeline for wine quality prediction using the WineQT.csv dataset, leveraging diverse models and a voting ensemble to maximize accuracy.",
+    "complexity": "complex",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/classification/easy/yasserh_wine-quality-dataset/WineQT.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/classification/easy/yasserh_wine-quality-dataset/WineQT.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": null,
+          "name": "Data Preprocessing Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "data_preprocessing_agent",
+            "agent_name": "Data Preprocessing Agent"
+          }
+        },
+        "planner_mcp_server": "data_preprocessing_server",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": "logistic",
+        "rationale": "Prepare data by splitting, removing irrelevant Id column, and scaling features for better model convergence and performance."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": null,
+          "name": "Model Training Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_training_agent",
+            "agent_name": "Model Training Agent"
+          }
+        },
+        "planner_mcp_server": "model_training_server",
+        "resolved_mcp_server": {
+          "id": "python-model_training",
+          "name": "Model Training Server",
+          "is_available": true
+        },
+        "tools": [
+          {
+            "tool_name": "train_classification_model",
+            "description": "Train a Random Forest classifier as one of the diverse base models.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/yasserh_wine-quality-dataset/WineQT.csv",
+              "target_column": "quality",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": null,
+              "hyperparameters": {
+                "n_estimators": 100,
+                "max_depth": 10,
+                "random_state": 42
+              },
+              "model_save_path": null,
+              "training_data": "scaled_train",
+              "model_name": "random_forest"
+            },
+            "planner_parameters": {
+              "model_type": "random_forest",
+              "hyperparameters": {
+                "n_estimators": 100,
+                "max_depth": 10,
+                "random_state": 42
+              },
+              "training_data": "scaled_train",
+              "target_column": "quality",
+              "model_name": "random_forest"
+            },
+            "missing_required_parameters": [
+              "random_state"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "train_classification_model",
+            "description": "Train a Gradient Boosting classifier for ensemble diversity.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/yasserh_wine-quality-dataset/WineQT.csv",
+              "target_column": "quality",
+              "model_type": "gradient_boosting",
+              "test_size": 0.2,
+              "random_state": null,
+              "hyperparameters": {
+                "n_estimators": 100,
+                "learning_rate": 0.1,
+                "max_depth": 3,
+                "random_state": 42
+              },
+              "model_save_path": null,
+              "training_data": "scaled_train",
+              "model_name": "gradient_boosting"
+            },
+            "planner_parameters": {
+              "model_type": "gradient_boosting",
+              "hyperparameters": {
+                "n_estimators": 100,
+                "learning_rate": 0.1,
+                "max_depth": 3,
+                "random_state": 42
+              },
+              "training_data": "scaled_train",
+              "target_column": "quality",
+              "model_name": "gradient_boosting"
+            },
+            "missing_required_parameters": [
+              "random_state"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "train_classification_model",
+            "description": "Train an SVM classifier for diversity (handles non-linear boundaries).",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/yasserh_wine-quality-dataset/WineQT.csv",
+              "target_column": "quality",
+              "model_type": "svm",
+              "test_size": 0.2,
+              "random_state": null,
+              "hyperparameters": {
+                "kernel": "rbf",
+                "C": 1.0,
+                "gamma": "scale",
+                "random_state": 42
+              },
+              "model_save_path": null,
+              "training_data": "scaled_train",
+              "model_name": "svm"
+            },
+            "planner_parameters": {
+              "model_type": "svm",
+              "hyperparameters": {
+                "kernel": "rbf",
+                "C": 1.0,
+                "gamma": "scale",
+                "random_state": 42
+              },
+              "training_data": "scaled_train",
+              "target_column": "quality",
+              "model_name": "svm"
+            },
+            "missing_required_parameters": [
+              "random_state"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          },
+          {
+            "tool_name": "train_classification_model",
+            "description": "Train a KNN classifier as another diverse base model.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/classification/easy/yasserh_wine-quality-dataset/WineQT.csv",
+              "target_column": "quality",
+              "model_type": "knn",
+              "test_size": 0.2,
+              "random_state": null,
+              "hyperparameters": {
+                "n_neighbors": 5,
+                "weights": "distance"
+              },
+              "model_save_path": null,
+              "training_data": "scaled_train",
+              "model_name": "knn"
+            },
+            "planner_parameters": {
+              "model_type": "knn",
+              "hyperparameters": {
+                "n_neighbors": 5,
+                "weights": "distance"
+              },
+              "training_data": "scaled_train",
+              "target_column": "quality",
+              "model_name": "knn"
+            },
+            "missing_required_parameters": [
+              "random_state"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "svm",
+        "rationale": "Train four diverse classifiers (RandomForest, GradientBoosting, SVM, KNN) to capture different decision boundaries, ensuring ensemble benefits from model diversity."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": null,
+          "name": "Ensemble Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "ensemble_agent",
+            "agent_name": "Ensemble Agent"
+          }
+        },
+        "planner_mcp_server": "ensemble_server",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": "logistic",
+        "rationale": "Ensemble methods reduce overfitting and combine strengths: soft voting uses predicted probabilities, typically yielding better accuracy than individual models."
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": null,
+          "name": "Evaluation Agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "evaluation_agent",
+            "agent_name": "Evaluation Agent"
+          }
+        },
+        "planner_mcp_server": "evaluation_server",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "evaluate_classification_model",
+            "description": "Evaluate the voting ensemble on the test set and report accuracy, precision, recall, F1-score, and confusion matrix.",
+            "tool_parameters": {
+              "model_path": null,
+              "test_data_path": "/app/data/uploads/datasets/classification/easy/yasserh_wine-quality-dataset/WineQT.csv",
+              "target_column": "quality",
+              "model": "wine_quality_voting_ensemble",
+              "test_data": "scaled_test",
+              "metrics": [
+                "accuracy",
+                "precision",
+                "recall",
+                "f1",
+                "confusion_matrix"
+              ],
+              "output_report": true,
+              "filepath": "/app/data/uploads/datasets/classification/easy/yasserh_wine-quality-dataset/WineQT.csv"
+            },
+            "planner_parameters": {
+              "model": "wine_quality_voting_ensemble",
+              "test_data": "scaled_test",
+              "target_column": "quality",
+              "metrics": [
+                "accuracy",
+                "precision",
+                "recall",
+                "f1",
+                "confusion_matrix"
+              ],
+              "output_report": true
+            },
+            "missing_required_parameters": [
+              "model_path"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Assess final ensemble performance to ensure the model meets classification objectives and to detect any class imbalance or misclassification patterns."
+      }
+    ],
+    "mcp_servers": [
+      {
+        "id": "python-model_training",
+        "name": "Model Training Server",
+        "command": "python",
+        "args": [
+          "/app/mcp_servers/model_training/server.py"
+        ],
+        "env": {
+          "PYTHONPATH": "/app"
+        },
+        "is_available": true,
+        "description": "Machine learning model training, hyperparameter tuning, and optimization"
+      }
+    ],
+    "validation": {
+      "status": "invalid",
+      "issue_count": 17,
+      "blocking_issue_count": 6,
+      "issues": [
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='data_preprocessing_agent' name='Data Preprocessing Agent'",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'data_preprocessing_server'",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'train_test_split' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'feature_scaler' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 1
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_training_agent' name='Model Training Agent'",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'train_classification_model' has unresolved required parameters: random_state",
+          "phase_number": 2,
+          "tool_name": "train_classification_model",
+          "missing_parameters": [
+            "random_state"
+          ]
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'train_classification_model' has unresolved required parameters: random_state",
+          "phase_number": 2,
+          "tool_name": "train_classification_model",
+          "missing_parameters": [
+            "random_state"
+          ]
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'train_classification_model' has unresolved required parameters: random_state",
+          "phase_number": 2,
+          "tool_name": "train_classification_model",
+          "missing_parameters": [
+            "random_state"
+          ]
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'train_classification_model' has unresolved required parameters: random_state",
+          "phase_number": 2,
+          "tool_name": "train_classification_model",
+          "missing_parameters": [
+            "random_state"
+          ]
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='ensemble_agent' name='Ensemble Agent'",
+          "phase_number": 3
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'ensemble_server'",
+          "phase_number": 3
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'build_voting_ensemble' not found in mcp-catalog.yaml",
+          "phase_number": 3
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 3
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='evaluation_agent' name='Evaluation Agent'",
+          "phase_number": 4
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'evaluation_server'",
+          "phase_number": 4
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'evaluate_classification_model' has unresolved required parameters: model_path",
+          "phase_number": 4,
+          "tool_name": "evaluate_classification_model",
+          "missing_parameters": [
+            "model_path"
+          ]
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_preprocessing_agent",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "model_training_agent",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "ensemble_agent",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "evaluation_agent",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      }
+    ]
+  }
+}

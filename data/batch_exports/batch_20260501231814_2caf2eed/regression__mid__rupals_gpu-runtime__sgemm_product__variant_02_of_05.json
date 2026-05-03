@@ -1,0 +1,308 @@
+{
+  "dataset_id": "regression__mid__rupals_gpu-runtime__sgemm_product",
+  "filename": "sgemm_product.csv",
+  "file_path": "/app/data/uploads/datasets/regression/mid/rupals_gpu-runtime/sgemm_product.csv",
+  "task_type": "regression",
+  "tier": "mid",
+  "target_column": null,
+  "variant_id": 2,
+  "total_variants": 5,
+  "generated_at": "2026-05-02T01:42:19.174342+00:00",
+  "workflow": {
+    "type": "amalia_pipeline_export_v1",
+    "format_version": "1.0",
+    "objective": "Build an accurate and robust regression model to predict GPU kernel runtime (Run4 in ms) from 14 integer kernel configuration features.",
+    "complexity": "moderate",
+    "dataset": {
+      "file_path": "/app/data/uploads/datasets/regression/mid/rupals_gpu-runtime/sgemm_product.csv",
+      "exists_on_disk": true,
+      "resolved_path": "/app/data/uploads/datasets/regression/mid/rupals_gpu-runtime/sgemm_product.csv"
+    },
+    "steps": [
+      {
+        "phase_number": 1,
+        "agent": {
+          "id": null,
+          "name": "data_loader_agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "data_loader_agent",
+            "agent_name": "data_loader_agent"
+          }
+        },
+        "planner_mcp_server": "filesystem_server",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": null,
+        "rationale": "Load the dataset from the filesystem so that it can be passed to downstream agents for splitting and modeling."
+      },
+      {
+        "phase_number": 2,
+        "agent": {
+          "id": null,
+          "name": "data_splitter_agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "data_splitter_agent",
+            "agent_name": "data_splitter_agent"
+          }
+        },
+        "planner_mcp_server": "ml_tools_server",
+        "resolved_mcp_server": null,
+        "tools": [],
+        "selected_model_type": "linear",
+        "rationale": "Create a held-out test set to evaluate model generalization, avoiding leakage of training data into evaluation."
+      },
+      {
+        "phase_number": 3,
+        "agent": {
+          "id": null,
+          "name": "model_trainer_agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_trainer_agent",
+            "agent_name": "model_trainer_agent"
+          }
+        },
+        "planner_mcp_server": "ml_tools_server",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "train_regression_model",
+            "description": "Train a Random Forest regression model for robustness and accuracy on the feature-target relationship.",
+            "tool_parameters": {
+              "filepath": "/app/data/uploads/datasets/regression/mid/rupals_gpu-runtime/sgemm_product.csv",
+              "target_column": "Run4 (ms)",
+              "model_type": "random_forest",
+              "test_size": 0.2,
+              "random_state": null,
+              "hyperparameters": {
+                "n_estimators": 100,
+                "max_depth": null,
+                "min_samples_split": 2,
+                "min_samples_leaf": 1,
+                "random_state": 42
+              },
+              "model_save_path": null,
+              "feature_columns": null,
+              "use_gpu": false,
+              "validation_split": 0.0,
+              "early_stopping": false
+            },
+            "planner_parameters": {
+              "model_type": "random_forest",
+              "target_column": "Run4 (ms)",
+              "hyperparameters": {
+                "n_estimators": 100,
+                "max_depth": null,
+                "min_samples_split": 2,
+                "min_samples_leaf": 1,
+                "random_state": 42
+              },
+              "feature_columns": null,
+              "use_gpu": false,
+              "validation_split": 0.0,
+              "early_stopping": false
+            },
+            "missing_required_parameters": [
+              "random_state"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": "linear",
+        "rationale": "Random Forest handles non-linear interactions among the 14 configuration features and provides robust predictions with built-in feature importance."
+      },
+      {
+        "phase_number": 4,
+        "agent": {
+          "id": null,
+          "name": "model_evaluator_agent",
+          "yaml_path": null,
+          "yaml_exists": false,
+          "planner_reference": {
+            "agent_id": "model_evaluator_agent",
+            "agent_name": "model_evaluator_agent"
+          }
+        },
+        "planner_mcp_server": "ml_tools_server",
+        "resolved_mcp_server": null,
+        "tools": [
+          {
+            "tool_name": "evaluate_regression_model",
+            "description": "Compute performance metrics (R\u00b2, MAE, RMSE) on the test set to quantify model accuracy.",
+            "tool_parameters": {
+              "model_path": null,
+              "test_data_path": "/app/data/uploads/datasets/regression/mid/rupals_gpu-runtime/sgemm_product.csv",
+              "target_column": "Run4 (ms)",
+              "metrics": [
+                "r2",
+                "mae",
+                "rmse"
+              ],
+              "plot_residuals": true,
+              "plot_predictions_vs_actual": true,
+              "filepath": "/app/data/uploads/datasets/regression/mid/rupals_gpu-runtime/sgemm_product.csv"
+            },
+            "planner_parameters": {
+              "target_column": "Run4 (ms)",
+              "metrics": [
+                "r2",
+                "mae",
+                "rmse"
+              ],
+              "plot_residuals": true,
+              "plot_predictions_vs_actual": true
+            },
+            "missing_required_parameters": [
+              "model_path"
+            ],
+            "parameter_source": "mcp_catalog_defaults_and_context"
+          }
+        ],
+        "selected_model_type": null,
+        "rationale": "Measure model performance and diagnose residuals to ensure the regression model meets accuracy requirements."
+      }
+    ],
+    "mcp_servers": [],
+    "validation": {
+      "status": "invalid",
+      "issue_count": 14,
+      "blocking_issue_count": 6,
+      "issues": [
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='data_loader_agent' name='data_loader_agent'",
+          "phase_number": 1
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'filesystem_server'",
+          "phase_number": 1
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'read_csv' not found in mcp-catalog.yaml",
+          "phase_number": 1
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 1
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='data_splitter_agent' name='data_splitter_agent'",
+          "phase_number": 2
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'ml_tools_server'",
+          "phase_number": 2
+        },
+        {
+          "code": "tool_not_in_catalog",
+          "message": "Tool 'train_test_split' not found in mcp-catalog.yaml",
+          "phase_number": 2
+        },
+        {
+          "code": "no_valid_tools_for_phase",
+          "message": "All tools in phase were invalid or unresolved",
+          "phase_number": 2
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_trainer_agent' name='model_trainer_agent'",
+          "phase_number": 3
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'ml_tools_server'",
+          "phase_number": 3
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'train_regression_model' has unresolved required parameters: random_state",
+          "phase_number": 3,
+          "tool_name": "train_regression_model",
+          "missing_parameters": [
+            "random_state"
+          ]
+        },
+        {
+          "code": "agent_unresolved",
+          "message": "Planner referenced unresolved agent id='model_evaluator_agent' name='model_evaluator_agent'",
+          "phase_number": 4
+        },
+        {
+          "code": "mcp_server_unresolved",
+          "message": "Planner referenced unresolved MCP server 'ml_tools_server'",
+          "phase_number": 4
+        },
+        {
+          "code": "tool_required_parameters_unresolved",
+          "message": "Tool 'evaluate_regression_model' has unresolved required parameters: model_path",
+          "phase_number": 4,
+          "tool_name": "evaluate_regression_model",
+          "missing_parameters": [
+            "model_path"
+          ]
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "instanceId": "phase-1",
+        "agentId": "data_loader_agent",
+        "position": {
+          "x": 220,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-2",
+        "agentId": "data_splitter_agent",
+        "position": {
+          "x": 440,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-3",
+        "agentId": "model_trainer_agent",
+        "position": {
+          "x": 660,
+          "y": 200
+        }
+      },
+      {
+        "instanceId": "phase-4",
+        "agentId": "model_evaluator_agent",
+        "position": {
+          "x": 880,
+          "y": 200
+        }
+      }
+    ],
+    "connections": [
+      {
+        "id": "conn-1",
+        "fromInstanceId": "phase-1",
+        "toInstanceId": "phase-2"
+      },
+      {
+        "id": "conn-2",
+        "fromInstanceId": "phase-2",
+        "toInstanceId": "phase-3"
+      },
+      {
+        "id": "conn-3",
+        "fromInstanceId": "phase-3",
+        "toInstanceId": "phase-4"
+      }
+    ]
+  }
+}
