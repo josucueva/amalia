@@ -1,0 +1,19 @@
+Model,Difficulty,Task Type,Pipeline Count
+DeepSeek,easy,classification,81
+DeepSeek,easy,regression,44
+DeepSeek,medium,classification,66
+DeepSeek,medium,regression,34
+DeepSeek,hard,classification,74
+DeepSeek,hard,regression,26
+Mistral,easy,classification,60
+Mistral,easy,regression,40
+Mistral,medium,classification,55
+Mistral,medium,regression,45
+Mistral,hard,classification,60
+Mistral,hard,regression,40
+Llama,easy,classification,60
+Llama,easy,regression,40
+Llama,medium,classification,55
+Llama,medium,regression,45
+Llama,hard,classification,55
+Llama,hard,regression,45

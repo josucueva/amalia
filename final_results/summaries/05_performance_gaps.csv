@@ -1,0 +1,5 @@
+Metric,DeepSeek (%),Mistral (%),Llama (%),DeepSeek vs Mistral,DeepSeek vs Llama,Mistral vs Llama
+Overall Success Rate,72.3,54.7,37.7,+17.6pp,+34.6pp,+17.0pp
+Easy Difficulty,92.0,75.0,47.0,+17.0pp,+45.0pp,+28.0pp
+Medium Difficulty,72.0,48.0,43.0,+24.0pp,+29.0pp,+5.0pp
+Hard Difficulty,48.0,41.0,23.0,+7.0pp,+25.0pp,+18.0pp

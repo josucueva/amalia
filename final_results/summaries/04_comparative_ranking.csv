@@ -1,0 +1,13 @@
+Rank,Model,Category,Value
+1,DeepSeek,Overall Success Rate,72.3%
+2,Mistral,Overall Success Rate,54.7%
+3,Llama,Overall Success Rate,37.7%
+1,DeepSeek,Easy Difficulty,92.0%
+2,Mistral,Easy Difficulty,75.0%
+3,Llama,Easy Difficulty,47.0%
+1,DeepSeek,Medium Difficulty,72.0%
+2,Mistral,Medium Difficulty,48.0%
+3,Llama,Medium Difficulty,43.0%
+1,DeepSeek,Hard Difficulty,48.0%
+2,Mistral,Hard Difficulty,41.0%
+3,Llama,Hard Difficulty,23.0%

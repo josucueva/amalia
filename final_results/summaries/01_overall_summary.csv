@@ -1,0 +1,4 @@
+Model,Total Pipelines,Successful,Success Rate (%),Mean Accuracy (%),Mean F1 Score (%),Mean R² (%)
+DeepSeek,325,235,72.3,65.5,61.7,37.4
+Mistral,300,164,54.7,80.6,78.1,69.9
+Llama,300,113,37.7,85.3,82.3,74.4

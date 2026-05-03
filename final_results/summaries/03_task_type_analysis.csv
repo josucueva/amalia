@@ -1,0 +1,7 @@
+Model,Task Type,Total,Successful,Success Rate (%),Mean Accuracy (%),Mean F1 (%),Mean R² (%)
+DeepSeek,classification,221,165,74.7,65.5,61.7,
+DeepSeek,regression,104,70,67.3,,N/A,37.4
+Mistral,classification,175,99,56.6,80.6,78.1,
+Mistral,regression,125,65,52.0,,N/A,69.9
+Llama,classification,170,66,38.8,85.3,82.3,
+Llama,regression,130,47,36.2,,N/A,74.4

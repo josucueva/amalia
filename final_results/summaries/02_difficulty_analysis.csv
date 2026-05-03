@@ -1,0 +1,10 @@
+Model,Difficulty,Total,Successful,Success Rate (%),Mean Accuracy (%),Mean R² (%)
+DeepSeek,easy,125,115,92.0,77.6,59.2
+DeepSeek,medium,100,72,72.0,66.5,1.0
+DeepSeek,hard,100,48,48.0,40.1,43.1
+Mistral,easy,100,75,75.0,79.9,71.0
+Mistral,medium,100,48,48.0,81.5,91.9
+Mistral,hard,100,41,41.0,80.7,50.3
+Llama,easy,100,47,47.0,82.8,76.2
+Llama,medium,100,43,43.0,86.9,82.1
+Llama,hard,100,23,23.0,88.7,48.4
