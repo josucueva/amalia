@@ -1,0 +1,62 @@
+{
+  "total_pipelines": 60,
+  "successful": 19,
+  "failed": 41,
+  "classification_successful": 11,
+  "regression_successful": 8,
+  "avg_classification_accuracy": 0.7085,
+  "avg_regression_r2": 0.6505,
+  "avg_regression_rmse": 15119.6525,
+  "failed_examples": [
+    {
+      "dataset_id": "classification__easy__himanshunakrani_naive-bayes-classification-data__Naive-Bayes-Classification-Data",
+      "artifact_file": "classification__easy__himanshunakrani_naive-bayes-classification-data__Naive-Bayes-Classification-Data.json",
+      "error": "Index(['all'], dtype='str')"
+    },
+    {
+      "dataset_id": "classification__easy__priyanshusethi_happiness-classification-dataset__happydata",
+      "artifact_file": "classification__easy__priyanshusethi_happiness-classification-dataset__happydata.json",
+      "error": "Index([13], dtype='int64')"
+    },
+    {
+      "dataset_id": "classification__easy__ritwikb3_heart-disease-cleveland__Heart_disease_cleveland_new",
+      "artifact_file": "classification__easy__ritwikb3_heart-disease-cleveland__Heart_disease_cleveland_new.json",
+      "error": "invalid load key, '['."
+    },
+    {
+      "dataset_id": "classification__easy__ritwikb3_heart-disease-statlog__Heart_disease_statlog",
+      "artifact_file": "classification__easy__ritwikb3_heart-disease-statlog__Heart_disease_statlog.json",
+      "error": "get_column_info: Column 'None' not found"
+    },
+    {
+      "dataset_id": "classification__easy__robikscube_eye-state-classification-eeg-dataset__EEG_Eye_State_Classification",
+      "artifact_file": "classification__easy__robikscube_eye-state-classification-eeg-dataset__EEG_Eye_State_Classification.json",
+      "error": "invalid load key, '['."
+    },
+    {
+      "dataset_id": "classification__easy__uciml_glass__glass",
+      "artifact_file": "classification__easy__uciml_glass__glass.json",
+      "error": "[Errno 21] Is a directory: '/home/joshua/Code/ai_projects/amalia/backend/models/classification'"
+    },
+    {
+      "dataset_id": "classification__easy__yasserh_wine-quality-dataset__WineQT",
+      "artifact_file": "classification__easy__yasserh_wine-quality-dataset__WineQT.json",
+      "error": "get_column_info: Column 'None' not found"
+    },
+    {
+      "dataset_id": "classification__hard__abhishek14398_loan-dataset__loan",
+      "artifact_file": "classification__hard__abhishek14398_loan-dataset__loan.json",
+      "error": "Input y contains NaN."
+    },
+    {
+      "dataset_id": "classification__hard__andrewmvd_cyberbullying-classification__cyberbullying_tweets",
+      "artifact_file": "classification__hard__andrewmvd_cyberbullying-classification__cyberbullying_tweets.json",
+      "error": "invalid load key, '['."
+    },
+    {
+      "dataset_id": "classification__hard__ddosad_ecommerce-customer-service-satisfaction__Customer_support_data",
+      "artifact_file": "classification__hard__ddosad_ecommerce-customer-service-satisfaction__Customer_support_data.json",
+      "error": "filter_rows: Unknown condition: not null"
+    }
+  ]
+}

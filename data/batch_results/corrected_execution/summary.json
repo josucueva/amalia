@@ -4,9 +4,9 @@
   "failed": 90,
   "classification_successful": 165,
   "regression_successful": 70,
-  "avg_classification_accuracy": 0.6678,
-  "avg_regression_r2": 0.404,
-  "avg_regression_rmse": 12536.5286,
+  "avg_classification_accuracy": 0.669,
+  "avg_regression_r2": 0.4036,
+  "avg_regression_rmse": 12586.9952,
   "failed_examples": [
     {
       "dataset_id": "classification__easy__brsahan_genomic-data-for-cancer__gene_expression",
