@@ -1,0 +1,62 @@
+{
+  "total_pipelines": 325,
+  "successful": 235,
+  "failed": 90,
+  "classification_successful": 165,
+  "regression_successful": 70,
+  "avg_classification_accuracy": 0.6678,
+  "avg_regression_r2": 0.404,
+  "avg_regression_rmse": 12536.5286,
+  "failed_examples": [
+    {
+      "dataset_id": "classification__easy__brsahan_genomic-data-for-cancer__gene_expression",
+      "artifact_file": "classification__easy__brsahan_genomic-data-for-cancer__gene_expression__variant_04_of_05.json",
+      "error": "invalid literal for int() with base 10: '0.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80"
+    },
+    {
+      "dataset_id": "classification__easy__brsahan_genomic-data-for-cancer__gene_expression_cleaned",
+      "artifact_file": "classification__easy__brsahan_genomic-data-for-cancer__gene_expression_cleaned__variant_01_of_05.json",
+      "error": "invalid literal for int() with base 10: '0.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80"
+    },
+    {
+      "dataset_id": "classification__easy__mahmoudshaheen1134_heart-disease-data__heart disease",
+      "artifact_file": "classification__easy__mahmoudshaheen1134_heart-disease-data__heart disease__variant_05_of_05.json",
+      "error": "invalid literal for int() with base 10: '0.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80.80"
+    },
+    {
+      "dataset_id": "classification__hard__abhishek14398_loan-dataset__loan",
+      "artifact_file": "classification__hard__abhishek14398_loan-dataset__loan__variant_01_of_05.json",
+      "error": "Input y contains NaN."
+    },
+    {
+      "dataset_id": "classification__hard__abhishek14398_loan-dataset__loan",
+      "artifact_file": "classification__hard__abhishek14398_loan-dataset__loan__variant_02_of_05.json",
+      "error": "Input y contains NaN."
+    },
+    {
+      "dataset_id": "classification__hard__abhishek14398_loan-dataset__loan",
+      "artifact_file": "classification__hard__abhishek14398_loan-dataset__loan__variant_03_of_05.json",
+      "error": "Input y contains NaN."
+    },
+    {
+      "dataset_id": "classification__hard__abhishek14398_loan-dataset__loan",
+      "artifact_file": "classification__hard__abhishek14398_loan-dataset__loan__variant_04_of_05.json",
+      "error": "Input y contains NaN."
+    },
+    {
+      "dataset_id": "classification__hard__abhishek14398_loan-dataset__loan",
+      "artifact_file": "classification__hard__abhishek14398_loan-dataset__loan__variant_05_of_05.json",
+      "error": "Input y contains NaN."
+    },
+    {
+      "dataset_id": "classification__hard__andrewmvd_cyberbullying-classification__cyberbullying_tweets",
+      "artifact_file": "classification__hard__andrewmvd_cyberbullying-classification__cyberbullying_tweets__variant_02_of_05.json",
+      "error": "train_classification_model: Target column 'label' not found"
+    },
+    {
+      "dataset_id": "classification__hard__ddosad_ecommerce-customer-service-satisfaction__Customer_support_data",
+      "artifact_file": "classification__hard__ddosad_ecommerce-customer-service-satisfaction__Customer_support_data__variant_01_of_05.json",
+      "error": "Input X contains NaN.\nGaussianNB does not accept missing values encoded as NaN natively. For supervised learning, you might want to consider sklearn.ensemble.HistGradientBoostingClassifier and Regressor which accept missing values encoded as NaNs natively. Alternatively, it is possible to preprocess the data, for instance by using an imputer transformer in a pipeline or drop samples with missing values. See https://scikit-learn.org/stable/modules/impute.html You can find a list of all estimators that handle NaN values at the following page: https://scikit-learn.org/stable/modules/impute.html#estimators-that-handle-nan-values"
+    }
+  ]
+}
