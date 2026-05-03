@@ -1,0 +1,13 @@
+Source,Difficulty,Task,Count,Accuracy (%),F1,R² Score
+Baseline,easy,Classification,60,79.11654787467103,0.7729414758131836,
+Baseline,easy,Regression,40,,,0.7475342609649177
+LLM-Generated,easy,Classification,154,79.24038600752927,0.766690151216705,
+LLM-Generated,easy,Regression,83,,,0.6560613240365445
+Baseline,medium,Classification,50,72.21661893215351,0.6897518942114857,
+Baseline,medium,Regression,49,,,0.6955001625940809
+LLM-Generated,medium,Classification,101,75.62942989620916,0.7206166120959453,
+LLM-Generated,medium,Regression,62,,,0.5751579632618322
+Baseline,hard,Classification,32,71.51246423579003,0.7014632456802928,
+Baseline,hard,Regression,38,,,-53.27556672028783
+LLM-Generated,hard,Classification,75,60.38992617957955,0.5593079768339266,
+LLM-Generated,hard,Regression,37,,,0.4800732719827993

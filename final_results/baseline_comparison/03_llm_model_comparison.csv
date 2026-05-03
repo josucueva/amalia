@@ -1,0 +1,7 @@
+Model,Task,Count,Accuracy (%),F1,R² Score
+DeepSeek,Classification,165,65.49917293233082,0.6168345864661654,
+DeepSeek,Regression,70,,,0.37387999999999993
+Mistral,Classification,99,80.64139860620631,0.7806383371020319,
+Mistral,Regression,65,,,0.6988594712348302
+Llama,Classification,66,85.33323775241477,0.8228007393986846,
+Llama,Regression,47,,,0.7439563792631633
